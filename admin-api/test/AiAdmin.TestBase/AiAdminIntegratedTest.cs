@@ -11,4 +11,13 @@ public abstract class AiAdminIntegratedTest : AbpIntegratedTest<AiAdminTestBaseM
     {
         options.UseAutofac();
     }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        // Force cleanup of any pending finalizers to prevent cross-test
+        // SQLite connection state pollution with in-memory databases.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+    }
 }
