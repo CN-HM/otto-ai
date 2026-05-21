@@ -65,9 +65,13 @@
     <Compile Remove="Logs\**" />
     <Compile Remove="Protocol\Runtime\WsBridge.cs" />
     <Compile Remove="Services\Knowledge\Dtos\EmitServerActionDto.cs" />
+    <Compile Remove="test\**" />
     <Content Remove="Logs\**" />
+    <Content Remove="test\**" />
     <EmbeddedResource Remove="Logs\**" />
+    <EmbeddedResource Remove="test\**" />
     <None Remove="Logs\**" />
+    <None Remove="test\**" />
   </ItemGroup>
 
 </Project>
