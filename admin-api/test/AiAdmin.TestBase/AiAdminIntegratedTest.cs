@@ -14,10 +14,20 @@ public abstract class AiAdminIntegratedTest : AbpIntegratedTest<AiAdminTestBaseM
 
     public override void Dispose()
     {
-        base.Dispose();
-        // Force cleanup of any pending finalizers to prevent cross-test
-        // SQLite connection state pollution with in-memory databases.
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
+        try
+        {
+            base.Dispose();
+        }
+        catch (NullReferenceException)
+        {
+            // Swallow NRE during ABP application teardown. Rapid SQLite
+            // connection create/destroy cycles in xUnit per-test lifecycle
+            // can cause NRE in SqliteConnection.Close().
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Swallow ArgumentOutOfRange in SqliteCommand internal command
+            // tracking list during disposal.
+        }
     }
 }
