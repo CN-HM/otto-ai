@@ -82,6 +82,71 @@ public class AiAdminTestDataBuilder : ITransientDependency
         return device;
     }
 
+    public async Task<SysMenu> SeedMenuAsync(
+        long id,
+        string code,
+        string name = "Test Menu",
+        short type = 1,
+        short status = 1)
+    {
+        var menu = new SysMenu
+        {
+            Id = id,
+            Code = code,
+            Name = name,
+            Type = type,
+            Status = status
+        };
+        _db.SysMenus.Add(menu);
+        await _db.SaveChangesAsync();
+        return menu;
+    }
+
+    public async Task<SysRole> SeedRoleAsync(
+        long id,
+        string code,
+        string name = "Test Role",
+        short status = 1)
+    {
+        var role = new SysRole
+        {
+            Id = id,
+            Code = code,
+            Name = name,
+            Status = status,
+            CreateDate = DateTime.UtcNow
+        };
+        _db.SysRoles.Add(role);
+        await _db.SaveChangesAsync();
+        return role;
+    }
+
+    public async Task<SysRoleMenu> SeedRoleMenuAsync(long id, long roleId, long menuId)
+    {
+        var roleMenu = new SysRoleMenu
+        {
+            Id = id,
+            RoleId = roleId,
+            MenuId = menuId
+        };
+        _db.SysRoleMenus.Add(roleMenu);
+        await _db.SaveChangesAsync();
+        return roleMenu;
+    }
+
+    public async Task<SysUserRole> SeedUserRoleAsync(long id, long userId, long roleId)
+    {
+        var userRole = new SysUserRole
+        {
+            Id = id,
+            UserId = userId,
+            RoleId = roleId
+        };
+        _db.SysUserRoles.Add(userRole);
+        await _db.SaveChangesAsync();
+        return userRole;
+    }
+
     public async Task SeedSystemSettingsAsync()
     {
         if (!await _db.SystemSettings.AnyAsync())
