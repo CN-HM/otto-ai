@@ -1,0 +1,154 @@
+<section class="users-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ '用户与管理员管理' | translate }}</h1>
+      <p>{{ '当前已接入用户分页查询、重置密码、批量状态修改和删除接口，可作为后续详情抽屉与批量操作的基础页面。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="3"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="searchForm"
+    [loading]="loading()"
+    [columns]="2"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="mobile">{{ '手机号' | translate }}</label>
+      <input id="mobile" type="text" pInputText formControlName="mobile" placeholder="{{ '输入手机号检索' | translate }}" />
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="errorMessage()"></app-feedback-message>
+
+  <p-card header="{{ '用户列表' | translate }}">
+    @if (hasSelection) {
+      <div class="batch-actions">
+        <span>{{ '已选' | translate }} {{ selectedUsers().length }} {{ '项' | translate }}</span>
+        <button
+          pButton
+          type="button"
+          label="{{ '批量启用' | translate }}"
+          icon="pi pi-check-circle"
+          size="small"
+          severity="success"
+          (click)="batchChangeStatus(1)"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="{{ '批量停用' | translate }}"
+          icon="pi pi-ban"
+          size="small"
+          severity="warn"
+          (click)="batchChangeStatus(0)"
+        ></button>
+      </div>
+    }
+    <p-table
+      [value]="users()"
+      [loading]="loading()"
+      [(selection)]="selectedUsers"
+      dataKey="userid"
+      [expandedRowKeys]="expandedRows"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+          <th>{{ '手机号' | translate }}</th>
+          <th>{{ '设备数' | translate }}</th>
+          <th>{{ '状态' | translate }}</th>
+          <th>{{ '注册时间' | translate }}</th>
+          <th>{{ '操作' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-user let-expanded="expanded">
+        <tr>
+          <td>
+            <button
+              type="button"
+              pButton
+              [pRowToggler]="user"
+              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              severity="secondary"
+              [text]="true"
+              size="small"
+            ></button>
+          </td>
+          <td>
+            <p-tableCheckbox [value]="user"></p-tableCheckbox>
+          </td>
+          <td>{{ user.mobile || '-' }}</td>
+          <td>{{ user.deviceCount || '0' }}</td>
+          <td>
+            <p-tag [value]="statusLabel(user.status)" [severity]="statusSeverity(user.status)"></p-tag>
+          </td>
+          <td>{{ user.createDate ? (user.createDate | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+          <td>
+            <div class="row-actions">
+              <button
+                pButton
+                type="button"
+                label="{{ '重置密码' | translate }}"
+                size="small"
+                severity="secondary"
+                (click)="resetPassword(user)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                [label]="user.status === 1 ? ('停用' | translate) : ('启用' | translate)"
+                size="small"
+                severity="warn"
+                (click)="toggleStatus(user)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ '删除' | translate }}"
+                size="small"
+                severity="danger"
+                [text]="true"
+                (click)="deleteUser(user)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="rowexpansion" let-user>
+        <tr>
+          <td [attr.colspan]="7">
+            <table class="row-expand-detail">
+              <tr>
+                <th>{{ '用户 ID' | translate }}</th>
+                <td>{{ user.userid }}</td>
+                <th>{{ '手机号' | translate }}</th>
+                <td>{{ user.mobile || '-' }}</td>
+                <th>{{ '设备数量' | translate }}</th>
+                <td>{{ user.deviceCount || '0' }}</td>
+              </tr>
+              <tr>
+                <th>{{ '状态' | translate }}</th>
+                <td>{{ statusLabel(user.status) }}</td>
+                <th>{{ '注册时间' | translate }}</th>
+                <td>{{ user.createDate ? (user.createDate | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+                <td colspan="2"></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7"><app-empty-state text="{{ '暂无用户数据。' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</section>

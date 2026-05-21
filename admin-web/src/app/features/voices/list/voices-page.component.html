@@ -1,0 +1,185 @@
+<section class="voices-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ 'voices.title' | translate }}</h1>
+      <p>{{ 'voices.description' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ 'voices.addVoice' | translate }}"
+      icon="pi pi-plus"
+      size="small"
+      (click)="newVoice()"
+    ></button>
+  </app-page-toolbar>
+
+  <div class="voice-metrics">
+    <p-card
+      ><div class="metric-card">
+        <span>{{ 'voices.totalCount' | translate }}</span
+        ><strong>{{ total() }}</strong>
+      </div></p-card
+    >
+    <p-card
+      ><div class="metric-card">
+        <span>{{ 'voices.currentPageCount' | translate }}</span
+        ><strong>{{ voices().length }}</strong>
+      </div></p-card
+    >
+    <p-card
+      ><div class="metric-card">
+        <span>{{ 'voices.currentConfig' | translate }}</span
+        ><strong class="metric-value-compact">{{ selectedProfileLabel() }}</strong>
+      </div></p-card
+    >
+  </div>
+
+  <app-search-filter-card
+    [formGroup]="queryForm"
+    [loading]="loading()"
+    [columns]="2"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="ttsProfileId">{{ 'voices.ttsProfile' | translate }}</label>
+      <select id="ttsProfileId" class="native-select" formControlName="ttsProfileId">
+        <option value="">{{ 'voices.selectTtsProfile' | translate }}</option>
+        @for (item of ttsProfileOptions(); track item.value) {
+          <option [value]="item.value">{{ item.label }}</option>
+        }
+      </select>
+    </div>
+    <div filterField class="filter-field">
+      <label for="name">{{ 'voices.voiceName' | translate }}</label>
+      <input id="name" type="text" pInputText formControlName="name" />
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card header="{{ 'voices.voiceList' | translate }}">
+    <p-table
+      [value]="voices()"
+      [loading]="loading()"
+      dataKey="id"
+      [expandedRowKeys]="expandedRows"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th>{{ 'voices.voice' | translate }}</th>
+          <th>{{ 'voices.runtimeInfo' | translate }}</th>
+          <th>{{ 'voices.operation' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item let-expanded="expanded">
+        <tr>
+          <td>
+            <button
+              type="button"
+              pButton
+              [pRowToggler]="item"
+              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              severity="secondary"
+              [text]="true"
+              size="small"
+            ></button>
+          </td>
+          <td>
+            <div class="voice-name-cell">
+              <span>{{ item.name || '-' }}</span>
+              <div>
+                <small
+                  >{{ 'voices.cloudCode' | translate }}：{{ item.ttsVoice || '-' }} ｜
+                  {{ 'voices.language' | translate }}：{{ item.languages || '-' }}</small
+                >
+              </div>
+              <div class="voice-tags">
+                <p-tag [value]="resolveProviderLabel(item)" severity="info"></p-tag>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div>
+              <small>{{ 'voices.configuration' | translate }}：{{ resolveModelName(item.ttsProfileId) }}</small>
+            </div>
+            <div>
+              <small>{{ 'voices.sortOrder' | translate }}：{{ item.sort ?? 0 }}</small>
+            </div>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button
+                pButton
+                type="button"
+                label="{{ 'common.edit' | translate }}"
+                size="small"
+                severity="info"
+                (click)="editVoice(item)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ 'common.delete' | translate }}"
+                size="small"
+                severity="danger"
+                (click)="deleteVoice(item)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="rowexpansion" let-item>
+        <tr>
+          <td [attr.colspan]="4">
+            <table class="row-expand-detail">
+              <tr>
+                <th>{{ 'voices.voiceName' | translate }}</th>
+                <td>{{ item.name || '-' }}</td>
+                <th>{{ 'voices.cloudCode' | translate }}</th>
+                <td>{{ item.ttsVoice || '-' }}</td>
+                <th>{{ 'voices.language' | translate }}</th>
+                <td>{{ item.languages || '-' }}</td>
+              </tr>
+              <tr>
+                <th>{{ 'voices.ttsProfile' | translate }}</th>
+                <td>{{ resolveModelName(item.ttsProfileId) }}</td>
+                <th>{{ 'voices.preview' | translate }}</th>
+                <td colspan="3">
+                  @if (isPreviewUrl(item.voiceDemo)) {
+                    <a [href]="item.voiceDemo" target="_blank" rel="noreferrer">{{ item.voiceDemo }}</a>
+                  } @else {
+                    {{ item.voiceDemo || '-' }}
+                  }
+                </td>
+              </tr>
+              <tr class="detail-row-full">
+                <th>{{ 'voices.remark' | translate }}</th>
+                <td colspan="5">{{ item.remark || '-' }}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4"><app-empty-state text="{{ 'voices.noVoiceData' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().limit"
+      [loading]="loading()"
+      (pageChange)="onPageChange($event)"
+      (limitChange)="onLimitChange($event)"
+    ></app-pagination-bar>
+  </p-card>
+</section>

@@ -1,0 +1,120 @@
+<section class="ota-form-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">{{ 'OTA 表单' | translate }}</p>
+      <h1>{{ otaId() ? ('编辑 OTA 固件' | translate) : ('新增 OTA 固件' | translate) }}</h1>
+      <p>{{ '当前页面已接上 OTA 新增、编辑、删除与上传骨架，可继续细化上传返回值映射和发布流程。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a pButton routerLink="/devices/ota" icon="pi pi-arrow-left" severity="secondary" size="small">{{ '返回列表' | translate }}</a>
+    @if (otaId()) {
+      <a
+        pButton
+        [routerLink]="['/devices/ota', otaId()]"
+        icon="pi pi-eye"
+        severity="info"
+        size="small"
+        >{{ '查看详情' | translate }}</a
+      >
+    }
+  </app-page-toolbar>
+
+  @if (feedbackMessage()) {
+    <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+  }
+
+  <div class="form-grid">
+    <p-card header="{{ '基础信息' | translate }}">
+      <form class="ota-form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field-group">
+          <label for="firmwareName">{{ '固件名称' | translate }}</label>
+          <input id="firmwareName" type="text" pInputText formControlName="firmwareName" placeholder="{{ '请输入固件名称' | translate }}" />
+        </div>
+        <div class="field-group">
+          <label for="type">{{ '固件类型' | translate }}</label>
+          <input id="type" type="text" pInputText formControlName="type" placeholder="{{ '请输入固件类型' | translate }}" />
+        </div>
+        <div class="field-group">
+          <label for="version">{{ '版本号' | translate }}</label>
+          <input id="version" type="text" pInputText formControlName="version" placeholder="{{ '请输入版本号' | translate }}" />
+        </div>
+        <div class="field-group">
+          <label for="size">{{ '文件大小' | translate }}</label>
+          <input id="size" type="text" pInputText formControlName="size" placeholder="{{ '请输入文件大小' | translate }}" />
+        </div>
+        <div class="field-group">
+          <label for="firmwarePath">{{ '固件路径' | translate }}</label>
+          <input id="firmwarePath" type="text" pInputText formControlName="firmwarePath" placeholder="{{ '请输入固件路径' | translate }}" />
+        </div>
+        <div class="field-group">
+          <label for="sort">{{ '排序' | translate }}</label>
+          <input id="sort" type="text" pInputText formControlName="sort" placeholder="{{ '请输入排序值' | translate }}" />
+        </div>
+        <div class="field-group field-group-full">
+          <label for="remark">{{ '备注' | translate }}</label>
+          <textarea
+            id="remark"
+            class="native-textarea"
+            formControlName="remark"
+            rows="4"
+            placeholder="{{ '请输入备注信息' | translate }}"
+          ></textarea>
+        </div>
+        <div class="form-actions">
+          <button
+            pButton
+            type="submit"
+            [label]="otaId() ? ('保存更新' | translate) : ('创建 OTA' | translate)"
+            icon="pi pi-save"
+            [loading]="submitting()"
+          ></button>
+          @if (otaId()) {
+            <button
+              pButton
+              type="button"
+              label="{{ '删除 OTA' | translate }}"
+              icon="pi pi-trash"
+              severity="danger"
+              [loading]="submitting()"
+              (click)="remove()"
+            ></button>
+          }
+        </div>
+      </form>
+    </p-card>
+
+    <p-card header="{{ '固件上传' | translate }}">
+      <app-upload-panel
+        inputId="firmwareFile"
+        [label]="'选择固件文件' | translate"
+        accept=".bin,.zip,.img,.fw,.hex,.tar,.gz,.tgz"
+        [fileName]="selectedFileName()"
+        [hint]="'已按 Swagger 核对为：body 使用 file 二进制字段上传；当前前端显式附带文件名，并兼容 filePath / url / downloadUrl / fileName 等返回字段，真实联调结果仍待继续确认。' | translate"
+        hintSeverity="warn"
+        [buttonLabel]="'上传固件' | translate"
+        buttonIcon="pi pi-upload"
+        [loading]="uploading()"
+        (fileSelected)="onFileSelected($event)"
+        (uploadTriggered)="upload()"
+      ></app-upload-panel>
+    </p-card>
+
+    <p-card header="{{ '资源固件上传' | translate }}">
+      <app-upload-panel
+        inputId="assetsBinFile"
+        [label]="'选择资源固件文件' | translate"
+        accept=".bin,.zip,.img,.fw,.hex,.tar,.gz,.tgz"
+        [fileName]="selectedAssetsFileName()"
+        [hint]="'上传资源固件文件（区别于普通 OTA 固件），对应接口 /otaMag/uploadAssetsBin。' | translate"
+        hintSeverity="info"
+        [buttonLabel]="'上传资源固件' | translate"
+        buttonIcon="pi pi-upload"
+        [loading]="uploadingAssets()"
+        (fileSelected)="onAssetsFileSelected($event)"
+        (uploadTriggered)="uploadAssetsBin()"
+      ></app-upload-panel>
+    </p-card>
+  </div>
+</section>

@@ -1,0 +1,7 @@
+@import '../../../../shared/styles/list-page.shared.css';
+
+.roles-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

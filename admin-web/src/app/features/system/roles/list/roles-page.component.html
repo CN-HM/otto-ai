@@ -1,0 +1,103 @@
+<section class="roles-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ '角色管理' | translate }}</h1>
+      <p>{{ '管理系统角色与权限分配，支持新增、编辑、删除角色及菜单权限配置。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a
+      *appHasPermission="'role:create'"
+      pButton
+      routerLink="/users/roles/new"
+      icon="pi pi-plus"
+      severity="primary"
+      size="small"
+      >{{ '新增角色' | translate }}</a
+    >
+  </app-page-toolbar>
+
+  <app-search-filter-card
+    [formGroup]="queryForm"
+    [loading]="loading()"
+    [columns]="1"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="name">{{ '角色名称' | translate }}</label><input id="name" type="text" pInputText formControlName="name" />
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card header="{{ '角色列表' | translate }}">
+    <p-table [value]="roles()" [loading]="loading()" dataKey="id" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ '角色名称' | translate }}</th>
+          <th>{{ '备注' | translate }}</th>
+          <th>{{ '状态' | translate }}</th>
+          <th>{{ '排序' | translate }}</th>
+          <th>{{ '创建时间' | translate }}</th>
+          <th>{{ '操作' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.remark || '-' }}</td>
+          <td>
+            <p-tag [value]="statusLabel(item.status)" [severity]="item.status === 1 ? 'success' : 'danger'"></p-tag>
+          </td>
+          <td>{{ item.sort }}</td>
+          <td>{{ item.createDate ? (item.createDate | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+          <td>
+            <div class="row-actions">
+              <a
+                *appHasPermission="'role:update'"
+                pButton
+                [routerLink]="['/users/roles', item.id, 'edit']"
+                size="small"
+                severity="contrast"
+                >{{ '编辑' | translate }}</a
+              >
+              <a
+                *appHasPermission="'role:assign-permission'"
+                pButton
+                [routerLink]="['/users/roles', item.id, 'permissions']"
+                size="small"
+                severity="secondary"
+                >{{ '权限' | translate }}</a
+              >
+              <button
+                *appHasPermission="'role:delete'"
+                pButton
+                type="button"
+                size="small"
+                severity="danger"
+                [text]="true"
+                (click)="deleteRole(item)"
+                [disabled]="item.code === 'admin'"
+                >{{ '删除' | translate }}</button
+              >
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6"><app-empty-state text="{{ '暂无角色数据。' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().limit"
+      [loading]="loading()"
+      (pageChange)="onPageChange($event)"
+    ></app-pagination-bar>
+  </p-card>
+</section>

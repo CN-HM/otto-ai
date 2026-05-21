@@ -1,0 +1,8 @@
+/.angular
+/.sass-cache
+/coverage
+/dist
+/node_modules
+/tmp
+.DS_Store
+Thumbs.db

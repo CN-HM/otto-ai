@@ -1,0 +1,102 @@
+<section class="memory-library-detail-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ library()?.name || '记忆库详情' }}</h1>
+      <p>管理记忆库的规则配置、记忆记录与检索测试。</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a
+      pButton
+      routerLink="/memory-libraries"
+      label="返回列表"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+    ></a>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card header="基础信息">
+    @if (library(); as item) {
+      <dl class="detail-list">
+        <div>
+          <dt>编码</dt>
+          <dd>{{ item.code || '-' }}</dd>
+        </div>
+        <div>
+          <dt>名称</dt>
+          <dd>
+            <strong>{{ item.name || '-' }}</strong>
+          </dd>
+        </div>
+        <div>
+          <dt>作用域</dt>
+          <dd>
+            <p-tag [value]="scopeLabel(item.entityScope)" [severity]="$any(scopeSeverity(item.entityScope))"></p-tag>
+          </dd>
+        </div>
+        <div>
+          <dt>状态</dt>
+          <dd><p-tag [value]="statusLabel(item.status)" [severity]="$any(statusSeverity(item.status))"></p-tag></dd>
+        </div>
+        <div>
+          <dt>默认</dt>
+          <dd>
+            <p-tag [value]="defaultLabel(item.isDefault)" [severity]="$any(defaultSeverity(item.isDefault))"></p-tag>
+          </dd>
+        </div>
+        <div>
+          <dt>记忆抽取 LLM</dt>
+          <dd>{{ item.memoryModelId || '-' }}</dd>
+        </div>
+        <div>
+          <dt>向量模型</dt>
+          <dd>平台默认 Embedding Profile</dd>
+        </div>
+        <div>
+          <dt>创建时间</dt>
+          <dd>{{ item.createdAt ? (item.createdAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</dd>
+        </div>
+        <div>
+          <dt>更新时间</dt>
+          <dd>{{ item.updatedAt ? (item.updatedAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</dd>
+        </div>
+        <div>
+          <dt>描述</dt>
+          <dd>{{ item.description || '-' }}</dd>
+        </div>
+        <div>
+          <dt>检索配置</dt>
+          <dd>
+            <pre>{{ item.retrievalConfig ? (item.retrievalConfig | json) : '-' }}</pre>
+          </dd>
+        </div>
+        <div>
+          <dt>写入配置</dt>
+          <dd>
+            <pre>{{ item.writeConfig ? (item.writeConfig | json) : '-' }}</pre>
+          </dd>
+        </div>
+      </dl>
+    } @else {
+      <p class="detail-empty">暂无记忆库详情数据。</p>
+    }
+  </p-card>
+
+  @if (libraryId()) {
+    <p-tabView>
+      <p-tabPanel header="规则配置" leftIcon="pi pi-cog">
+        <app-memory-library-rules [libraryId]="libraryId()"></app-memory-library-rules>
+      </p-tabPanel>
+      <p-tabPanel header="记忆记录" leftIcon="pi pi-list">
+        <app-memory-library-records [libraryId]="libraryId()"></app-memory-library-records>
+      </p-tabPanel>
+      <p-tabPanel header="检索测试" leftIcon="pi pi-search">
+        <app-memory-library-retrieval [libraryId]="libraryId()"></app-memory-library-retrieval>
+      </p-tabPanel>
+    </p-tabView>
+  }
+</section>

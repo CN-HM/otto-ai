@@ -1,0 +1,28 @@
+{
+  "id": "4070692a-0ea7-4ba6-96ae-d9cd8f83abbb",
+  "template": "app-nolayers",
+  "versions": {
+    "AbpFramework": "10.1.0",
+    "AbpStudio": "2.2.1",
+    "TargetDotnetFramework": "net10.0"
+  },
+  "modules": {
+    "AiAdmin": {
+      "path": "AiAdmin.abpmdl"
+    }
+  },
+  "options": {
+    "httpRequests": {
+      "ignoredUrls": []
+    }
+  },
+  "creatingStudioConfiguration": {
+    "template": "app-nolayers",
+    "createdAbpStudioVersion": "2.2.1",
+    "creationTool": "ABP Studio CLI",
+    "multiTenancy": "false",
+    "uiFramework": "no-ui",
+    "databaseProvider": "ef",
+    "databaseManagementSystem": "postgresql"
+  }
+}

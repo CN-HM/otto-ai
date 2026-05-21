@@ -1,0 +1,145 @@
+<section class="runtime-signals-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ '运行时信号' | translate }}</h1>
+      <p>{{ '集中核对风险、健康、提醒等信号；通知推送由后续定时任务统一消费处理。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="3"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="queryForm"
+    [loading]="loading()"
+    [columns]="4"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keyword">{{ '关键词' | translate }}</label>
+      <input id="keyword" type="text" pInputText formControlName="keyword" placeholder="{{ '内容、设备、会话或编码' | translate }}" />
+    </div>
+    <div filterField class="filter-field">
+      <label for="signalType">{{ '类型' | translate }}</label>
+      <select id="signalType" class="native-select" formControlName="signalType">
+        <option value="">{{ '全部类型' | translate }}</option>
+        <option value="risk">{{ '风险' | translate }}</option>
+        <option value="health_followup">{{ '健康' | translate }}</option>
+        <option value="reminder">{{ '提醒' | translate }}</option>
+      </select>
+    </div>
+    <div filterField class="filter-field">
+      <label for="status">{{ '状态' | translate }}</label>
+      <select id="status" class="native-select" formControlName="status">
+        <option value="">{{ '全部状态' | translate }}</option>
+        <option value="pending">{{ '待处理' | translate }}</option>
+        <option value="scheduled">{{ '已排程' | translate }}</option>
+        <option value="processing">{{ '处理中' | translate }}</option>
+        <option value="completed">{{ '已完成' | translate }}</option>
+        <option value="ignored">{{ '已忽略' | translate }}</option>
+        <option value="failed">{{ '失败' | translate }}</option>
+      </select>
+    </div>
+    <div filterField class="filter-field">
+      <label for="severity">{{ '级别' | translate }}</label>
+      <select id="severity" class="native-select" formControlName="severity">
+        <option value="">{{ '全部级别' | translate }}</option>
+        <option value="critical">{{ '严重' | translate }}</option>
+        <option value="high">{{ '高' | translate }}</option>
+        <option value="medium">{{ '中' | translate }}</option>
+        <option value="low">{{ '低' | translate }}</option>
+      </select>
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card header="{{ '信号列表' | translate }}">
+    <p-table [value]="signals()" [loading]="loading()" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ '类型 / 级别' | translate }}</th>
+          <th>{{ '内容' | translate }}</th>
+          <th>{{ '状态' | translate }}</th>
+          <th>{{ '上下文' | translate }}</th>
+          <th>{{ '时间' | translate }}</th>
+          <th>{{ '操作' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <div class="tag-stack">
+              <p-tag [value]="typeLabel(item.signalType)" severity="info"></p-tag>
+              <p-tag [value]="severityLabel(item.severity)" [severity]="severitySeverity(item.severity)"></p-tag>
+            </div>
+          </td>
+          <td>
+            <strong>{{ item.signalCode || item.id }}</strong>
+            <p>{{ item.sourceText || '-' }}</p>
+            @if (item.errorMessage) {
+              <small class="error-text">{{ item.errorMessage }}</small>
+            }
+          </td>
+          <td><p-tag [value]="statusLabel(item.status)" [severity]="statusSeverity(item.status)"></p-tag></td>
+          <td>
+            <small>{{ '设备：' | translate }}{{ item.deviceId || '-' }}</small
+            ><br />
+            <small>{{ '会话：' | translate }}{{ item.sessionId || '-' }}</small
+            ><br />
+            <small>{{ '用户：' | translate }}{{ item.userId || '-' }}</small>
+          </td>
+          <td>
+            <small>{{ '创建：' | translate }}{{ item.createdAt ? (item.createdAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</small
+            ><br />
+            <small>{{ '排程：' | translate }}{{ item.scheduledAt ? (item.scheduledAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</small>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button
+                pButton
+                type="button"
+                label="{{ '完成' | translate }}"
+                size="small"
+                severity="success"
+                [text]="true"
+                (click)="updateStatus(item, 'completed')"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ '忽略' | translate }}"
+                size="small"
+                severity="secondary"
+                [text]="true"
+                (click)="updateStatus(item, 'ignored')"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ '重置' | translate }}"
+                size="small"
+                severity="warn"
+                [text]="true"
+                (click)="updateStatus(item, 'pending')"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6"><app-empty-state text="{{ '暂无运行时信号。' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().limit"
+      [loading]="loading()"
+      (pageChange)="changePage($event)"
+      (limitChange)="changeLimit($event)"
+    ></app-pagination-bar>
+  </p-card>
+</section>

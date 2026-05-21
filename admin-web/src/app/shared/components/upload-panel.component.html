@@ -1,0 +1,24 @@
+<div class="upload-panel">
+  <label [for]="inputId()">{{ label() | translate }}</label>
+  <input [id]="inputId()" type="file" [accept]="accept()" [multiple]="multiple()" (change)="onFileChange($event)" />
+  <p class="upload-panel__file-name">{{ fileName() || emptyFileText() | translate }}</p>
+  @if (hint()) {
+    <p
+      class="upload-panel__hint"
+      [class.upload-panel__hint--info]="hintSeverity() === 'info'"
+      [class.upload-panel__hint--warn]="hintSeverity() === 'warn'"
+      [class.upload-panel__hint--success]="hintSeverity() === 'success'"
+    >
+      {{ hint() | translate }}
+    </p>
+  }
+  <button
+    pButton
+    type="button"
+    [label]="buttonLabel() | translate"
+    [icon]="buttonIcon()"
+    [loading]="loading()"
+    [disabled]="uploadDisabled()"
+    (click)="onUpload()"
+  ></button>
+</div>

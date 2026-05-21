@@ -1,0 +1,114 @@
+<section class="knowledge-base-form-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ datasetId() ? '编辑知识库' : '新增知识库' }}</h1>
+      <p>先定义一个清晰的知识范围，再进入内容管理上传文件或粘贴文本，方便智能体稳定检索。</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="返回知识库列表"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+      (click)="backToList()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <app-form-detail-layout formTitle="知识库信息" asideTitle="使用建议">
+    <form formPane class="dataset-form" [formGroup]="form" (ngSubmit)="submit()">
+      <section class="form-section">
+        <h3>基础信息</h3>
+        <div class="field-grid">
+          <div class="field-group">
+            <label for="name">知识库名称 <span class="required">*</span></label>
+            <input
+              id="name"
+              type="text"
+              pInputText
+              formControlName="name"
+              placeholder="例如：产品 FAQ、设备说明书、售后知识库"
+            />
+            <span class="field-help">建议使用清晰的业务名称，便于后续在智能体角色中绑定。</span>
+          </div>
+          <div class="field-group field-group-switch">
+            <label for="statusToggle">状态</label>
+            <div class="toggle-status-row">
+              <p-toggleswitch
+                inputId="statusToggle"
+                [ngModel]="isStatusActive()"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="setStatusByToggle(!!$event)"
+              ></p-toggleswitch>
+              <span class="field-help">{{
+                isStatusActive() ? '启用中：参与运行时检索。' : '停用中：不会参与运行时检索。'
+              }}</span>
+            </div>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="description">知识库描述</label>
+            <textarea
+              id="description"
+              class="native-textarea"
+              formControlName="description"
+              rows="6"
+              placeholder="说明这个知识库覆盖的内容范围、适用场景和维护负责人。"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3>当前能力</h3>
+        <div class="capability-grid">
+          <div class="capability-item">
+            <strong>向量存储</strong>
+            <span>使用 PostgreSQL pgvector，无需选择向量库。</span>
+          </div>
+          <div class="capability-item">
+            <strong>Embedding</strong>
+            <span>统一使用绑定配置中心的默认 Embedding Profile。</span>
+          </div>
+          <div class="capability-item">
+            <strong>权限范围</strong>
+            <span>后台创建默认公共，便于在智能体角色中统一绑定使用。</span>
+          </div>
+          <div class="capability-item">
+            <strong>切块策略</strong>
+            <span>当前使用系统默认文本切块策略，上传文档后自动解析。</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button
+          pButton
+          type="submit"
+          label="保存知识库"
+          icon="pi pi-save"
+          [loading]="submitting() || loading()"
+        ></button>
+      </div>
+    </form>
+
+    <div asidePane class="form-aside">
+      <div class="form-aside-section">
+        <h3>推荐填写方式</h3>
+        <p>新建知识库后进入内容管理页面上传资料，系统会自动解析、切块、使用平台默认向量模型生成向量并写入检索库。</p>
+      </div>
+      <div class="form-aside-section">
+        <h3>向量模型如何管理？</h3>
+        <p>请在“绑定配置中心 > Embedding Profile”新增模型并绑定云平台 Integration，可维护多个模型和默认模型。</p>
+      </div>
+      <div class="form-aside-section">
+        <h3>内容维护建议</h3>
+        <p>建议按业务主题拆分知识库，例如产品 FAQ、售后政策、设备说明书，避免一个知识库混入过多无关主题。</p>
+      </div>
+    </div>
+  </app-form-detail-layout>
+</section>

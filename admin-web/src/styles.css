@@ -1,0 +1,207 @@
+:root {
+  /* ── Surface & Background ── */
+  --surface-ground: #07070a;
+  --surface-section: #0c0c10;
+  --surface-card: #12121a;
+  --surface-overlay: #1a1a24;
+  --surface-border: rgba(255, 255, 255, 0.06);
+  --surface-hover: rgba(255, 255, 255, 0.04);
+
+  /* ── Text ── */
+  --text-color: #f0f0f5;
+  --text-color-secondary: #9d9db5;
+  --text-color-muted: #64648a;
+
+  /* ── Accent — Cyan × Indigo ── */
+  --primary-color: #6ee7b7;
+  --primary-color-text: #a7f3d0;
+  --primary-alt: #818cf8;
+  --highlight-bg: rgba(110, 231, 183, 0.1);
+  --accent-gradient: linear-gradient(135deg, #6ee7b7, #818cf8);
+  --accent-glow: rgba(110, 231, 183, 0.35);
+  --accent-glow-alt: rgba(129, 140, 248, 0.3);
+
+  /* ── Semantic ── */
+  --red-400: #f87171;
+  --green-400: #4ade80;
+  --yellow-400: #facc15;
+  --blue-400: #60a5fa;
+
+  /* ── Hero / Gradient ── */
+  --hero-bg: linear-gradient(135deg, #0c0c10 0%, #151520 50%, #12121a 100%);
+  --hero-border: rgba(110, 231, 183, 0.1);
+
+  /* ── Sidebar ── */
+  --sidebar-bg: linear-gradient(180deg, #07070a 0%, #0f0f18 100%);
+  --sidebar-text: #c8c8da;
+  --sidebar-hover: rgba(110, 231, 183, 0.08);
+  --sidebar-active-bg: linear-gradient(135deg, rgba(110, 231, 183, 0.12), rgba(129, 140, 248, 0.1));
+  --sidebar-active-border: rgba(110, 231, 183, 0.4);
+
+  /* ── Quick Action Cards ── */
+  --card-action-bg: rgba(18, 18, 26, 0.8);
+  --card-action-border: rgba(255, 255, 255, 0.06);
+  --card-action-icon-bg: linear-gradient(135deg, rgba(110, 231, 183, 0.15), rgba(129, 140, 248, 0.15));
+
+  /* ── Field ── */
+  --field-error: #f87171;
+
+  /* ── Misc ── */
+  --link-color: #6ee7b7;
+  --breadcrumb-color: #9d9db5;
+  --breadcrumb-active: #f0f0f5;
+  --badge-accent: #818cf8;
+  --p-scrollbar-width: 0px;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  background: var(--surface-ground);
+  color: var(--text-color);
+}
+
+app-root {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+}
+
+:root *::-webkit-scrollbar:vertical {
+  width: 0;
+  display: none;
+}
+
+:root *::-webkit-scrollbar:horizontal {
+  height: 8px;
+}
+
+:root *::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+:root *::-webkit-scrollbar-track:horizontal {
+  background: transparent;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-top: 0;
+}
+
+/* ── Global PrimeNG Card AI Glow ── */
+:root .p-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+:root .p-card:hover {
+  border-color: rgba(110, 231, 183, 0.15);
+  box-shadow:
+    0 0 20px rgba(110, 231, 183, 0.06),
+    0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ── PrimeNG Table — unify with card background ── */
+:root .p-datatable .p-datatable-thead > tr > th {
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+  border-color: var(--surface-border);
+}
+
+:root .p-datatable .p-datatable-tbody > tr {
+  background: var(--surface-card);
+  color: var(--text-color);
+  border-color: var(--surface-border);
+  transition: background 0.2s ease;
+}
+
+:root .p-datatable .p-datatable-tbody > tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+:root .p-datatable .p-datatable-tbody > tr > td {
+  border-color: var(--surface-border);
+}
+
+/* ── PrimeNG Menu popup dark theme ── */
+:root .p-menu {
+  background: var(--surface-overlay);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+:root .p-menu .p-menuitem-link {
+  color: var(--text-color);
+  transition: background 0.15s ease;
+}
+
+:root .p-menu .p-menuitem-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Global layout utilities ── */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+  align-self: center;
+}
+
+/* ── Mobile: table horizontal scroll + touch targets ── */
+@media (max-width: 768px) {
+  :root .p-datatable .p-datatable-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :root .p-datatable .p-datatable-thead > tr > th,
+  :root .p-datatable .p-datatable-tbody > tr > td {
+    white-space: nowrap;
+  }
+
+  :root .p-button {
+    min-height: 2.75rem;
+  }
+}
+
+/* 修复：确保 PrimeNG 的 p-password 组件宽度与普通输入框一致（在 field-group 中生效） */
+.field-group .p-password.p-component,
+.field-group .p-password.p-component .p-inputwrapper,
+.field-group .p-inputwrapper {
+  display: flex !important;
+  width: 100% !important;
+}
+
+.field-group .p-inputwrapper .p-inputtext {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}

@@ -1,0 +1,68 @@
+<section class="role-form-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">{{ '角色表单' | translate }}</p>
+      <h1>{{ isEdit() ? ('编辑角色' | translate) : ('新增角色' | translate) }}</h1>
+      <p>{{ '配置角色基本信息，保存后可在角色列表中进行权限分配。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ '返回角色列表' | translate }}"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+      (click)="cancel()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <app-form-detail-layout formTitle="{{ '角色信息' | translate }}" asideTitle="{{ '填写说明' | translate }}">
+    <form formPane class="role-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field-group">
+        <label for="name">{{ '角色名称' | translate }}</label><input id="name" type="text" pInputText formControlName="name" />
+      </div>
+      <div class="field-group">
+        <label for="code">{{ '角色编码' | translate }}</label
+        ><input id="code" type="text" pInputText formControlName="code" placeholder="{{ '如 admin, user, editor' | translate }}" />
+      </div>
+      <div class="field-group">
+        <label for="status">{{ '状态' | translate }}</label>
+        <p-select
+          id="status"
+          [options]="statusOptions()"
+          formControlName="status"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="{{ '选择状态' | translate }}"
+        ></p-select>
+      </div>
+      <div class="field-group">
+        <label for="sort">{{ '排序' | translate }}</label
+        ><p-inputNumber id="sort" formControlName="sort" [min]="0" [showButtons]="true"></p-inputNumber>
+      </div>
+      <div class="field-group field-group-full">
+        <label for="remark">{{ '备注' | translate }}</label
+        ><textarea id="remark" class="native-textarea" formControlName="remark" rows="4"></textarea>
+      </div>
+      <div class="form-actions">
+        <button pButton type="submit" label="{{ '保存角色' | translate }}" icon="pi pi-save" [loading]="submitting() || loading()"></button>
+      </div>
+    </form>
+
+    <div asidePane class="form-aside">
+      <div class="form-aside-section">
+        <h3>{{ '角色编码' | translate }}</h3>
+        <p>{{ '角色编码全局唯一，用于程序内部标识角色，建议使用英文小写加连字符的形式。' | translate }}</p>
+      </div>
+      <div class="form-aside-section">
+        <h3>{{ '权限分配' | translate }}</h3>
+        <p>{{ '保存角色后，可在角色列表中点击"权限"按钮分配菜单权限。' | translate }}</p>
+      </div>
+    </div>
+  </app-form-detail-layout>
+</section>

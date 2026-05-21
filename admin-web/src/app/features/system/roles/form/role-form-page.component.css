@@ -1,0 +1,7 @@
+@import '../../../../shared/styles/form-page.shared.css';
+
+.role-form-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

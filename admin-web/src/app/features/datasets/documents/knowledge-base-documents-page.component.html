@@ -1,0 +1,294 @@
+<section class="knowledge-base-documents-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ dataset()?.name || '知识库内容' }}</h1>
+      <p>通过文件上传或手动文本录入知识数据，系统会自动解析、切片、生成向量并写入检索库。</p>
+    </div>
+    <div class="hero-summary">
+      <span>知识条目 {{ total() }}</span>
+      <span>已完成 {{ doneCount() }}</span>
+      <span>处理中 {{ processingCount() }}</span>
+      <span>失败 {{ failedCount() }}</span>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a pButton routerLink="/datasets" label="返回知识库" icon="pi pi-arrow-left" severity="secondary" size="small"></a>
+    <a
+      pButton
+      [routerLink]="['/datasets', datasetId(), 'retrieval-test']"
+      label="检索测试"
+      icon="pi pi-search"
+      severity="contrast"
+      size="small"
+    ></a>
+    <button
+      pButton
+      type="button"
+      [label]="autoRefreshEnabled() ? '停止刷新' : '自动刷新'"
+      icon="pi pi-refresh"
+      severity="secondary"
+      size="small"
+      (click)="toggleAutoRefresh()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <div class="knowledge-workspace">
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="card-header-row">
+          <span>录入知识</span>
+          <div class="header-actions">
+            <button
+              pButton
+              type="button"
+              label="上传文件"
+              icon="pi pi-upload"
+              size="small"
+              [severity]="inputMode() === 'file' ? 'contrast' : 'secondary'"
+              (click)="setInputMode('file')"
+            ></button>
+            <button
+              pButton
+              type="button"
+              label="粘贴文本"
+              icon="pi pi-file-edit"
+              size="small"
+              [severity]="inputMode() === 'text' ? 'contrast' : 'secondary'"
+              (click)="setInputMode('text')"
+            ></button>
+          </div>
+        </div>
+      </ng-template>
+
+      @if (inputMode() === 'file') {
+        <app-upload-panel
+          inputId="knowledgeDocumentFile"
+          label="选择知识文件"
+          accept=".txt,.md,.markdown,.doc,.docx,.pdf,.csv,.json"
+          [fileName]="selectedFileName()"
+          buttonLabel="导入文件"
+          buttonIcon="pi pi-upload"
+          hint="适合说明书、FAQ、政策文档、Markdown、TXT、PDF 等资料。导入后系统会异步处理。"
+          hintSeverity="success"
+          [loading]="uploading()"
+          [uploadDisabled]="!selectedFile()"
+          (fileSelected)="onFileSelected($event)"
+          (uploadTriggered)="upload()"
+        ></app-upload-panel>
+      } @else {
+        <form class="text-import-form" [formGroup]="textImportForm" (ngSubmit)="importText()">
+          <div class="filter-field">
+            <label for="textTitle">标题</label>
+            <input id="textTitle" type="text" pInputText formControlName="title" placeholder="例如：设备联网常见问题" />
+          </div>
+          <div class="filter-field">
+            <label for="textSource">来源</label>
+            <input
+              id="textSource"
+              type="text"
+              pInputText
+              formControlName="source"
+              placeholder="manual / faq / policy"
+            />
+          </div>
+          <div class="filter-field field-full">
+            <label for="textContent">知识内容 <span class="required">*</span></label>
+            <textarea
+              id="textContent"
+              class="native-textarea"
+              formControlName="content"
+              rows="10"
+              placeholder="粘贴 FAQ、客服话术、产品说明或故障处理步骤"
+            ></textarea>
+            <small class="field-help">建议使用“问题/答案”“标题/步骤”“场景/处理方式”组织内容，方便后续检索命中。</small>
+          </div>
+          <div class="filter-actions field-full">
+            <button pButton type="submit" label="导入文本" icon="pi pi-check" [loading]="textImporting()"></button>
+            <button
+              pButton
+              type="button"
+              label="填入示例"
+              icon="pi pi-file-edit"
+              severity="secondary"
+              (click)="textImportForm.patchValue({ content: textImportExample })"
+            ></button>
+            <button
+              pButton
+              type="button"
+              label="清空"
+              icon="pi pi-times"
+              severity="secondary"
+              (click)="textImportForm.reset({ title: '', content: '', source: 'manual' })"
+            ></button>
+          </div>
+        </form>
+      }
+    </p-card>
+
+    <p-card header="录入建议">
+      <div class="tips-list">
+        <div>
+          <strong>内容边界清晰</strong>
+          <span>一个知识库建议聚焦同一业务域，例如售后 FAQ、设备说明书或门店政策。</span>
+        </div>
+        <div>
+          <strong>文本结构稳定</strong>
+          <span>优先使用标题、分点、问答格式，避免把多个无关主题堆在同一段。</span>
+        </div>
+        <div>
+          <strong>导入后看状态</strong>
+          <span>待处理/处理中会自动进入解析和向量写入，失败时可重新处理或删除后重传。</span>
+        </div>
+      </div>
+      @if (dataset(); as item) {
+        <div class="dataset-meta-card">
+          <span>ID：{{ item.datasetId || item.id || '-' }}</span>
+          <span>切片：{{ item.chunkCount ?? 0 }}</span>
+          <span>Token：{{ item.tokenNum ?? 0 }}</span>
+        </div>
+      }
+    </p-card>
+  </div>
+
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="card-header-row">
+        <span>知识内容</span>
+        @if (selectedDocuments().length > 0) {
+          <button
+            pButton
+            type="button"
+            [label]="'删除选中 (' + selectedDocuments().length + ')'"
+            icon="pi pi-trash"
+            severity="danger"
+            size="small"
+            (click)="batchDeleteDocuments()"
+          ></button>
+        }
+      </div>
+    </ng-template>
+
+    <app-search-filter-card
+      [formGroup]="queryForm"
+      [loading]="loading()"
+      [columns]="2"
+      (submitted)="applyFilters()"
+      (resetTriggered)="reset()"
+    >
+      <div filterField class="filter-field">
+        <label for="name">关键词</label>
+        <input id="name" type="text" pInputText formControlName="name" placeholder="按标题搜索" />
+      </div>
+      <div filterField class="filter-field">
+        <label for="status">处理状态</label>
+        <p-select
+          id="status"
+          [options]="statusFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          formControlName="status"
+        ></p-select>
+      </div>
+    </app-search-filter-card>
+
+    <p-table
+      [value]="documents()"
+      [loading]="loading()"
+      dataKey="id"
+      responsiveLayout="scroll"
+      [selection]="selectedDocuments()"
+      (selectionChange)="onSelectionChange($event)"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+          <th>知识内容</th>
+          <th>状态与索引</th>
+          <th>操作</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td><p-tableCheckbox [value]="item"></p-tableCheckbox></td>
+          <td>
+            <div>
+              <strong>{{ item.name || '-' }}</strong>
+            </div>
+            <div>
+              <small>类型：{{ fileTypeLabel(item) }} ｜ 大小：{{ fileSizeLabel(item.fileSize) }}</small>
+            </div>
+            @if (item.error) {
+              <div>
+                <small class="error-text">{{ item.error }}</small>
+              </div>
+            }
+            <div>
+              <small>更新：{{ item.updatedAt ? (item.updatedAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</small>
+            </div>
+          </td>
+          <td>
+            <div class="status-cell">
+              <p-tag [value]="statusLabel(item.status)" [severity]="statusSeverity(item.status)"></p-tag>
+              @if (item.progress !== null) {
+                <small>进度：{{ item.progress }}%</small>
+              }
+              <div class="stat-cell">
+                <span>切片 {{ item.chunkCount ?? 0 }}</span>
+                <span>Token {{ item.tokenCount ?? 0 }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="row-actions">
+              <a
+                pButton
+                [routerLink]="['/datasets', datasetId(), 'documents', documentKey(item), 'chunks']"
+                [queryParams]="{ name: item.name || '', status: item.status ?? '', run: item.run || '' }"
+                label="查看切片"
+                size="small"
+                severity="info"
+              ></a>
+              <button
+                pButton
+                type="button"
+                label="重新处理"
+                size="small"
+                severity="secondary"
+                [text]="true"
+                [loading]="parsing()"
+                (click)="reprocessDocument(item)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="删除"
+                size="small"
+                severity="danger"
+                [text]="true"
+                (click)="deleteDocument(item)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4"><app-empty-state text="暂无知识内容，请先上传文件或粘贴文本导入。"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().page_size"
+      [loading]="loading()"
+      (pageChange)="changePage($event)"
+      (limitChange)="changePageSize($event)"
+    >
+    </app-pagination-bar>
+  </p-card>
+</section>

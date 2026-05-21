@@ -1,0 +1,123 @@
+@import '../../../../shared/styles/list-page.shared.css';
+
+.audit-logs-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.native-select {
+  height: 2.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color);
+  padding: 0 0.85rem;
+}
+
+.operator-cell,
+.count-cell,
+.result-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.operator-cell span,
+.count-cell span,
+.result-cell span {
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+}
+
+.request-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.request-url {
+  color: var(--text-color-secondary);
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.detail-sections {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.detail-section-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.detail-section-header span {
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+}
+
+.detail-chip-list {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.detail-chip-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%);
+}
+
+.detail-chip-title,
+.detail-chip-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.detail-chip-title {
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.detail-chip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+}
+
+.detail-code-block {
+  margin: 0;
+  padding: 0.85rem;
+  border-radius: 10px;
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
+  color: var(--text-color);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+}

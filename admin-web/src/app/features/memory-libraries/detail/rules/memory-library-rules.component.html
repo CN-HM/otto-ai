@@ -1,0 +1,167 @@
+<section class="memory-library-rules">
+  <div class="rules-header">
+    <div>
+      <h3>{{ '规则配置' | translate }}</h3>
+      <p>{{ '规则用来告诉系统“哪些对话内容值得写入长期记忆”。一般只需要创建用户画像或事实两类规则。' | translate }}</p>
+    </div>
+    <button
+      pButton
+      type="button"
+      label="{{ '新建规则' | translate }}"
+      icon="pi pi-plus"
+      severity="primary"
+      size="small"
+      (click)="openCreateDialog()"
+    ></button>
+  </div>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card>
+    <p-table [value]="rules()" [loading]="loading()" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ '规则类型' | translate }}</th>
+          <th>{{ '规则名称' | translate }}</th>
+          <th>{{ '有效期' | translate }}</th>
+          <th>{{ '状态' | translate }}</th>
+          <th>{{ '操作' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-rule>
+        <tr>
+          <td><p-tag [value]="ruleTypeLabel(rule.ruleType)" severity="info"></p-tag></td>
+          <td>
+            <div class="rule-name-cell">
+              <strong>{{ rule.ruleName }}</strong>
+            </div>
+          </td>
+          <td>{{ ttlLabel(rule.ttlDays) }}</td>
+          <td><p-tag [value]="enabledLabel(rule.isEnabled)" [severity]="enabledSeverity(rule.isEnabled)"></p-tag></td>
+          <td>
+            <div class="row-actions">
+              <button
+                pButton
+                type="button"
+                label="{{ '编辑' | translate }}"
+                size="small"
+                severity="info"
+                (click)="openEditDialog(rule)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ '删除' | translate }}"
+                size="small"
+                severity="danger"
+                (click)="deleteRule(rule)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5">
+            <app-empty-state
+              text="{{ '暂无规则配置。建议先新建“用户画像”规则，用来记住昵称、偏好、习惯等长期信息。' | translate }}"
+            ></app-empty-state>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  @if (dialogVisible()) {
+    <div class="rule-modal-backdrop" (click)="closeDialog()">
+      <section
+        class="rule-modal"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="editingRuleId() ? ('编辑规则' | translate) : ('新建规则' | translate)"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="rule-modal-header">
+          <h3>{{ editingRuleId() ? ('编辑规则' | translate) : ('新建规则' | translate) }}</h3>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            (click)="closeDialog()"
+          ></button>
+        </header>
+
+        <div class="rule-modal-body">
+          <form [formGroup]="form" class="rule-form">
+            <div class="rule-help-card">
+              <strong>{{ '怎么理解规则？' | translate }}</strong>
+              <span>{{ '用户画像和事实规则会在会话结束后异步提取并写入长期记忆。' | translate }}</span>
+            </div>
+            <div class="field-group">
+              <label>{{ '要抽取或标记什么？' | translate }} <span class="required">*</span></label>
+              <div class="rule-type-cards">
+                @for (type of ruleTypes; track type) {
+                  <label class="rule-type-card" [class.rule-type-card--active]="form.controls.ruleType.value === type">
+                    <input
+                      type="radio"
+                      formControlName="ruleType"
+                      [value]="type"
+                      (change)="applyRuleTypeDefaults(type)"
+                    />
+                    <strong>{{ ruleTypeLabel(type) }}</strong>
+                    <span>{{ ruleTypeDescription(type) }}</span>
+                  </label>
+                }
+              </div>
+              <span class="field-help">{{ currentRuleTypeDescription(form.controls.ruleType.value) }}</span>
+            </div>
+            <div class="field-group">
+              <label for="ruleName">{{ '规则名称' | translate }} <span class="required">*</span></label>
+              <input id="ruleName" type="text" pInputText formControlName="ruleName" placeholder="{{ '例如：用户画像提取' | translate }}" />
+            </div>
+            <div class="field-group">
+              <label for="instruction">{{ '提取说明' | translate }}</label>
+              <textarea
+                id="instruction"
+                class="native-textarea"
+                formControlName="instruction"
+                rows="4"
+                placeholder="{{ '用自然语言说明什么内容应该被记住' | translate }}"
+              ></textarea>
+              <span class="field-help">{{ '通常直接使用默认说明即可；合并、去重、阈值和结构化输出由系统固定策略处理。' | translate }}</span>
+            </div>
+            <div class="form-row">
+              <div class="field-group">
+                <label for="ttlDays">{{ '有效期（天）' | translate }}</label>
+                <input id="ttlDays" type="number" pInputText formControlName="ttlDays" />
+                <span class="field-help">{{ '填 0 表示永不过期。' | translate }}</span>
+              </div>
+              <div class="field-group">
+                <label>{{ '启用状态' | translate }}</label>
+                <div class="switch-field">
+                  <input id="isEnabled" type="checkbox" class="custom-switch" formControlName="isEnabled" />
+                  <span>{{ form.getRawValue().isEnabled ? ('立即启用' | translate) : ('先保存但不生效' | translate) }}</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <footer class="rule-modal-footer">
+          <button pButton type="button" label="{{ '取消' | translate }}" severity="secondary" (click)="closeDialog()"></button>
+          <button
+            pButton
+            type="button"
+            label="{{ '保存' | translate }}"
+            severity="primary"
+            [loading]="dialogSubmitting()"
+            (click)="submitRule()"
+          ></button>
+        </footer>
+      </section>
+    </div>
+  }
+</section>

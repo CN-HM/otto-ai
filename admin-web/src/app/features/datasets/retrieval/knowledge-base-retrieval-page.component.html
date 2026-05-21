@@ -1,0 +1,73 @@
+<section class="knowledge-base-retrieval-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">知识库检索测试</p>
+      <h1>检索测试</h1>
+      <p>当前页面已接入 /datasets/&#123;dataset_id&#125;/retrieval-test，用于验证知识库的召回测试结果。</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a pButton routerLink="/datasets" label="返回列表" icon="pi pi-arrow-left" severity="secondary" size="small"></a>
+    @if (datasetId()) {
+      <a
+        pButton
+        [routerLink]="['/datasets', datasetId(), 'documents']"
+        label="返回文档管理"
+        icon="pi pi-folder-open"
+        severity="info"
+        size="small"
+      ></a>
+    }
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <div class="retrieval-grid">
+    <p-card header="测试参数">
+      @if (dataset(); as item) {
+        <p class="dataset-meta">当前知识库：{{ item.name || '-' }}（{{ item.datasetId || item.id || '-' }}）</p>
+      }
+
+      <form class="retrieval-form" [formGroup]="form" (ngSubmit)="runTest()">
+        <div class="field-group field-group-full">
+          <label for="query">检索问题</label
+          ><textarea id="query" class="native-textarea" formControlName="query" rows="6"></textarea>
+        </div>
+        <div class="field-group slider-field">
+          <label for="topK">召回条数：{{ form.controls.topK.value }}</label
+          ><p-slider id="topK" formControlName="topK" [min]="1" [max]="50" [step]="1"></p-slider
+          ><span class="field-help">最多返回多少条候选切片。</span>
+        </div>
+        <div class="field-group slider-field">
+          <label for="threshold">相似度阈值：{{ form.controls.threshold.value }}</label
+          ><p-slider id="threshold" formControlName="threshold" [min]="0" [max]="1" [step]="0.05"></p-slider
+          ><span class="field-help">范围 0~1，越高越保守；低于该值的切片不会返回，默认 0.3。</span>
+        </div>
+        <div class="field-group field-group-full">
+          <label for="rewriteQuery">手动改写查询</label
+          ><input id="rewriteQuery" type="text" pInputText formControlName="rewriteQuery" /><span class="field-help"
+            >可选。填写后后端会用这里的文本做向量检索；当前不是自动 LLM 改写。</span
+          >
+        </div>
+        <div class="form-actions">
+          <button
+            pButton
+            type="submit"
+            label="执行检索测试"
+            icon="pi pi-play"
+            [loading]="testing() || loading()"
+          ></button>
+        </div>
+      </form>
+    </p-card>
+
+    <p-card header="测试结果">
+      @if (testResult()) {
+        <pre class="result-block">{{ testResult() | json }}</pre>
+      } @else {
+        <p class="result-empty">执行检索测试后将在这里显示返回结果。</p>
+      }
+    </p-card>
+  </div>
+</section>

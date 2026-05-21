@@ -1,0 +1,12 @@
+analyzer:
+  exclude:
+    - .dart_tool/**
+    - build/**
+    - packages/openapi/**
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+
+linter:
+  rules:
+    avoid_print: false

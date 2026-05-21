@@ -1,0 +1,140 @@
+<section class="mcp-tools-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ 'mcpTools.title' | translate }}</h1>
+      <p>{{ 'mcpTools.description' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a
+      *appHasPermission="'mcp-tool:create'"
+      pButton
+      routerLink="/mcp-tools/new"
+      label="{{ 'mcpTools.new' | translate }}"
+      icon="pi pi-plus"
+      severity="primary"
+      size="small"
+    ></a>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <app-search-filter-card
+    [formGroup]="queryForm"
+    [loading]="loading()"
+    [columns]="3"
+    (submitted)="onSearch()"
+    (resetTriggered)="onReset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keyword">{{ 'mcpTools.keywords' | translate }}</label>
+      <input
+        id="keyword"
+        type="text"
+        pInputText
+        formControlName="keyword"
+        placeholder="{{ 'mcpTools.searchPlaceholder' | translate }}"
+      />
+    </div>
+    <div filterField class="filter-field">
+      <label for="status">{{ 'mcpTools.status' | translate }}</label>
+      <p-select
+        id="status"
+        [options]="statusOptions"
+        formControlName="status"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="{{ 'mcpTools.allStatus' | translate }}"
+      ></p-select>
+    </div>
+    <div filterField class="filter-field">
+      <label for="category">{{ 'mcpTools.category' | translate }}</label>
+      <p-select
+        id="category"
+        [options]="categoryOptions()"
+        formControlName="category"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="{{ 'mcpTools.allCategories' | translate }}"
+      ></p-select>
+    </div>
+  </app-search-filter-card>
+
+  <p-table
+    [value]="tools()"
+    [loading]="loading()"
+    dataKey="id"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>{{ 'mcpTools.toolCode' | translate }}</th>
+        <th>{{ 'mcpTools.toolName' | translate }}</th>
+        <th>{{ 'mcpTools.type' | translate }}</th>
+        <th>{{ 'mcpTools.category' | translate }}</th>
+        <th>{{ 'mcpTools.status' | translate }}</th>
+        <th>排序</th>
+        <th>{{ 'mcpTools.updatedAt' | translate }}</th>
+        <th>{{ 'voices.operation' | translate }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>{{ item.code }}</td>
+        <td>
+          <strong>{{ item.name }}</strong>
+          <div class="text-sm text-muted" *ngIf="item.description">{{ item.description }}</div>
+        </td>
+        <td>
+          <p-tag
+            [value]="item.isSystem ? ('mcpTools.system' | translate) : ('mcpTools.custom' | translate)"
+            [severity]="item.isSystem ? 'info' : 'secondary'"
+          ></p-tag>
+        </td>
+        <td>{{ item.category || '-' }}</td>
+        <td><p-tag [value]="getStatusLabel(item.status)" [severity]="getStatusSeverity(item.status)"></p-tag></td>
+        <td>{{ item.sort }}</td>
+        <td>{{ item.updatedAt ? (item.updatedAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+        <td>
+          <div class="row-actions">
+            <a
+              *appHasPermission="'mcp-tool:update'"
+              pButton
+              [routerLink]="['/mcp-tools', item.id, 'edit']"
+              label="{{ 'common.edit' | translate }}"
+              size="small"
+              severity="contrast"
+            ></a>
+            <button
+              *appHasPermission="'mcp-tool:delete'"
+              pButton
+              type="button"
+              label="{{ 'common.delete' | translate }}"
+              size="small"
+              severity="danger"
+              [text]="true"
+              [disabled]="item.isSystem"
+              (click)="confirmDelete(item)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center p-8">
+          <app-empty-state text="{{ 'mcpTools.noToolData' | translate }}"></app-empty-state>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <app-pagination-bar
+    [total]="total()"
+    [page]="queryForm.getRawValue().page"
+    [limit]="queryForm.getRawValue().limit"
+    [loading]="loading()"
+    (pageChange)="onPageChange($event)"
+    (limitChange)="onLimitChange($event)"
+  ></app-pagination-bar>
+</section>

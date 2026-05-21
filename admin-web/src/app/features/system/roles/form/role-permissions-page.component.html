@@ -1,0 +1,48 @@
+<section class="role-permissions-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">{{ '权限配置' | translate }}</p>
+      <h1>{{ '角色权限分配' | translate }}</h1>
+      <p>{{ '勾选该角色可访问的菜单与按钮权限，保存后立即生效。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ '返回角色列表' | translate }}"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+      (click)="cancel()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card header="{{ '权限树' | translate }}">
+    <p-tree
+      [value]="treeNodes()"
+      [loading]="loading()"
+      selectionMode="checkbox"
+      [(selection)]="selectedNodes"
+      (selectionChange)="onSelectionChange($any($event))"
+      [propagateSelectionUp]="true"
+      [propagateSelectionDown]="true"
+      scrollHeight="60vh"
+    ></p-tree>
+
+    <div class="form-actions">
+      <button
+        pButton
+        type="button"
+        label="{{ '保存权限' | translate }}"
+        icon="pi pi-save"
+        [loading]="submitting()"
+        (click)="save()"
+      ></button>
+      <button pButton type="button" label="{{ '取消' | translate }}" severity="secondary" (click)="cancel()"></button>
+    </div>
+  </p-card>
+</section>

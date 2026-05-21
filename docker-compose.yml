@@ -1,0 +1,60 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ai-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - ai-net
+
+  admin-api:
+    build:
+      context: ./admin-api
+      dockerfile: Dockerfile
+    container_name: ai-api
+    ports:
+      - "8080:8080"
+      - "1883:1883"
+      - "8884:8884/udp"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      - IoTRuntime__Enabled=true
+      - IoTRuntime__EnableMqtt=true
+      - IoTRuntime__EnableUdp=true
+      - IoTRuntime__NodeId=ai-api
+      - IoTRuntime__MqttPort=1883
+      - IoTRuntime__UdpPort=8884
+      - IoTRuntime__LocalSpeechIdleTimeoutMs=${IOT_LOCAL_SPEECH_IDLE_TIMEOUT_MS:-900}
+      - IoTRuntime__PublicHost=${IOT_PUBLIC_HOST:-}
+      - IoTRuntime__PublicIp=${IOT_PUBLIC_IP:-127.0.0.1}
+      - IoTRuntime__SignatureKey=${IOT_SIGNATURE_KEY:-}
+    volumes:
+      - api-uploads:/app/uploads
+      - ./admin-api/appsettings.Production.json:/app/appsettings.Production.json:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - ai-net
+
+  admin-web:
+    build:
+      context: ./admin-web
+      dockerfile: Dockerfile
+    container_name: ai-web
+    ports:
+      - "80:80"
+    depends_on:
+      - admin-api
+    restart: unless-stopped
+    networks:
+      - ai-net
+
+volumes:
+  api-uploads:
+
+networks:
+  ai-net:
+    driver: bridge

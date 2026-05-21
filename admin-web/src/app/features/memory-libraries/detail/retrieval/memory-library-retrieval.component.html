@@ -1,0 +1,85 @@
+<section class="memory-library-retrieval">
+  <p-card header="{{ '检索测试' | translate }}">
+    <form [formGroup]="form" class="retrieval-form" (ngSubmit)="submitSearch()">
+      <div class="field-group field-group-full">
+        <label for="query">{{ '想查询什么记忆？' | translate }} <span class="required">*</span></label>
+        <textarea
+          id="query"
+          class="native-textarea"
+          formControlName="query"
+          rows="3"
+          placeholder="{{ '例如：用户喜欢什么、最近提到过什么事情、有什么长期偏好' | translate }}"
+        ></textarea>
+      </div>
+      <div class="form-row">
+        <div class="field-group">
+          <label for="recordType">{{ '记忆类型' | translate }}</label>
+          <p-select
+            id="recordType"
+            [options]="recordTypeOptions()"
+            optionLabel="label"
+            optionValue="value"
+            formControlName="recordType"
+          ></p-select>
+        </div>
+        <div class="field-group">
+          <label for="maxResults">{{ '返回数量' | translate }}</label>
+          <input
+            id="maxResults"
+            type="number"
+            pInputText
+            formControlName="maxResults"
+            min="1"
+            max="100"
+            step="1"
+            placeholder="{{ '最多 100 条' | translate }}"
+          />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button pButton type="submit" label="{{ '执行检索' | translate }}" icon="pi pi-search" [loading]="loading()"></button>
+      </div>
+    </form>
+  </p-card>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  @if (hasSearched() && !loading() && results(); as result) {
+    <p-card [header]="resultHeader(result.total)">
+      @if (result.total === 0) {
+        <div class="empty-result">
+          <app-empty-state text="{{ '未检索到匹配的记忆记录，请尝试调整查询条件或降低相似度要求。' | translate }}"></app-empty-state>
+        </div>
+      } @else {
+        <div class="result-list">
+          @for (hit of result.hits; track hit.id; let i = $index) {
+            <div class="result-card">
+              <div class="result-header">
+                <div class="result-meta">
+                  <span class="result-index">#{{ i + 1 }}</span>
+                  <p-tag [value]="scoreLabel(hit.score)" [severity]="scoreSeverity(hit.score)"></p-tag>
+                  <p-tag [value]="recordTypeLabel(hit.recordType)" severity="info"></p-tag>
+                  @if (hit.importance !== null) {
+                    <p-tag [value]="importanceLabel(hit.importance)" [severity]="importanceSeverity(hit.importance)"></p-tag>
+                  }
+                  <p-tag [value]="isPinnedLabel(hit.isPinned)" [severity]="isPinnedSeverity(hit.isPinned)"></p-tag>
+                </div>
+              </div>
+              @if (hit.title) {
+                <h4 class="result-title">{{ hit.title }}</h4>
+              }
+              <p class="result-content">{{ truncateContent(hit.content) }}</p>
+              @if (hit.summary) {
+                <p class="result-summary">{{ '摘要：' | translate }}{{ truncateContent(hit.summary, 120) }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+    </p-card>
+  }
+
+  @if (hasSearched() && !loading() && !results()) {
+    <app-empty-state text="{{ '检索失败，请检查网络连接或查询参数后重试。' | translate }}"></app-empty-state>
+  }
+</section>

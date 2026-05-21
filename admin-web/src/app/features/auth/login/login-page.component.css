@@ -1,0 +1,160 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 480px);
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem;
+  background:
+    radial-gradient(ellipse 600px 500px at 15% 20%, rgba(110, 231, 183, 0.18), transparent),
+    radial-gradient(ellipse 500px 400px at 80% 70%, rgba(129, 140, 248, 0.14), transparent),
+    radial-gradient(ellipse 300px 300px at 50% 50%, rgba(110, 231, 183, 0.06), transparent), var(--surface-ground);
+}
+
+.login-hero {
+  padding: 2rem;
+}
+
+.login-badge {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(110, 231, 183, 0.1);
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.login-hero h1 {
+  margin-bottom: 1rem;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.15;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-hero p {
+  max-width: 38rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-color-secondary);
+}
+
+.login-card-header {
+  padding: 1.5rem 1.5rem 0;
+}
+
+.login-card-header h2 {
+  margin-bottom: 0.35rem;
+}
+
+.login-card-header p {
+  color: var(--text-color-muted);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-group label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+.field-group :deep(.p-password) {
+  width: 100%;
+}
+
+.field-error {
+  color: var(--field-error);
+}
+
+.login-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem 1.5rem;
+}
+
+.login-links a {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-links a:hover {
+  text-decoration: underline;
+  color: var(--primary-color);
+}
+
+.w-full {
+  width: 100%;
+}
+
+.mobile-brand {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+    padding: 0;
+    gap: 0;
+  }
+
+  .login-hero {
+    display: none;
+  }
+
+  :host ::ng-deep .login-card {
+    border-radius: 0;
+    min-height: 100vh;
+    box-shadow: none;
+  }
+
+  .mobile-brand {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .login-card-header {
+    padding: 2rem 1.25rem 0;
+  }
+
+  .login-card-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .login-form {
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .login-links {
+    padding: 0 1.25rem 2rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}

@@ -1,0 +1,47 @@
+# Archived business docs (not committed)
+.archive/
+
+# 环境配置（包含密钥，不要提交）
+appsettings.Production.json
+appsettings.Development.json
+.env
+
+# ===== .NET Build Outputs =====
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# ===== Logs =====
+Logs/
+*.log
+
+# ===== Node.js / Angular =====
+node_modules/
+dist/
+.angular/
+
+# ===== Flutter =====
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+build/
+coverage/
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+android/.gradle/
+
+# ===== IDE =====
+.idea/
+.vs/
+*.user
+*.suo
+
+# ===== OS =====
+.DS_Store
+Thumbs.db

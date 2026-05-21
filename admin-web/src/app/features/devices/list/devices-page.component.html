@@ -1,0 +1,161 @@
+<section class="devices-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ 'devices.title' | translate }}</h1>
+      <p>{{ 'devices.description' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ 'devices.refresh' | translate }}"
+      icon="pi pi-refresh"
+      severity="secondary"
+      size="small"
+      [loading]="loading()"
+      (click)="loadDevices()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="3"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="searchForm"
+    [loading]="loading()"
+    [columns]="2"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keywords">{{ 'devices.keywords' | translate }}</label>
+      <input
+        id="keywords"
+        type="text"
+        pInputText
+        formControlName="keywords"
+        placeholder="{{ 'devices.searchPlaceholder' | translate }}"
+      />
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="errorMessage()"></app-feedback-message>
+
+  <p-card header="{{ 'devices.deviceList' | translate }}">
+    <p-table
+      [value]="devices()"
+      [loading]="loading()"
+      dataKey="id"
+      [expandedRowKeys]="expandedRows"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th>{{ 'devices.device' | translate }}</th>
+          <th>{{ 'devices.bindingOta' | translate }}</th>
+          <th>{{ 'devices.recentChatTime' | translate }}</th>
+          <th>{{ 'devices.operation' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-device>
+        <tr>
+          <td>
+            <button
+              type="button"
+              pButton
+              [pRowToggler]="device"
+              [icon]="expandedRows[device.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              severity="secondary"
+              [text]="true"
+              size="small"
+            ></button>
+          </td>
+          <td>
+            <div>
+              <strong>{{ device.macAddress || '-' }}</strong>
+            </div>
+            <div>
+              <small
+                >{{ 'devices.model' | translate }}：{{ device.deviceType || '-' }} ｜
+                {{ 'devices.firmware' | translate }}：{{ device.appVersion || '-' }}</small
+              >
+            </div>
+          </td>
+          <td>
+            <div class="row-actions">
+              <p-tag [value]="device.bindUserName || ('devices.unboundUser' | translate)" severity="info"></p-tag>
+              <p-tag [value]="otaLabel(device.otaUpgrade)" [severity]="otaSeverity(device.otaUpgrade)"></p-tag>
+            </div>
+          </td>
+          <td>{{ device.recentChatTime ? (device.recentChatTime | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+          <td>
+            <div class="row-actions">
+              <a
+                pButton
+                [routerLink]="['/devices', device.id]"
+                [queryParams]="detailQueryParams(device)"
+                size="small"
+                severity="contrast"
+                >{{ 'devices.detail' | translate }}</a
+              >
+              <button
+                pButton
+                type="button"
+                label="{{ 'devices.unbind' | translate }}"
+                size="small"
+                severity="danger"
+                [text]="true"
+                (click)="unbind(device)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ 'devices.manualAdd' | translate }}"
+                size="small"
+                severity="secondary"
+                [text]="true"
+                (click)="manualAdd(device)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="rowexpansion" let-device>
+        <tr>
+          <td [attr.colspan]="5">
+            <table class="row-expand-detail">
+              <tr>
+                <th>{{ 'devices.deviceId' | translate }}</th>
+                <td>{{ device.id }}</td>
+                <th>{{ 'devices.macAddress' | translate }}</th>
+                <td>{{ device.macAddress || '-' }}</td>
+                <th>{{ 'devices.boundUser' | translate }}</th>
+                <td>{{ device.bindUserName || '-' }}</td>
+              </tr>
+              <tr>
+                <th>{{ 'devices.deviceType' | translate }}</th>
+                <td>{{ device.deviceType || '-' }}</td>
+                <th>{{ 'devices.appVersion' | translate }}</th>
+                <td>{{ device.appVersion || '-' }}</td>
+                <th>{{ 'devices.ota' | translate }}</th>
+                <td>{{ otaLabel(device.otaUpgrade) }}</td>
+              </tr>
+              <tr>
+                <th>{{ 'devices.recentChat' | translate }}</th>
+                <td>{{ device.recentChatTime ? (device.recentChatTime | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+                <td colspan="4"></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5"><app-empty-state text="{{ 'devices.noDeviceData' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</section>

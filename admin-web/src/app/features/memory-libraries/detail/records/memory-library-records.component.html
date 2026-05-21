@@ -1,0 +1,200 @@
+<section class="memory-library-records">
+  <div class="records-header">
+    <h3>{{ '记忆记录' | translate }}</h3>
+  </div>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <app-search-filter-card
+    [formGroup]="queryForm"
+    [loading]="loading()"
+    [columns]="2"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="recordKeyword">{{ '关键词' | translate }}</label>
+      <input id="recordKeyword" type="text" pInputText formControlName="keyword" placeholder="{{ '搜索内容或标题' | translate }}" />
+    </div>
+    <div filterField class="filter-field">
+      <label for="recordType">{{ '记录类型' | translate }}</label>
+      <p-select
+        id="recordType"
+        [options]="recordTypeOptions()"
+        optionLabel="label"
+        optionValue="value"
+        formControlName="recordType"
+      ></p-select>
+    </div>
+  </app-search-filter-card>
+
+  <p-card>
+    <p-table [value]="records()" [loading]="loading()" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ '记忆内容' | translate }}</th>
+          <th>{{ '状态' | translate }}</th>
+          <th>{{ '操作' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-record>
+        <tr>
+          <td>
+            <div class="content-cell" [pTooltip]="record.content" tooltipPosition="top">
+              <strong>{{ record.title || '-' }}</strong>
+              <span>{{ truncateContent(record.content) }}</span>
+              <div class="inline-meta">
+                <p-tag [value]="recordTypeLabel(record.recordType)" severity="info"></p-tag>
+                <small>{{
+                  record.expiresAt ? ('过期：' | translate) + (record.expiresAt | date: 'yyyy-MM-dd HH:mm') : ('永不过期' | translate)
+                }}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="status-cell">
+              <div class="inline-meta">
+                <p-tag
+                  [value]="importanceLabel(record.importance)"
+                  [severity]="importanceSeverity(record.importance)"
+                ></p-tag>
+                <p-tag [value]="pinnedLabel(record.isPinned)" [severity]="pinnedSeverity(record.isPinned)"></p-tag>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button
+                pButton
+                type="button"
+                [label]="(record.isPinned ?? 0) === 1 ? ('取消置顶' | translate) : ('置顶' | translate)"
+                size="small"
+                [severity]="(record.isPinned ?? 0) === 1 ? 'secondary' : 'success'"
+                (click)="togglePin(record)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ '编辑' | translate }}"
+                size="small"
+                severity="info"
+                (click)="openEditDialog(record)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ '删除' | translate }}"
+                size="small"
+                severity="danger"
+                (click)="deleteRecord(record)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3"><app-empty-state text="{{ '暂无记忆记录，请等待对话结束后自动提取。' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().limit"
+      [loading]="loading()"
+      (pageChange)="changePage($event)"
+      (limitChange)="changeLimit($event)"
+    ></app-pagination-bar>
+  </p-card>
+
+  <p-dialog
+    header="{{ '编辑记录' | translate }}"
+    [modal]="true"
+    appendTo="body"
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [style]="{ width: '700px' }"
+  >
+    <form [formGroup]="form" class="record-form">
+      <div class="form-row">
+        <div class="field-group">
+          <label for="recordType">{{ '记录类型' | translate }} <span class="required">*</span></label>
+          <p-select
+            id="recordType"
+            [options]="recordTypeFormOptions()"
+            optionLabel="label"
+            optionValue="value"
+            formControlName="recordType"
+          ></p-select>
+        </div>
+        <div class="field-group">
+          <label for="title">{{ '标题' | translate }}</label>
+          <input id="title" type="text" pInputText formControlName="title" placeholder="{{ '记录标题（可选）' | translate }}" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label for="content">{{ '内容' | translate }} <span class="required">*</span></label>
+        <textarea
+          id="content"
+          class="native-textarea"
+          formControlName="content"
+          rows="5"
+          placeholder="{{ '记忆内容' | translate }}"
+        ></textarea>
+      </div>
+      <div class="field-group">
+        <label for="summary">{{ '摘要' | translate }}</label>
+        <textarea
+          id="summary"
+          class="native-textarea"
+          formControlName="summary"
+          rows="3"
+          placeholder="{{ '内容摘要（可选，可由系统生成）' | translate }}"
+        ></textarea>
+      </div>
+      <div class="form-row">
+        <div class="field-group">
+          <label for="importance">{{ '重要性' | translate }} ({{ form.controls.importance.value }})</label>
+          <input
+            id="importance"
+            class="native-range"
+            type="range"
+            formControlName="importance"
+            min="1"
+            max="5"
+            step="1"
+          />
+          <span class="field-help">{{ '1=最低，5=最高' | translate }}</span>
+        </div>
+        <div class="field-group">
+          <label>{{ '置顶' | translate }}</label>
+          <div class="switch-field">
+            <label class="native-switch">
+              <input type="checkbox" formControlName="isPinned" />
+              <span class="native-switch-track"><span class="native-switch-thumb"></span></span>
+            </label>
+            <span>{{ form.getRawValue().isPinned ? ('已置顶' | translate) : ('未置顶' | translate) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label for="expiresAt">{{ '过期时间' | translate }}</label>
+        <input id="expiresAt" type="datetime-local" class="native-select" formControlName="expiresAt" />
+        <span class="field-help">{{ '留空表示永不过期。' | translate }}</span>
+      </div>
+    </form>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="{{ '取消' | translate }}" severity="secondary" (click)="closeDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="{{ '保存' | translate }}"
+        severity="contrast"
+        [loading]="dialogSubmitting()"
+        (click)="submitRecord()"
+      ></button>
+    </ng-template>
+  </p-dialog>
+</section>

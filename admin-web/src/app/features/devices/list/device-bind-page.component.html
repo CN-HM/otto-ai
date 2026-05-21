@@ -1,0 +1,33 @@
+<section class="device-bind-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">页面已废弃</p>
+      <h1>网页端不再提供设备绑定</h1>
+      <p>
+        设备接入已切换为 App 在 BLE 配网阶段直接向 ESP32 下发长期身份凭证。网页端仅保留设备列表、详情与 OTA
+        管理，不再支持激活码绑定或 MAC 兼容认领。
+      </p>
+    </div>
+  </div>
+
+  <p-card header="新的接入方式">
+    <ol class="bind-form">
+      <li>在 App 中扫描 ESP32，并进入 BLE 配网流程。</li>
+      <li>App 读取设备标识后，调用后端签发 `credentialId` 与 `credentialSecret`。</li>
+      <li>App 通过 BLE 特征值把凭证写入 ESP32 的本地安全存储。</li>
+      <li>设备联网后，使用设备凭证访问 `/config/*`、`/device/bootstrap`、`/ota/`，并以每设备密钥完成 MQTT 鉴权。</li>
+    </ol>
+  </p-card>
+
+  <app-feedback-message
+    text="如果需要接入新设备，请使用移动端或带 BLE 能力的桌面客户端完成配网与凭证写入。"
+  ></app-feedback-message>
+
+  <p-card header="网页端保留能力">
+    <ul class="bind-form">
+      <li>查看设备列表与当前绑定状态。</li>
+      <li>查看设备详情、固件版本与最近连接时间。</li>
+      <li>管理 OTA 固件与升级包。</li>
+    </ul>
+  </p-card>
+</section>

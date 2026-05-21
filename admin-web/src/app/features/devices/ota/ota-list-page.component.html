@@ -1,0 +1,154 @@
+<section class="ota-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ 'OTA 列表' | translate }}</h1>
+      <p>{{ '当前已接入 OTA 列表、详情与下载链接接口，后续可继续补充新增、编辑、删除和固件上传表单。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a pButton routerLink="/devices/ota/new" icon="pi pi-plus" severity="primary" size="small">{{ '新增 OTA' | translate }}</a>
+    <button
+      pButton
+      type="button"
+      label="{{ '刷新' | translate }}"
+      icon="pi pi-refresh"
+      severity="secondary"
+      size="small"
+      [loading]="loading()"
+      (click)="loadOtaList()"
+    ></button>
+  </app-page-toolbar>
+
+  <div class="ota-overview">
+    <p-card>
+      <div class="metric-card">
+        <span>{{ '固件总数' | translate }}</span>
+        <strong>{{ total() }}</strong>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="metric-card">
+        <span>{{ '当前页数量' | translate }}</span>
+        <strong>{{ otaList().length }}</strong>
+      </div>
+    </p-card>
+  </div>
+
+  @if (feedbackMessage()) {
+    <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+  }
+
+  <p-card header="{{ 'OTA 固件列表' | translate }}">
+    <p-table
+      [value]="otaList()"
+      [loading]="loading()"
+      dataKey="id"
+      [expandedRowKeys]="expandedRows"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th>{{ '名称' | translate }}</th>
+          <th>{{ '类型' | translate }}</th>
+          <th>{{ '版本' | translate }}</th>
+          <th>{{ '大小' | translate }}</th>
+          <th>{{ '更新时间' | translate }}</th>
+          <th>{{ '操作' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item let-expanded="expanded">
+        <tr>
+          <td>
+            <button
+              type="button"
+              pButton
+              [pRowToggler]="item"
+              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              severity="secondary"
+              [text]="true"
+              size="small"
+            ></button>
+          </td>
+          <td>{{ item.firmwareName || '-' }}</td>
+          <td>{{ item.type || '-' }}</td>
+          <td>{{ item.version || '-' }}</td>
+          <td>{{ item.size || '-' }}</td>
+          <td>{{ item.updateDate ? (item.updateDate | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+          <td>
+            <div class="row-actions">
+              <a pButton [routerLink]="['/devices/ota', item.id]" size="small" severity="secondary">{{ '详情' | translate }}</a>
+              <a
+                pButton
+                [routerLink]="['/devices/ota', item.id, 'edit']"
+                size="small"
+                severity="contrast"
+                >{{ '编辑' | translate }}</a
+              >
+              <button
+                pButton
+                type="button"
+                label="{{ '下载链接' | translate }}"
+                size="small"
+                severity="secondary"
+                [text]="true"
+                (click)="getDownloadUrl(item)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ '删除' | translate }}"
+                size="small"
+                severity="danger"
+                [text]="true"
+                (click)="deleteOta(item)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="rowexpansion" let-item>
+        <tr>
+          <td [attr.colspan]="7">
+            <table class="row-expand-detail">
+              <tr>
+                <th>{{ '固件名称' | translate }}</th>
+                <td>{{ item.firmwareName || '-' }}</td>
+                <th>{{ '版本号' | translate }}</th>
+                <td>{{ item.version || '-' }}</td>
+                <th>{{ '固件类型' | translate }}</th>
+                <td>{{ item.type || '-' }}</td>
+              </tr>
+              <tr>
+                <th>{{ '文件大小' | translate }}</th>
+                <td>{{ item.size ? item.size + ' bytes' : '-' }}</td>
+                <th>{{ '固件路径' | translate }}</th>
+                <td colspan="3">{{ item.firmwarePath || '-' }}</td>
+              </tr>
+              <tr class="detail-row-full">
+                <th>{{ '备注' | translate }}</th>
+                <td colspan="5">{{ item.remark || '-' }}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">{{ '暂无固件升级数据。' | translate }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().limit"
+      [loading]="loading()"
+      (pageChange)="changePage($event)"
+      (limitChange)="changeLimit($event)"
+    >
+    </app-pagination-bar>
+  </p-card>
+</section>

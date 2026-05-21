@@ -1,0 +1,100 @@
+<section class="billing-usage-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ '用量明细' | translate }}</h1>
+      <p>{{ '查看 AI 调用折算后的统一 token 用量，帮助排查高消耗模型、设备和会话。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      label="{{ '刷新' | translate }}"
+      severity="secondary"
+      size="small"
+      [loading]="loading()"
+      (click)="loadUsage()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="5"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="searchForm"
+    [loading]="loading()"
+    [columns]="2"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keyword">{{ '手机号 / 用户名' | translate }}</label>
+      <input id="keyword" type="text" pInputText formControlName="keyword" placeholder="{{ '输入手机号或用户名检索' | translate }}" />
+    </div>
+    <div filterField class="filter-field">
+      <label for="serviceType">{{ '服务类型' | translate }}</label>
+      <input id="serviceType" type="text" pInputText formControlName="serviceType" placeholder="{{ '例如 LLM / ASR / TTS' | translate }}" />
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="errorMessage()" severity="warn"></app-feedback-message>
+
+  <p-card header="{{ '用量记录' | translate }}">
+    <p-table [value]="items()" [loading]="loading()" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ '用户' | translate }}</th>
+          <th>{{ '服务 / 用量' | translate }}</th>
+          <th>{{ '关联上下文' | translate }}</th>
+          <th>{{ '状态' | translate }}</th>
+          <th>{{ '发生时间' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <strong>{{ item.username || '-' }}</strong>
+              <span>{{ item.mobile || '-' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="usage-cell">
+              <strong>{{ item.serviceType }}</strong>
+              <span>{{ item.rawUnits }} {{ item.unitType }} ｜ {{ item.normalizedTokens }} token</span>
+            </div>
+          </td>
+          <td>
+            <div class="usage-cell">
+              <span>{{ '设备：' | translate }}{{ item.deviceId || '-' }}</span>
+              <span>{{ '会话：' | translate }}{{ item.sessionId || '-' }}</span>
+            </div>
+          </td>
+          <td>
+            <p-tag
+              [value]="chargeStatusLabel(item.chargeStatus)"
+              [severity]="chargeStatusSeverity(item.chargeStatus)"
+            ></p-tag>
+          </td>
+          <td>{{ item.happenedAt || '-' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5"><app-empty-state text="{{ '暂无用量数据。' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <app-pagination-bar
+      [total]="total()"
+      [page]="page()"
+      [limit]="pageSize()"
+      [loading]="loading()"
+      (pageChange)="onPageChange($event)"
+      (limitChange)="onLimitChange($event)"
+    >
+    </app-pagination-bar>
+  </p-card>
+</section>

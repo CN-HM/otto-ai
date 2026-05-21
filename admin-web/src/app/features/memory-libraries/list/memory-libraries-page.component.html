@@ -1,0 +1,204 @@
+<section class="memory-libraries-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ 'memoryLibrary.title' | translate }}</h1>
+      <p>{{ 'memoryLibrary.description' | translate }}</p>
+    </div>
+  </div>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="3"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="queryForm"
+    [loading]="loading()"
+    [columns]="3"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keyword">{{ 'memoryLibrary.keywords' | translate }}</label>
+      <input
+        id="keyword"
+        type="text"
+        pInputText
+        formControlName="keyword"
+        placeholder="{{ 'memoryLibrary.searchPlaceholder' | translate }}"
+      />
+    </div>
+    <div filterField class="filter-field">
+      <label for="status">{{ 'memoryLibrary.status' | translate }}</label>
+      <select id="status" class="native-select" formControlName="status">
+        <option [ngValue]="null">{{ 'memoryLibrary.allStatus' | translate }}</option>
+        <option [ngValue]="1">{{ 'memoryLibrary.enabled' | translate }}</option>
+        <option [ngValue]="0">{{ 'memoryLibrary.disabled' | translate }}</option>
+      </select>
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card header="{{ '记忆库列表' | translate }}">
+    <p-table
+      [value]="libraries()"
+      [loading]="loading()"
+      [dataKey]="'id'"
+      [expandedRowKeys]="expandedRows"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th>{{ 'memoryLibrary.memoryLibrary' | translate }}</th>
+          <th>{{ 'memoryLibrary.scopeStatus' | translate }}</th>
+          <th>{{ 'memoryLibrary.statsConfig' | translate }}</th>
+          <th>{{ 'mcpTools.updatedAt' | translate }}</th>
+          <th>{{ 'voices.operation' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item let-expanded="expanded">
+        <tr>
+          <td>
+            <button
+              type="button"
+              pButton
+              [pRowToggler]="item"
+              [icon]="expandedRows[item.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              severity="secondary"
+              [text]="true"
+              size="small"
+            ></button>
+          </td>
+          <td>
+            <div>
+              <strong>{{ item.name || '-' }}</strong>
+            </div>
+            <div>
+              <small>{{ 'memoryLibrary.code' | translate }}：{{ item.code || '-' }}</small>
+            </div>
+            @if (item.description) {
+              <div>
+                <small>{{ item.description }}</small>
+              </div>
+            }
+          </td>
+          <td>
+            <div class="row-actions">
+              <p-tag [value]="scopeLabel(item.entityScope)" [severity]="$any(scopeSeverity(item.entityScope))"></p-tag>
+              <p-tag [value]="statusLabel(item.status)" [severity]="$any(statusSeverity(item.status))"></p-tag>
+              <p-tag
+                [value]="item.isDefault === 1 ? ('memoryLibrary.default' | translate) : ('memoryLibrary.normal' | translate)"
+                [severity]="$any(defaultSeverity(item.isDefault))"
+              ></p-tag>
+            </div>
+            <div>
+              <small>{{ 'memoryLibrary.associated' | translate }}：{{ item.agentName || item.agentId || '-' }}</small>
+            </div>
+          </td>
+          <td>
+            <div class="row-actions">
+              <p-tag
+                [value]="('memoryLibrary.rules' | translate) + ' ' + (item.ruleCount ?? 0)"
+                severity="secondary"
+              ></p-tag>
+              <p-tag
+                [value]="('memoryLibrary.records' | translate) + ' ' + (item.recordCount ?? 0)"
+                severity="secondary"
+              ></p-tag>
+            </div>
+            <div>
+              <small
+                >{{ 'memoryLibrary.extractionLlm' | translate }}：{{
+                  item.memoryModelId || ('memoryLibrary.notConfigured' | translate)
+                }}
+                ｜ {{ 'voices.sortOrder' | translate }}：{{ item.sort }}</small
+              >
+            </div>
+          </td>
+          <td>{{ item.updatedAt ? (item.updatedAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+          <td>
+            <div class="row-actions">
+              <a
+                pButton
+                [routerLink]="['/memory-libraries', item.id]"
+                size="small"
+                severity="contrast"
+                >{{ '详情' | translate }}</a
+              >
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="rowexpansion" let-item>
+        <tr>
+          <td [attr.colspan]="6">
+            <table class="row-expand-detail">
+              <tr>
+                <th>{{ '记忆库ID' | translate }}</th>
+                <td>{{ item.id || '-' }}</td>
+                <th>{{ 'memoryLibrary.code' | translate }}</th>
+                <td>{{ item.code || '-' }}</td>
+                <th>{{ '名称' | translate }}</th>
+                <td>{{ item.name || '-' }}</td>
+              </tr>
+              <tr>
+                <th>{{ '作用域' | translate }}</th>
+                <td>{{ scopeLabel(item.entityScope) }}</td>
+                <th>{{ ('memoryLibrary.associated' | translate) + ('智能体' | translate) }}</th>
+                <td>{{ item.agentName || item.agentId || '-' }}</td>
+                <th>{{ 'memoryLibrary.status' | translate }}</th>
+                <td>{{ statusLabel(item.status) }}</td>
+              </tr>
+              <tr>
+                <th>{{ 'memoryLibrary.extractionLlm' | translate }}</th>
+                <td>{{ item.memoryModelId || '-' }}</td>
+                <th>{{ '向量模型' | translate }}</th>
+                <td>{{ '平台默认 Embedding Profile' | translate }}</td>
+                <th>{{ 'memoryLibrary.default' | translate }}</th>
+                <td>{{ defaultLabel(item.isDefault) }}</td>
+              </tr>
+              <tr>
+                <th>{{ '创建时间' | translate }}</th>
+                <td>{{ item.createdAt ? (item.createdAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+                <th>{{ 'mcpTools.updatedAt' | translate }}</th>
+                <td>{{ item.updatedAt ? (item.updatedAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</td>
+                <th>{{ 'voices.sortOrder' | translate }}</th>
+                <td>{{ item.sort }}</td>
+              </tr>
+              <tr class="detail-row-full">
+                <th>{{ '描述' | translate }}</th>
+                <td colspan="5">{{ item.description || '-' }}</td>
+              </tr>
+              <tr class="detail-row-full">
+                <th>{{ '检索配置' | translate }}</th>
+                <td colspan="5">
+                  <pre>{{ item.retrievalConfig ? (item.retrievalConfig | json) : '-' }}</pre>
+                </td>
+              </tr>
+              <tr class="detail-row-full">
+                <th>{{ '写入配置' | translate }}</th>
+                <td colspan="5">
+                  <pre>{{ item.writeConfig ? (item.writeConfig | json) : '-' }}</pre>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6">
+            <app-empty-state text="{{ 'memoryLibrary.noMemoryLibraryData' | translate }}"></app-empty-state>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().limit"
+      [loading]="loading()"
+      (pageChange)="changePage($event)"
+      (limitChange)="changeLimit($event)"
+    ></app-pagination-bar>
+  </p-card>
+</section>

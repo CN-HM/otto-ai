@@ -1,0 +1,297 @@
+<section class="memory-library-form-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ libraryId() ? ('编辑记忆库' | translate) : ('新建记忆库' | translate) }}</h1>
+      <p>{{ '配置记忆库的基础信息、作用域、模型绑定以及检索与写入策略。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ '返回列表' | translate }}"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+      (click)="backToList()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <app-form-detail-layout formTitle="{{ '记忆库配置' | translate }}" asideTitle="{{ '填写说明' | translate }}">
+    <form formPane class="memory-form" [formGroup]="form" (ngSubmit)="submit()">
+      <section class="form-section">
+        <h3>{{ '基础信息' | translate }}</h3>
+        <div class="field-grid">
+          <div class="field-group">
+            <label for="code">{{ '记忆库编码' | translate }} <span class="required">*</span></label>
+            <input
+              id="code"
+              type="text"
+              pInputText
+              formControlName="code"
+              placeholder="{{ '请输入唯一编码' | translate }}"
+              [readonly]="!!libraryId()"
+            />
+            @if (libraryId()) {
+              <span class="field-help">{{ '编码创建后不可修改。' | translate }}</span>
+            }
+          </div>
+          <div class="field-group">
+            <label for="name">{{ '记忆库名称' | translate }} <span class="required">*</span></label>
+            <input id="name" type="text" pInputText formControlName="name" placeholder="{{ '请输入记忆库名称' | translate }}" />
+          </div>
+          <div class="field-group field-group-full">
+            <label for="description">{{ '描述' | translate }}</label>
+            <textarea
+              id="description"
+              class="native-textarea"
+              formControlName="description"
+              rows="3"
+              placeholder="{{ '请输入描述（可选）' | translate }}"
+            ></textarea>
+          </div>
+          <div class="field-group">
+            <label>{{ '状态' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="status"></p-inputSwitch>
+              <span>{{ form.getRawValue().status ? ('启用' | translate) : ('停用' | translate) }}</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>{{ '设为默认' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="isDefault"></p-inputSwitch>
+              <span>{{ form.getRawValue().isDefault ? ('是' | translate) : ('否' | translate) }}</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="sort">{{ '排序' | translate }}</label>
+            <input id="sort" type="number" pInputText formControlName="sort" />
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3>{{ '作用域与模型' | translate }}</h3>
+        <div class="field-grid">
+          <div class="field-group">
+            <label for="entityScope">{{ '实体作用域' | translate }} <span class="required">*</span></label>
+            <select id="entityScope" class="native-select" formControlName="entityScope">
+              <option value="user">{{ '用户级（按用户隔离）' | translate }}</option>
+              <option value="device">{{ '设备级（按设备隔离）' | translate }}</option>
+              <option value="session">{{ '会话级（按会话隔离）' | translate }}</option>
+              <option value="global">{{ '全局（不隔离）' | translate }}</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="agentId">{{ '关联智能体' | translate }}</label>
+            <input
+              id="agentId"
+              type="text"
+              pInputText
+              formControlName="agentId"
+              placeholder="{{ '可选，输入智能体ID进行关联' | translate }}"
+            />
+            <span class="field-help">{{ '关联后该智能体将自动使用此记忆库。' | translate }}</span>
+          </div>
+          <div class="field-group">
+            <label for="memoryModelId">{{ '记忆抽取 LLM' | translate }}</label>
+            <p-select
+              id="memoryModelId"
+              [options]="memoryModelOptions()"
+              formControlName="memoryModelId"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="{{ '选择用于记忆提取的 LLM Profile' | translate }}"
+              [showClear]="true"
+            ></p-select>
+            <span class="field-help"
+              >{{ '必须选择已配置主连接地址和模型名称的 LLM Profile；向量写入使用平台默认 Embedding Profile。' | translate }}</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3>{{ '检索配置' | translate }}</h3>
+        <div class="preset-buttons">
+          <button
+            pButton
+            type="button"
+            label="{{ '均衡模式' | translate }}"
+            severity="secondary"
+            size="small"
+            (click)="applyRetrievalPreset('balanced')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="{{ '严格模式' | translate }}"
+            severity="secondary"
+            size="small"
+            (click)="applyRetrievalPreset('strict')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="{{ '宽松模式' | translate }}"
+            severity="secondary"
+            size="small"
+            (click)="applyRetrievalPreset('loose')"
+          ></button>
+        </div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label for="retrievalTopK">{{ '召回数量 TopK' | translate }}</label>
+            <input id="retrievalTopK" type="number" pInputText formControlName="retrievalTopK" />
+            <span class="field-help">{{ '一次最多返回多少条相关记忆，建议 3-10。' | translate }}</span>
+          </div>
+          <div class="field-group">
+            <label for="retrievalMinScore">{{ '相似度阈值' | translate }}</label>
+            <input
+              id="retrievalMinScore"
+              type="number"
+              pInputText
+              formControlName="retrievalMinScore"
+              min="0"
+              max="1"
+              step="0.05"
+            />
+            <span class="field-help">{{ '0-1，越高越严格；低于该分数的结果会被过滤。' | translate }}</span>
+          </div>
+          <div class="field-group">
+            <label>{{ '意图召回' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="retrievalIntentRecall"></p-inputSwitch>
+              <span>{{ form.getRawValue().retrievalIntentRecall ? ('启用' | translate) : ('关闭' | translate) }}</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>{{ '查询改写' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="retrievalQueryRewrite"></p-inputSwitch>
+              <span>{{ form.getRawValue().retrievalQueryRewrite ? ('启用' | translate) : ('关闭' | translate) }}</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>{{ '结果重排' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="retrievalRerank"></p-inputSwitch>
+              <span>{{ form.getRawValue().retrievalRerank ? ('启用' | translate) : ('关闭' | translate) }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3>{{ '写入配置' | translate }}</h3>
+        <div class="preset-buttons">
+          <button
+            pButton
+            type="button"
+            label="{{ '默认策略' | translate }}"
+            severity="secondary"
+            size="small"
+            (click)="applyWritePreset('default')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="{{ '长期记忆' | translate }}"
+            severity="secondary"
+            size="small"
+            (click)="applyWritePreset('longterm')"
+          ></button>
+          <button
+            pButton
+            type="button"
+            label="{{ '短期记忆' | translate }}"
+            severity="secondary"
+            size="small"
+            (click)="applyWritePreset('shortterm')"
+          ></button>
+        </div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>{{ '自动写入' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="writeAutoWrite"></p-inputSwitch>
+              <span>{{ form.getRawValue().writeAutoWrite ? ('启用' | translate) : ('关闭' | translate) }}</span>
+            </div>
+            <span class="field-help">{{ '系统将在会话结束后统一整理并写入记忆。' | translate }}</span>
+          </div>
+          <div class="field-group">
+            <label>{{ '自动提取' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="writeAutoExtract"></p-inputSwitch>
+              <span>{{ form.getRawValue().writeAutoExtract ? ('启用' | translate) : ('关闭' | translate) }}</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="writeTtlDays">{{ '默认有效期（天）' | translate }}</label>
+            <input id="writeTtlDays" type="number" pInputText formControlName="writeTtlDays" />
+            <span class="field-help">{{ '0 表示永不过期。' | translate }}</span>
+          </div>
+          <div class="field-group">
+            <label for="writeMinImportance">{{ '最低重要性' | translate }}</label>
+            <input
+              id="writeMinImportance"
+              type="number"
+              pInputText
+              formControlName="writeMinImportance"
+              min="1"
+              max="10"
+            />
+          </div>
+          <div class="field-group">
+            <label for="writeImportanceThreshold">{{ '自动写入阈值' | translate }}</label>
+            <input
+              id="writeImportanceThreshold"
+              type="number"
+              pInputText
+              formControlName="writeImportanceThreshold"
+              min="1"
+              max="10"
+            />
+          </div>
+          <div class="field-group">
+            <label>{{ '自动去重' | translate }}</label>
+            <div class="switch-field">
+              <p-inputSwitch formControlName="writeDeduplicate"></p-inputSwitch>
+              <span>{{ form.getRawValue().writeDeduplicate ? ('启用' | translate) : ('关闭' | translate) }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button
+          pButton
+          type="submit"
+          label="{{ '保存记忆库' | translate }}"
+          icon="pi pi-save"
+          [loading]="submitting() || loading()"
+        ></button>
+        <button pButton type="button" label="{{ '取消' | translate }}" severity="secondary" (click)="backToList()"></button>
+      </div>
+    </form>
+
+    <div asidePane class="form-aside">
+      <div class="form-aside-section">
+        <h3>{{ '记忆库用途' | translate }}</h3>
+        <p>{{ '记忆库用于承载智能体长期记忆规则、写入策略和检索策略，可按用户、设备、会话或全局范围隔离。' | translate }}</p>
+      </div>
+      <div class="form-aside-section">
+        <h3>{{ '编码说明' | translate }}</h3>
+        <p>{{ '记忆库编码创建后不可修改，建议使用稳定且可读的业务标识。' | translate }}</p>
+      </div>
+      <div class="form-aside-section">
+        <h3>{{ '策略配置' | translate }}</h3>
+        <p>{{ '检索和写入策略已拆成明确字段，保存时后端会统一归一化范围。' | translate }}</p>
+      </div>
+    </div>
+  </app-form-detail-layout>
+</section>

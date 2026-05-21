@@ -1,0 +1,21 @@
+<div class="summary-metric-grid" [style.--summary-metric-columns]="columns()">
+  @for (item of items(); track item.title) {
+    <p-card>
+      <div class="summary-metric-card">
+        @if (item.severity) {
+          <div class="summary-metric-card__top">
+            <span>{{ item.title | translate }}</span>
+            <p-tag [value]="item.value + '' | translate" [severity]="item.severity"></p-tag>
+          </div>
+        } @else {
+          <span>{{ item.title | translate }}</span>
+          <strong>{{ item.value + '' | translate }}</strong>
+        }
+
+        @if (item.description) {
+          <p>{{ item.description | translate }}</p>
+        }
+      </div>
+    </p-card>
+  }
+</div>

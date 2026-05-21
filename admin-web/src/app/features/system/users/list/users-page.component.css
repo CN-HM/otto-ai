@@ -1,0 +1,21 @@
+@import '../../../../shared/styles/list-page.shared.css';
+
+.users-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.batch-actions span {
+  font-weight: 600;
+  color: var(--primary-color);
+}

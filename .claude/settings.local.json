@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"e:\\\\GitHub\\\\AI-admin-platform\\\\admin-api\\\\Entities\" -Recurse -Filter \"*.cs\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"e:\\\\GitHub\\\\AI-admin-platform\\\\admin-api\" -Directory -Recurse)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(dotnet build *)",
+      "Bash(git checkout *)",
+      "Bash(git reset *)",
+      "Bash(dotnet ef *)",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__navigate_page",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_pages",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(Select-String \"DROP\")",
+      "Bash(Select-Object -First 5)"
+    ]
+  }
+}

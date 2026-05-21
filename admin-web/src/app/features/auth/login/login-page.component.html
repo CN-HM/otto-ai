@@ -1,0 +1,72 @@
+<div class="login-page">
+  <div class="login-hero">
+    <p class="login-badge">{{ branding.loginBadge }}</p>
+    <h1>{{ branding.loginTitle | translate }}</h1>
+    <p>
+      {{ branding.loginDescription | translate }}
+    </p>
+  </div>
+
+  <p-card styleClass="login-card">
+    <ng-template pTemplate="header">
+      <div class="login-card-header">
+        <p class="mobile-brand">{{ branding.loginBadge }}</p>
+        <h2>{{ 'auth.loginAccountTitle' | translate }}</h2>
+        <p>{{ 'auth.loginAccountDescription' | translate }}</p>
+      </div>
+    </ng-template>
+
+    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field-group">
+        <label for="username">{{ 'auth.usernameOrPhone' | translate }}</label>
+        <input
+          id="username"
+          type="text"
+          pInputText
+          formControlName="username"
+          [fluid]="true"
+          [placeholder]="'auth.enterUsername' | translate"
+        />
+        @if (usernameInvalid) {
+          <small class="field-error">{{ 'auth.enterUsernameValidation' | translate }}</small>
+        }
+      </div>
+
+      <div class="field-group">
+        <label for="password">{{ 'auth.password' | translate }}</label>
+        <p-password
+          inputId="password"
+          formControlName="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          [fluid]="true"
+          [placeholder]="'auth.enterPassword' | translate"
+        ></p-password>
+        @if (passwordInvalid) {
+          <small class="field-error">{{ 'auth.enterPasswordValidation' | translate }}</small>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <app-feedback-message [text]="errorMessage() | translate" [severity]="'error'"></app-feedback-message>
+      }
+
+      <app-turnstile #turnstile></app-turnstile>
+
+      <button
+        pButton
+        type="submit"
+        [loading]="submitting()"
+        [label]="'common.login' | translate"
+        icon="pi pi-sign-in"
+      ></button>
+    </form>
+
+    <div class="login-links">
+      @if (config()?.allowUserRegister !== false) {
+        <a routerLink="/register">{{ 'auth.registerAccount' | translate }}</a>
+      }
+      <a routerLink="/retrieve-password">{{ 'auth.retrievePassword' | translate }}</a>
+    </div>
+  </p-card>
+</div>

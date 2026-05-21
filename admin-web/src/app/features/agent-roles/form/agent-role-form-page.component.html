@@ -1,0 +1,500 @@
+<section class="agent-role-form-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ (isEdit() ? 'agentRoles.form.editTitle' : 'agentRoles.form.createTitle') | translate }}</h1>
+      <p>{{ 'agentRoles.form.description' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ 'agentRoles.form.backToList' | translate }}"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+      (click)="cancel()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <div class="step-indicator">
+    @for (s of visibleSteps(); track s.key; let i = $index) {
+      <div class="step-dot" [class.active]="currentStep() === i" [class.done]="currentStep() > i" (click)="goToStep(i)">
+        <span class="step-num">{{ currentStep() > i ? '✓' : i + 1 }}</span>
+        <span class="step-label">{{ s.label }}</span>
+      </div>
+    }
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="step-form">
+    @switch (currentStep()) {
+      @case (0) {
+        <section class="step-panel">
+          <h3>{{ 'agentRoles.form.basicTitle' | translate }}</h3>
+          <p class="step-desc">{{ 'agentRoles.form.basicDescription' | translate }}</p>
+          <div class="field-grid">
+            <div class="field-group">
+              <label for="code">{{ 'agentRoles.form.code' | translate }} <span class="required">*</span></label
+              ><input id="code" type="text" pInputText formControlName="code" placeholder="{{ 'agentRoles.form.codePlaceholder' | translate }}" />
+            </div>
+            <div class="field-group">
+              <label for="name">{{ 'agentRoles.form.name' | translate }} <span class="required">*</span></label
+              ><input id="name" type="text" pInputText formControlName="name" />
+            </div>
+            <div class="field-group">
+              <label for="displayName">{{ 'agentRoles.form.displayName' | translate }}</label
+              ><input id="displayName" type="text" pInputText formControlName="displayName" />
+            </div>
+            <div class="field-group field-group-switch">
+              <label for="statusToggle">{{ 'agentRoles.form.status' | translate }}</label>
+              <div class="toggle-status-row">
+                <p-toggleswitch
+                  inputId="statusToggle"
+                  [ngModel]="isStatusActive()"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="setStatusByToggle(!!$event)"
+                ></p-toggleswitch
+                ><span class="field-help">{{ (isStatusActive() ? 'agentRoles.active' : 'agentRoles.inactive') | translate }}</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="icon">{{ 'agentRoles.form.icon' | translate }}</label
+              ><p-select
+                id="icon"
+                [options]="iconOptions()"
+                formControlName="icon"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectIcon' | translate }}"
+                [showClear]="true"
+              ></p-select>
+            </div>
+            <div class="field-group">
+              <label for="themeToken">{{ 'agentRoles.form.themeToken' | translate }}</label
+              ><p-select
+                id="themeToken"
+                [options]="themeTokenOptions()"
+                formControlName="themeToken"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectTheme' | translate }}"
+                [showClear]="true"
+              ></p-select>
+            </div>
+            <div class="field-group">
+              <label for="sort">{{ 'agentRoles.form.sort' | translate }}</label
+              ><p-inputNumber id="sort" formControlName="sort" [min]="0" [showButtons]="true"></p-inputNumber>
+            </div>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="coverImage">{{ 'agentRoles.form.coverImage' | translate }}</label>
+            <div class="cover-image-upload">
+              <input
+                type="file"
+                id="coverImageFile"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onCoverImageSelected($event)"
+                style="display: none"
+              />
+              <button
+                pButton
+                type="button"
+                label="{{ 'agentRoles.form.selectImage' | translate }}"
+                icon="pi pi-image"
+                severity="secondary"
+                (click)="triggerCoverImageUpload()"
+              ></button>
+              <span class="field-help">{{ coverImageFileName() || ('agentRoles.form.coverImageHelp' | translate) }}</span>
+              @if (coverImagePreview()) {
+                <div class="cover-image-preview"><img [src]="coverImagePreview()" alt="{{ 'agentRoles.form.coverImageAlt' | translate }}" /></div>
+              }
+            </div>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="description">{{ 'agentRoles.form.descriptionLabel' | translate }}</label
+            ><textarea
+              id="description"
+              class="native-textarea"
+              formControlName="description"
+              rows="3"
+              placeholder="{{ 'agentRoles.form.descriptionPlaceholder' | translate }}"
+            ></textarea>
+          </div>
+        </section>
+      }
+      @case (1) {
+        <section class="step-panel">
+          <h3>{{ 'agentRoles.form.modelsTitle' | translate }}</h3>
+          <p class="step-desc">{{ 'agentRoles.form.modelsDescription' | translate }}</p>
+          <div class="field-grid">
+            <div class="field-group">
+              <label for="pipelineTemplateId">{{ 'agentRoles.form.pipelineTemplate' | translate }}</label
+              ><p-select
+                id="pipelineTemplateId"
+                [options]="pipelineTemplateOptions()"
+                formControlName="pipelineTemplateId"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectPipelineTemplate' | translate }}"
+                [showClear]="true"
+              ></p-select
+              ><span class="field-help">{{ 'agentRoles.form.pipelineTemplateHelp' | translate }}</span>
+            </div>
+          </div>
+          <div class="field-grid">
+            <div class="field-group">
+              <label for="asrProfileId">{{ 'agentRoles.form.asr' | translate }}</label
+              ><p-select
+                id="asrProfileId"
+                [options]="asrProfileOptions()"
+                formControlName="asrProfileId"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectAsr' | translate }}"
+                [showClear]="true"
+              ></p-select
+              ><span class="field-help">{{ 'agentRoles.form.asrHelp' | translate }}</span>
+            </div>
+            <div class="field-group">
+              <label for="llmProfileId">{{ 'agentRoles.form.llm' | translate }}</label
+              ><p-select
+                id="llmProfileId"
+                [options]="llmProfileOptions()"
+                formControlName="llmProfileId"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectLlm' | translate }}"
+                [showClear]="true"
+              ></p-select
+              ><span class="field-help">{{ 'agentRoles.form.llmHelp' | translate }}</span>
+            </div>
+            <div class="field-group">
+              <label for="ttsProfileId">{{ 'agentRoles.form.tts' | translate }}</label
+              ><p-select
+                id="ttsProfileId"
+                [options]="ttsProfileOptions()"
+                formControlName="ttsProfileId"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectTts' | translate }}"
+                [showClear]="true"
+              ></p-select
+              ><span class="field-help">{{ 'agentRoles.form.ttsHelp' | translate }}</span>
+            </div>
+            <div class="field-group">
+              <label for="vadProfileId">{{ 'agentRoles.form.vad' | translate }}</label
+              ><p-select
+                id="vadProfileId"
+                [options]="vadProfileOptions()"
+                formControlName="vadProfileId"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectVad' | translate }}"
+                [showClear]="true"
+              ></p-select>
+            </div>
+          </div>
+        </section>
+      }
+      @case (2) {
+        <section class="step-panel">
+          <h3>{{ 'agentRoles.form.voiceTitle' | translate }}</h3>
+          <p class="step-desc">{{ 'agentRoles.form.voiceDescription' | translate }}</p>
+          <div class="field-grid">
+            <div class="field-group">
+              <label for="ttsVoiceId">{{ 'agentRoles.form.ttsVoice' | translate }}</label
+              ><p-select
+                id="ttsVoiceId"
+                [options]="voiceOptions()"
+                formControlName="ttsVoiceId"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectTtsVoice' | translate }}"
+                [showClear]="true"
+              ></p-select>
+            </div>
+            <div class="field-group">
+              <label for="ttsLanguage">{{ 'agentRoles.form.language' | translate }}</label
+              ><p-select
+                id="ttsLanguage"
+                [options]="languageOptions()"
+                formControlName="ttsLanguage"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="{{ 'agentRoles.form.selectLanguage' | translate }}"
+              ></p-select>
+            </div>
+            <div class="field-group">
+              <label for="chatHistoryConf">{{ 'agentRoles.form.chatHistoryConf' | translate }}</label
+              ><p-inputNumber
+                id="chatHistoryConf"
+                formControlName="chatHistoryConf"
+                [min]="0"
+                [max]="50"
+                [showButtons]="true"
+              ></p-inputNumber
+              ><span class="field-help">{{ 'agentRoles.form.chatHistoryHelp' | translate }}</span>
+            </div>
+            <div class="field-group slider-field">
+              <label for="ttsVolume">{{ 'agentRoles.form.volume' | translate }}：{{ form.controls.ttsVolume.value ?? 0 }}</label
+              ><p-slider id="ttsVolume" formControlName="ttsVolume" [min]="-100" [max]="100" [step]="5"></p-slider>
+            </div>
+            <div class="field-group slider-field">
+              <label for="ttsRate">{{ 'agentRoles.form.rate' | translate }}：{{ form.controls.ttsRate.value ?? 0 }}</label
+              ><p-slider id="ttsRate" formControlName="ttsRate" [min]="-100" [max]="100" [step]="5"></p-slider>
+            </div>
+            <div class="field-group slider-field">
+              <label for="ttsPitch">{{ 'agentRoles.form.pitch' | translate }}：{{ form.controls.ttsPitch.value ?? 0 }}</label
+              ><p-slider id="ttsPitch" formControlName="ttsPitch" [min]="-100" [max]="100" [step]="5"></p-slider>
+            </div>
+          </div>
+        </section>
+      }
+      @case (3) {
+        <section class="step-panel">
+          <div class="section-title-row">
+            <h3>{{ 'agentRoles.form.promptTitle' | translate }}</h3>
+            <button
+              pButton
+              type="button"
+              label="{{ 'agentRoles.form.applyPromptTemplate' | translate }}"
+              icon="pi pi-sparkles"
+              severity="secondary"
+              size="small"
+              (click)="applyPromptTemplate()"
+            ></button>
+          </div>
+          <p class="step-desc">{{ 'agentRoles.form.promptDescription' | translate }}</p>
+          <div class="field-group field-group-full">
+            <textarea id="systemPrompt" class="native-textarea" formControlName="systemPrompt" rows="12"></textarea>
+          </div>
+        </section>
+      }
+      @case (4) {
+        <section class="step-panel">
+          <h3>{{ 'agentRoles.form.knowledgeTitle' | translate }}</h3>
+          <p class="step-desc">{{ 'agentRoles.form.knowledgeDescription' | translate }}</p>
+          <div class="knowledge-picker-grid">
+            @for (dataset of knowledgeBaseOptions(); track dataset.datasetId || dataset.id) {
+              <label
+                class="knowledge-picker-card"
+                [class.knowledge-picker-card-active]="isKnowledgeBaseSelected(dataset)"
+              >
+                <input
+                  type="checkbox"
+                  [checked]="isKnowledgeBaseSelected(dataset)"
+                  (change)="toggleKnowledgeBase(dataset, $event)"
+                />
+                <span class="knowledge-picker-content"
+                  ><strong>{{ dataset.name || dataset.datasetId || dataset.id }}</strong
+                  ><small>{{ dataset.description || ('agentRoles.form.noDescription' | translate) }}</small></span
+                >
+                <span class="knowledge-picker-switch" aria-hidden="true"></span>
+              </label>
+            }
+          </div>
+          @if (knowledgeBindings().length > 0) {
+            <div class="field-group field-group-full">
+              <label for="knowledgeNoHitFallbackText">{{ 'agentRoles.form.knowledgeNoHitFallbackText' | translate }}</label
+              ><textarea
+                id="knowledgeNoHitFallbackText"
+                class="native-textarea"
+                formControlName="knowledgeNoHitFallbackText"
+                rows="3"
+                placeholder="{{ 'agentRoles.form.knowledgeNoHitFallbackPlaceholder' | translate }}"
+              ></textarea
+              ><span class="field-help">{{ 'agentRoles.form.knowledgeNoHitFallbackHelp' | translate }}</span>
+            </div>
+            <div class="knowledge-binding-list">
+              @for (binding of knowledgeBindings(); track binding.datasetId) {
+                <div class="knowledge-binding-card">
+                  <div class="knowledge-binding-header">
+                    <strong>{{ binding.datasetName }}</strong
+                    ><span>{{ 'agentRoles.form.sortNumber' | translate : { index: (binding.sort + 1).toString() } }}</span>
+                  </div>
+                  <div class="knowledge-binding-actions">
+                    <button
+                      pButton
+                      type="button"
+                      label="{{ 'agentRoles.form.moveUp' | translate }}"
+                      size="small"
+                      severity="secondary"
+                      [disabled]="binding.sort === 0"
+                      (click)="moveKnowledgeBinding(binding.datasetId, -1)"
+                    ></button>
+                    <button
+                      pButton
+                      type="button"
+                      label="{{ 'agentRoles.form.moveDown' | translate }}"
+                      size="small"
+                      severity="secondary"
+                      [disabled]="binding.sort === knowledgeBindings().length - 1"
+                      (click)="moveKnowledgeBinding(binding.datasetId, 1)"
+                    ></button>
+                    <button
+                      pButton
+                      type="button"
+                      label="{{ 'agentRoles.form.remove' | translate }}"
+                      size="small"
+                      severity="danger"
+                      (click)="removeKnowledgeBinding(binding.datasetId)"
+                    ></button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+      @case (5) {
+        <section class="step-panel">
+          <h3>{{ 'agentRoles.form.memoryTitle' | translate }}</h3>
+          <p class="step-desc">{{ 'agentRoles.form.memoryDescription' | translate }}</p>
+          <div class="field-grid">
+            <div class="field-group field-group-inline">
+              <label for="memoryEnabled">{{ 'agentRoles.form.longTermMemory' | translate }}</label
+              ><p-toggleSwitch id="memoryEnabled" formControlName="memoryEnabled" /><span class="field-help"
+                >{{ 'agentRoles.form.longTermMemoryHelp' | translate }}</span
+              >
+            </div>
+            @if (form.controls.memoryEnabled.value) {
+              <div class="field-group">
+                <label for="memoryModelId">{{ 'agentRoles.form.memoryModel' | translate }}</label
+                ><p-select
+                  id="memoryModelId"
+                  [options]="llmProfileOptions()"
+                  formControlName="memoryModelId"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="{{ 'agentRoles.form.selectMemoryModel' | translate }}"
+                ></p-select>
+              </div>
+              <div class="field-group">
+                <label for="memoryEntityScope">{{ 'agentRoles.form.memoryScope' | translate }}</label
+                ><p-select
+                  id="memoryEntityScope"
+                  [options]="memoryScopeOptions()"
+                  formControlName="memoryEntityScope"
+                  optionLabel="label"
+                  optionValue="value"
+                ></p-select>
+              </div>
+              <div class="field-group">
+                <label for="memoryTopK">{{ 'agentRoles.form.memoryTopK' | translate }}</label
+                ><p-inputNumber
+                  id="memoryTopK"
+                  formControlName="memoryTopK"
+                  [min]="1"
+                  [max]="20"
+                  [showButtons]="true"
+                ></p-inputNumber
+                ><span class="field-help">{{ 'agentRoles.form.memoryTopKHelp' | translate }}</span>
+              </div>
+              <div class="field-group slider-field">
+                <label for="memoryMinScore">{{ 'agentRoles.form.memoryMinScore' | translate }}：{{ form.controls.memoryMinScore.value ?? 0.3 }}</label
+                ><p-slider
+                  id="memoryMinScore"
+                  formControlName="memoryMinScore"
+                  [min]="0"
+                  [max]="1"
+                  [step]="0.05"
+                ></p-slider>
+              </div>
+              <div class="field-group">
+                <label for="memoryIntentRecall">{{ 'agentRoles.form.memoryIntentRecall' | translate }}</label
+                ><p-select
+                  id="memoryIntentRecall"
+                  [options]="memoryDecisionOptions()"
+                  formControlName="memoryIntentRecall"
+                  optionLabel="label"
+                  optionValue="value"
+                ></p-select>
+              </div>
+              <div class="field-group">
+                <label for="memoryQueryRewrite">{{ 'agentRoles.form.memoryQueryRewrite' | translate }}</label
+                ><p-select
+                  id="memoryQueryRewrite"
+                  [options]="memoryDecisionOptions()"
+                  formControlName="memoryQueryRewrite"
+                  optionLabel="label"
+                  optionValue="value"
+                ></p-select>
+              </div>
+              <div class="field-group">
+                <label for="memoryRerank">{{ 'agentRoles.form.memoryRerank' | translate }}</label
+                ><p-select
+                  id="memoryRerank"
+                  [options]="memoryDecisionOptions()"
+                  formControlName="memoryRerank"
+                  optionLabel="label"
+                  optionValue="value"
+                ></p-select>
+              </div>
+            }
+          </div>
+        </section>
+      }
+      @case (6) {
+        <section class="step-panel">
+          <h3>{{ 'agentRoles.form.mcpTitle' | translate }}</h3>
+          <p class="step-desc">{{ 'agentRoles.form.mcpDescription' | translate }}</p>
+          <div class="mcp-tool-grid">
+            @for (tool of mcpToolOptions(); track tool.code) {
+              <label class="mcp-tool-card" [class.mcp-tool-card-active]="isMcpToolSelected(tool.code)">
+                <input
+                  type="checkbox"
+                  [checked]="isMcpToolSelected(tool.code)"
+                  (change)="toggleMcpTool(tool.code, $event)"
+                />
+                <span class="mcp-tool-content"
+                  ><strong>{{ tool.name }}</strong
+                  ><small>{{ tool.description || ('agentRoles.form.noDescription' | translate) }}</small></span
+                >
+                <span class="mcp-tool-switch" aria-hidden="true"></span>
+              </label>
+            }
+          </div>
+        </section>
+      }
+      @case (7) {
+        <section class="step-panel">
+          <app-action-rules [agentRoleId]="roleId()"></app-action-rules>
+        </section>
+      }
+    }
+
+    <div class="step-actions">
+      <button
+        pButton
+        type="button"
+        label="{{ 'agentRoles.form.previousStep' | translate }}"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [disabled]="currentStep() === 0"
+        (click)="prevStep()"
+      ></button>
+      @if (!isLastStep()) {
+        <button
+          pButton
+          type="button"
+          label="{{ 'agentRoles.form.nextStep' | translate }}"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          severity="primary"
+          (click)="nextStep()"
+        ></button>
+      } @else {
+        <button
+          pButton
+          type="submit"
+          label="{{ 'agentRoles.form.saveRole' | translate }}"
+          icon="pi pi-save"
+          [loading]="submitting() || loading()"
+        ></button>
+      }
+    </div>
+  </form>
+</section>

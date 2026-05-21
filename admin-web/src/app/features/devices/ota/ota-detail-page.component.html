@@ -1,0 +1,78 @@
+<section class="ota-detail-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">{{ 'OTA 详情' | translate }}</p>
+      <h1>{{ ota()?.firmwareName || ('固件详情' | translate) }}</h1>
+      <p>{{ '查看当前固件的基础信息与下载链接，后续可继续扩展版本对比、发布记录与设备影响范围。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a
+      pButton
+      routerLink="/devices/ota"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+      >{{ '返回 OTA 列表' | translate }}</a
+    >
+    <a
+      pButton
+      [routerLink]="['/devices/ota', ota()?.id, 'edit']"
+      icon="pi pi-pencil"
+      severity="info"
+      size="small"
+      >{{ '编辑' | translate }}</a
+    >
+  </app-page-toolbar>
+
+  @if (feedbackMessage()) {
+    <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+  }
+
+  <p-card header="{{ '固件详情' | translate }}">
+    <dl class="detail-list">
+      <div>
+        <dt>ID</dt>
+        <dd>{{ ota()?.id || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ '固件名称' | translate }}</dt>
+        <dd>{{ ota()?.firmwareName || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ '固件类型' | translate }}</dt>
+        <dd>{{ ota()?.type || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ '版本号' | translate }}</dt>
+        <dd>{{ ota()?.version || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ '文件大小' | translate }}</dt>
+        <dd>{{ ota()?.size || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ '固件路径' | translate }}</dt>
+        <dd>{{ ota()?.firmwarePath || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ '备注' | translate }}</dt>
+        <dd>{{ ota()?.remark || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ '更新时间' | translate }}</dt>
+        <dd>{{ ota()?.updateDate ? (ota()?.updateDate | date: 'yyyy-MM-dd HH:mm') : '-' }}</dd>
+      </div>
+    </dl>
+
+    <button
+      pButton
+      type="button"
+      label="{{ '获取下载链接' | translate }}"
+      icon="pi pi-link"
+      severity="secondary"
+      (click)="getDownloadUrl()"
+    ></button>
+  </p-card>
+</section>

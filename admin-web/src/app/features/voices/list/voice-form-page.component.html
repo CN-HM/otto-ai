@@ -1,0 +1,94 @@
+<section class="voice-form-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">{{ 'voices.formLabel' | translate }}</p>
+      <h1>{{ (voiceId() ? 'voices.editTitle' : 'voices.createTitle') | translate }}</h1>
+      <p>{{ 'voices.formDescription' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ 'voices.backToList' | translate }}"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+      (click)="backToList()"
+    ></button>
+  </app-page-toolbar>
+
+  @if (feedbackMessage()) {
+    <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+  }
+
+  <p-card header="{{ 'voices.voiceInfo' | translate }}">
+    <form class="voice-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-section field-group-full">
+        <h3>{{ 'voices.basicInfoTitle' | translate }}</h3>
+        <p>{{ 'voices.basicInfoDescription' | translate }}</p>
+      </div>
+
+      <div class="field-group field-group-full">
+        <label for="ttsProfileId">{{ 'voices.ttsProfile' | translate }}</label>
+        <select id="ttsProfileId" class="native-select" formControlName="ttsProfileId">
+          <option value="">{{ 'voices.selectTtsProfile' | translate }}</option>
+          @for (item of ttsProfileOptions(); track item.value) {
+            <option [value]="item.value">{{ item.label }}</option>
+          }
+        </select>
+        <small class="field-hint">{{ 'voices.cloudPlatform' | translate }}：{{ selectedCloudPlatformLabel() }}</small>
+        <small class="field-hint">{{ 'voices.integrationId' | translate }}：{{ selectedIntegrationId() }}</small>
+      </div>
+
+      <div class="field-group">
+        <label for="name">{{ 'voices.voiceName' | translate }}</label>
+        <input id="name" type="text" pInputText formControlName="name" />
+      </div>
+
+      <div class="field-group">
+        <label for="ttsVoice">{{ 'voices.voiceCode' | translate }}</label>
+        <input id="ttsVoice" type="text" pInputText formControlName="ttsVoice" />
+      </div>
+
+      <div class="field-group">
+        <label for="languages">{{ 'voices.language' | translate }}</label>
+        @if (hasLanguageOptions()) {
+          <select id="languages" class="native-select" formControlName="languages">
+            <option value="">{{ 'voices.selectLanguage' | translate }}</option>
+            @for (item of languageOptions(); track item.value) {
+              <option [value]="item.value">{{ item.label }}</option>
+            }
+          </select>
+        } @else {
+          <input id="languages" type="text" pInputText formControlName="languages" />
+        }
+      </div>
+
+      <div class="field-group">
+        <label for="sort">{{ 'voices.sortOrder' | translate }}</label>
+        <input id="sort" type="number" pInputText formControlName="sort" />
+      </div>
+
+      <div class="form-section field-group-full">
+        <h3>{{ 'voices.previewInfoTitle' | translate }}</h3>
+        <p>{{ 'voices.previewInfoDescription' | translate }}</p>
+      </div>
+
+      <div class="field-group">
+        <label for="voiceDemo">{{ 'voices.previewUrl' | translate }}</label>
+        <input id="voiceDemo" type="text" pInputText formControlName="voiceDemo" placeholder="https://" />
+      </div>
+
+      <div class="field-group field-group-full">
+        <label for="remark">{{ 'voices.remark' | translate }}</label>
+        <textarea id="remark" class="native-textarea" formControlName="remark" rows="4"></textarea>
+      </div>
+
+      <div class="form-actions field-group-full">
+        <button pButton type="submit" label="{{ 'voices.saveVoice' | translate }}" icon="pi pi-save" [loading]="submitting()"></button>
+      </div>
+    </form>
+  </p-card>
+</section>

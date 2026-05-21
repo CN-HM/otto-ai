@@ -1,0 +1,48 @@
+<div class="pagination-bar">
+  <div class="pagination-bar__summary">
+    <strong
+      >{{ 'shared.pagination.totalPrefix' | translate }} {{ total() }}
+      {{ 'shared.pagination.totalSuffix' | translate }}</strong
+    >
+    <span>{{ 'shared.pagination.showing' | translate }} {{ startIndex() }} - {{ endIndex() }}</span>
+  </div>
+
+  <div class="pagination-bar__controls">
+    <label class="pagination-bar__size">
+      <span>{{ 'shared.pagination.perPage' | translate }}</span>
+      <select
+        class="native-select pagination-bar__select"
+        [value]="limit()"
+        (change)="onLimitSelect($any($event.target).value)"
+      >
+        @for (size of pageSizeOptions(); track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+      <span>{{ 'shared.pagination.totalSuffix' | translate }}</span>
+    </label>
+
+    <div class="pagination-bar__nav">
+      <button
+        pButton
+        type="button"
+        [label]="'shared.pagination.previousPage' | translate"
+        severity="secondary"
+        [disabled]="!canGoPrevious()"
+        (click)="goPrevious()"
+      ></button>
+      <span class="pagination-bar__page"
+        >{{ 'shared.pagination.pagePrefix' | translate }} {{ page() }} / {{ totalPages() }}
+        {{ 'shared.pagination.pageSuffix' | translate }}</span
+      >
+      <button
+        pButton
+        type="button"
+        [label]="'shared.pagination.nextPage' | translate"
+        severity="secondary"
+        [disabled]="!canGoNext()"
+        (click)="goNext()"
+      ></button>
+    </div>
+  </div>
+</div>

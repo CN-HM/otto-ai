@@ -1,0 +1,26 @@
+import 'package:test/test.dart';
+import 'package:openapi/openapi.dart';
+
+// tests for AiAdminInfrastructureResultSystemCollectionsGenericListAiAdminServicesVoiceDtosTtsProfileOptionDto
+void main() {
+  final instance = AiAdminInfrastructureResultSystemCollectionsGenericListAiAdminServicesVoiceDtosTtsProfileOptionDtoBuilder();
+  // TODO add properties to the builder and call build()
+
+  group(AiAdminInfrastructureResultSystemCollectionsGenericListAiAdminServicesVoiceDtosTtsProfileOptionDto, () {
+    // int code
+    test('to test the property `code`', () async {
+      // TODO
+    });
+
+    // String msg
+    test('to test the property `msg`', () async {
+      // TODO
+    });
+
+    // BuiltList<AiAdminServicesVoiceDtosTtsProfileOptionDto> data
+    test('to test the property `data`', () async {
+      // TODO
+    });
+
+  });
+}

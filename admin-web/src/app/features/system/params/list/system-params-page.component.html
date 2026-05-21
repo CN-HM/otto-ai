@@ -1,0 +1,235 @@
+<section class="system-params-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">{{ '固定配置' | translate }}</p>
+      <h1>{{ '系统设置' | translate }}</h1>
+      <p>{{ '系统设置已改为固定 schema 管理，不再支持动态新增、删除或列表式参数维护。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ '重新加载' | translate }}"
+      icon="pi pi-refresh"
+      severity="secondary"
+      size="small"
+      [disabled]="loading() || submitting()"
+      (click)="reload()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="3"></app-summary-metric-grid>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <form class="settings-page-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="settings-card-grid">
+      <p-card header="{{ '服务端配置' | translate }}" styleClass="settings-card">
+        <div class="settings-form-grid" formGroupName="server">
+          <div class="field-group">
+            <label for="serverListenIp">{{ '监听地址' | translate }}</label
+            ><input id="serverListenIp" type="text" pInputText formControlName="listenIp" />
+          </div>
+          <div class="field-group">
+            <label for="serverPublicHost">{{ '对外地址 / 域名' | translate }}</label
+            ><input id="serverPublicHost" type="text" pInputText formControlName="publicHost" />
+          </div>
+          <div class="field-group">
+            <label for="serverPort">{{ '服务端口' | translate }}</label
+            ><p-inputNumber id="serverPort" formControlName="port" [min]="1" [showButtons]="true"></p-inputNumber>
+          </div>
+          <div class="field-group">
+            <label for="httpPort">{{ 'HTTP 端口' | translate }}</label
+            ><p-inputNumber id="httpPort" formControlName="httpPort" [min]="1" [showButtons]="true"></p-inputNumber>
+          </div>
+          <div class="field-group">
+            <label for="visionPort">{{ '视觉服务端口' | translate }}</label
+            ><p-inputNumber id="visionPort" formControlName="visionPort" [min]="1" [showButtons]="true"></p-inputNumber>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="serverWebSocketPreview">{{ '设备 WebSocket 地址' | translate }}</label>
+            <input id="serverWebSocketPreview" type="text" pInputText [value]="serverWebSocketPreview()" readonly />
+            <small class="field-hint">{{ '由对外地址和服务端口自动生成，前端仅预览。' | translate }}</small>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="frontendUrl">{{ '控制面板地址' | translate }}</label
+            ><input id="frontendUrl" type="text" pInputText formControlName="frontendUrl" />
+          </div>
+          <div class="field-group field-group-full">
+            <label for="serverSecret">{{ '服务密钥' | translate }}</label
+            ><input id="serverSecret" type="text" pInputText formControlName="secret" />
+          </div>
+          <div class="field-group field-group-full">
+            <label>{{ '允许普通用户注册' | translate }}</label>
+            <div class="toggle-field-row">
+              <p-toggleswitch formControlName="allowUserRegister"></p-toggleswitch>
+              <span>{{ boolLabel(form.controls.server.controls.allowUserRegister.value) }}</span>
+            </div>
+            <small class="field-hint">{{ '关闭后，仅管理员可创建账号。' | translate }}</small>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="{{ '日志配置' | translate }}" styleClass="settings-card">
+        <div class="settings-form-grid" formGroupName="log">
+          <div class="field-group">
+            <label for="logLevel">{{ '日志级别' | translate }}</label
+            ><input id="logLevel" type="text" pInputText formControlName="logLevel" />
+          </div>
+          <div class="field-group">
+            <label for="logDir">{{ '日志目录' | translate }}</label><input id="logDir" type="text" pInputText formControlName="logDir" />
+          </div>
+          <div class="field-group">
+            <label for="logFile">{{ '日志文件' | translate }}</label><input id="logFile" type="text" pInputText formControlName="logFile" />
+          </div>
+          <div class="field-group">
+            <label for="dataDir">{{ '数据目录' | translate }}</label><input id="dataDir" type="text" pInputText formControlName="dataDir" />
+          </div>
+          <div class="field-group field-group-full">
+            <label for="logFormat">{{ '控制台格式' | translate }}</label
+            ><textarea
+              id="logFormat"
+              class="native-textarea mono-textarea"
+              formControlName="logFormat"
+              rows="4"
+            ></textarea>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="logFormatFile">{{ '文件格式' | translate }}</label
+            ><textarea
+              id="logFormatFile"
+              class="native-textarea mono-textarea"
+              formControlName="logFormatFile"
+              rows="4"
+            ></textarea>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="{{ '运行时配置' | translate }}" styleClass="settings-card">
+        <div class="settings-form-grid" formGroupName="runtime">
+          <div class="field-group">
+            <label for="closeConnectionNoVoiceTime">{{ '静默断开时长（秒）' | translate }}</label
+            ><p-inputNumber
+              id="closeConnectionNoVoiceTime"
+              formControlName="closeConnectionNoVoiceTime"
+              [min]="0"
+              [showButtons]="true"
+            ></p-inputNumber>
+          </div>
+          <div class="field-group">
+            <label for="ttsTimeout">{{ 'TTS 超时（秒）' | translate }}</label
+            ><p-inputNumber id="ttsTimeout" formControlName="ttsTimeout" [min]="0" [showButtons]="true"></p-inputNumber>
+          </div>
+          <div class="field-group">
+            <label for="deviceMaxOutputSize">{{ '设备最大输出字符数' | translate }}</label
+            ><p-inputNumber id="deviceMaxOutputSize" formControlName="deviceMaxOutputSize" [min]="0"></p-inputNumber>
+          </div>
+          <div class="field-group">
+            <label for="voiceprintSimilarityThreshold">{{ '声纹阈值' | translate }}</label
+            ><p-inputNumber
+              id="voiceprintSimilarityThreshold"
+              formControlName="voiceprintSimilarityThreshold"
+              mode="decimal"
+              [min]="0"
+              [step]="0.01"
+              [minFractionDigits]="0"
+              [maxFractionDigits]="4"
+            ></p-inputNumber>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="voiceprintUrl">{{ '声纹服务地址' | translate }}</label
+            ><input id="voiceprintUrl" type="text" pInputText formControlName="voiceprintUrl" />
+          </div>
+          <div class="field-group field-group-full">
+            <label for="stopTtsNotifyVoice">{{ '结束提示音文件' | translate }}</label
+            ><input id="stopTtsNotifyVoice" type="text" pInputText formControlName="stopTtsNotifyVoice" />
+          </div>
+          <div class="field-group field-group-full">
+            <label for="exitCommands">{{ '退出命令' | translate }}</label
+            ><textarea id="exitCommands" class="native-textarea" formControlName="exitCommands" rows="3"></textarea>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="wakeupWords">{{ '唤醒词列表' | translate }}</label
+            ><textarea id="wakeupWords" class="native-textarea" formControlName="wakeupWords" rows="4"></textarea>
+          </div>
+          <div class="field-group field-group-full">
+            <label for="iotProtocolConfig">{{ 'IoT 协议配置' | translate }}</label
+            ><app-json-editor formControlName="iotProtocolConfig" [minHeight]="220"></app-json-editor>
+          </div>
+
+          <div class="field-group field-group-full toggle-stack">
+            <label>{{ '运行时开关' | translate }}</label>
+            <div class="toggle-field-row">
+              <p-toggleswitch formControlName="deleteAudio"></p-toggleswitch
+              ><span>{{ '自动删除临时音频：' | translate }}{{ boolLabel(form.controls.runtime.controls.deleteAudio.value) }}</span>
+            </div>
+            <div class="toggle-field-row">
+              <p-toggleswitch formControlName="enableWakeupWordsResponseCache"></p-toggleswitch
+              ><span
+                >{{ '唤醒词加速缓存：' | translate }}{{
+                  boolLabel(form.controls.runtime.controls.enableWakeupWordsResponseCache.value)
+                }}</span
+              >
+            </div>
+            <div class="toggle-field-row">
+              <p-toggleswitch formControlName="enableGreeting"></p-toggleswitch
+              ><span>{{ '开场回复：' | translate }}{{ boolLabel(form.controls.runtime.controls.enableGreeting.value) }}</span>
+            </div>
+            <div class="toggle-field-row">
+              <p-toggleswitch formControlName="enableStopTtsNotify"></p-toggleswitch
+              ><span>{{ '结束提示音：' | translate }}{{ boolLabel(form.controls.runtime.controls.enableStopTtsNotify.value) }}</span>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="{{ '计费配置' | translate }}" styleClass="settings-card">
+        <div class="settings-form-grid" formGroupName="billing">
+          <div class="field-group">
+            <label for="defaultPlanCode">{{ '默认套餐编码' | translate }}</label
+            ><input id="defaultPlanCode" type="text" pInputText formControlName="defaultPlanCode" />
+          </div>
+          <div class="field-group">
+            <label for="resetTimezone">{{ '账期时区' | translate }}</label
+            ><input id="resetTimezone" type="text" pInputText formControlName="resetTimezone" />
+          </div>
+          <div class="field-group">
+            <label for="lowBalanceRatio">{{ '低余额阈值比例' | translate }}</label
+            ><p-inputNumber
+              id="lowBalanceRatio"
+              formControlName="lowBalanceRatio"
+              mode="decimal"
+              [min]="0"
+              [step]="0.01"
+              [minFractionDigits]="0"
+              [maxFractionDigits]="4"
+            ></p-inputNumber>
+          </div>
+          <div class="field-group">
+            <label for="exhaustionRemindCooldownHours">{{ '额度耗尽提醒冷却（小时）' | translate }}</label
+            ><p-inputNumber
+              id="exhaustionRemindCooldownHours"
+              formControlName="exhaustionRemindCooldownHours"
+              [min]="0"
+              [showButtons]="true"
+            ></p-inputNumber>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="page-actions">
+      <button
+        pButton
+        type="submit"
+        label="{{ '保存系统设置' | translate }}"
+        icon="pi pi-save"
+        [loading]="submitting()"
+        [disabled]="loading()"
+      ></button>
+    </div>
+  </form>
+</section>

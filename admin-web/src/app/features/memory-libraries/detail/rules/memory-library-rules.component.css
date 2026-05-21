@@ -1,0 +1,241 @@
+.memory-library-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rules-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rules-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.rules-header p {
+  margin: 0.35rem 0 0;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rule-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rule-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.46);
+}
+
+.rule-modal {
+  width: min(680px, 100%);
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--surface-border);
+  border-radius: 18px;
+  background: var(--surface-card);
+  box-shadow: 0 24px 70px rgb(15 23 42 / 0.24);
+  overflow: hidden;
+}
+
+.rule-modal-header,
+.rule-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.rule-modal-header {
+  justify-content: space-between;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.rule-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.rule-modal-body {
+  overflow: auto;
+  padding: 1.25rem;
+  scrollbar-width: none;
+}
+
+.rule-modal-body::-webkit-scrollbar {
+  display: none;
+}
+
+.rule-modal-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--surface-border);
+}
+
+.rule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field-group label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+.field-group .required {
+  color: var(--red-500);
+}
+
+.switch-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.custom-switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  appearance: none;
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  background: var(--surface-300);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.custom-switch::before {
+  content: '';
+  position: absolute;
+  top: 0.17rem;
+  left: 0.18rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: var(--surface-card);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.28);
+  transition: transform 0.2s ease;
+}
+
+.custom-switch:checked {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+}
+
+.custom-switch:checked::before {
+  transform: translateX(1.22rem);
+}
+
+.custom-switch:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.field-help {
+  color: var(--text-color-muted);
+  font-size: 0.85rem;
+}
+
+.rule-help-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  background: var(--surface-ground);
+  color: var(--text-color-secondary);
+}
+
+.rule-help-card strong {
+  color: var(--text-color);
+}
+
+.rule-type-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.rule-type-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  background: var(--surface-card);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.rule-type-card input {
+  align-self: flex-start;
+}
+
+.rule-type-card span {
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.rule-type-card--active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.native-textarea {
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+  background: var(--surface-card);
+  resize: vertical;
+}
+
+@media (max-width: 768px) {
+  .rules-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .form-row,
+  .rule-type-cards {
+    grid-template-columns: 1fr;
+  }
+}

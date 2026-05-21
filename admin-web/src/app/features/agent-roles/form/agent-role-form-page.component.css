@@ -1,0 +1,389 @@
+@import '../../../shared/styles/form-page.shared.css';
+
+.agent-role-form-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.agent-role-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  background: var(--surface-ground);
+}
+
+.form-section h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.field-hint {
+  margin: 0;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.field-help {
+  color: var(--text-color-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.field-group-switch :deep(.p-toggleswitch) {
+  margin-top: 0.2rem;
+}
+
+.toggle-status-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.slider-field {
+  gap: 0.75rem;
+}
+
+.cover-image-upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cover-image-preview {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.cover-image-preview img {
+  max-width: 200px;
+  max-height: 120px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  object-fit: cover;
+}
+
+.mcp-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.85rem;
+}
+
+.mcp-tool-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
+  min-height: 6.25rem;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  background: var(--surface-card);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.mcp-tool-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary-color);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.mcp-tool-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mcp-tool-card-active {
+  border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--surface-card));
+}
+
+.mcp-tool-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.mcp-tool-content strong {
+  color: var(--text-color);
+}
+
+.mcp-tool-content small {
+  color: var(--text-color-muted);
+  line-height: 1.5;
+}
+
+.mcp-tool-switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--surface-border);
+  transition: background 0.2s ease;
+  margin-top: auto;
+}
+
+.mcp-tool-switch::after {
+  content: '';
+  position: absolute;
+  top: 0.2rem;
+  left: 0.22rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--surface-card);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.mcp-tool-card-active .mcp-tool-switch {
+  background: var(--primary-color);
+}
+
+.mcp-tool-card-active .mcp-tool-switch::after {
+  transform: translateX(1.2rem);
+}
+
+.knowledge-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.knowledge-picker-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
+  min-height: 6rem;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  background: var(--surface-card);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.knowledge-picker-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary-color);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.knowledge-picker-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.knowledge-picker-card-active {
+  border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--surface-card));
+}
+
+.knowledge-picker-content,
+.knowledge-binding-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.knowledge-picker-content {
+  width: 100%;
+}
+
+.knowledge-picker-content small,
+.knowledge-binding-header span {
+  color: var(--text-color-muted);
+  font-size: 0.8rem;
+}
+
+.knowledge-picker-switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--surface-border);
+  transition: background 0.2s ease;
+  margin-top: auto;
+}
+
+.knowledge-picker-switch::after {
+  content: '';
+  position: absolute;
+  top: 0.2rem;
+  left: 0.22rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--surface-card);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.knowledge-picker-card-active .knowledge-picker-switch {
+  background: var(--primary-color);
+}
+
+.knowledge-picker-card-active .knowledge-picker-switch::after {
+  transform: translateX(1.2rem);
+}
+
+.knowledge-binding-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.knowledge-binding-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  background: var(--surface-card);
+}
+
+.knowledge-binding-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.step-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.step-dot.active,
+.step-dot.done {
+  opacity: 1;
+}
+
+.step-num {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--surface-border);
+  color: var(--text-color-muted);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.step-dot.active .step-num {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.step-dot.done .step-num {
+  background: var(--green-500, #22c55e);
+  color: #fff;
+}
+
+.step-label {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+  white-space: nowrap;
+}
+
+.step-dot.active .step-label {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.step-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  background: var(--surface-card);
+}
+
+.step-panel h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.step-desc {
+  margin: 0;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}

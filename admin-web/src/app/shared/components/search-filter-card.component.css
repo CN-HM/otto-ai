@@ -1,0 +1,85 @@
+@import '../styles/list-page.shared.css';
+
+:host {
+  display: block;
+  --filter-control-height: 2.75rem;
+}
+
+.filter-form {
+  grid-template-columns: repeat(var(--filter-columns, 4), minmax(0, 1fr));
+}
+
+.filter-field-full {
+  grid-column: span 2;
+}
+
+:host ::ng-deep .filter-field input[pInputText],
+:host ::ng-deep .filter-field .p-inputtext,
+:host ::ng-deep .filter-field .p-select,
+:host ::ng-deep .filter-field .p-dropdown,
+:host ::ng-deep .filter-field .native-select {
+  width: 100%;
+  min-height: var(--filter-control-height);
+}
+
+:host ::ng-deep .filter-field .p-select,
+:host ::ng-deep .filter-field .p-dropdown {
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .filter-field .p-select-label,
+:host ::ng-deep .filter-field .p-dropdown-label {
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+:host ::ng-deep .filter-field .p-select-dropdown,
+:host ::ng-deep .filter-field .p-dropdown-trigger {
+  width: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .filter-field .p-input-icon-left,
+:host ::ng-deep .filter-field .p-iconfield {
+  width: 100%;
+  display: block;
+}
+
+:host ::ng-deep .filter-field .p-input-icon-left > i,
+:host ::ng-deep .filter-field .p-iconfield > .p-inputicon {
+  top: 50%;
+  margin-top: 0;
+  transform: translateY(-50%);
+}
+
+:host ::ng-deep .filter-actions {
+  min-height: var(--filter-control-height);
+  align-items: center;
+}
+
+:host ::ng-deep .filter-actions .p-button {
+  min-height: 2.75rem;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+}
+
+:host ::ng-deep .filter-actions .p-button.p-button-icon-only {
+  padding: 0.5rem;
+}
+
+@media (max-width: 1200px) {
+  .filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-field-full {
+    grid-column: auto;
+  }
+}

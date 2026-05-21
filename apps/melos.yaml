@@ -1,0 +1,10 @@
+name: ai_admin_workspace
+packages:
+  - ai_admin_app
+  - packages/**
+
+scripts:
+  analyze:baseline:
+    run: dart run melos exec --concurrency 1 --scope=ai_admin_app -- flutter analyze
+  test:baseline:
+    run: dart run melos exec --concurrency 1 --scope=ai_admin_app -- flutter test

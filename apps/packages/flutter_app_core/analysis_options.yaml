@@ -1,0 +1,9 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - ../openapi/**
+
+linter:
+  rules:
+    avoid_print: false

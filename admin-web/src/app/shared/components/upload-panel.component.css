@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.upload-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upload-panel label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+.upload-panel__file-name {
+  margin: 0;
+  color: var(--text-color-muted);
+}
+
+.upload-panel__hint {
+  margin: 0;
+  color: var(--text-color-muted);
+  line-height: 1.6;
+}
+
+.upload-panel__hint--info {
+  color: #60a5fa;
+}
+
+.upload-panel__hint--warn {
+  color: #fb923c;
+}
+
+.upload-panel__hint--success {
+  color: #34d399;
+}

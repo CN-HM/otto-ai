@@ -1,0 +1,27 @@
+@import '../../../shared/styles/list-page.shared.css';
+
+.billing-orders-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.page-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.order-cell,
+.user-cell,
+.plan-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.order-cell span,
+.user-cell span,
+.plan-cell span {
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+}

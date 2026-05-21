@@ -1,0 +1,150 @@
+<section class="action-rules">
+  <div class="rules-header">
+    <div>
+      <h3>{{ 'agentRoles.actionRules.title' | translate }}</h3>
+      <p>{{ 'agentRoles.actionRules.description' | translate }}</p>
+    </div>
+    <button
+      pButton
+      type="button"
+      label="{{ 'agentRoles.actionRules.newRule' | translate }}"
+      icon="pi pi-plus"
+      severity="primary"
+      size="small"
+      (click)="openCreateDialog()"
+    ></button>
+  </div>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card>
+    <p-table [value]="rules()" [loading]="loading()" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ 'agentRoles.actionRules.type' | translate }}</th>
+          <th>{{ 'agentRoles.actionRules.ruleName' | translate }}</th>
+          <th>{{ 'agentRoles.actionRules.state' | translate }}</th>
+          <th>{{ 'agentRoles.actionRules.actions' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-rule>
+        <tr>
+          <td><p-tag [value]="actionTypeLabel(rule.actionType)" severity="info"></p-tag></td>
+          <td>
+            <div class="rule-name-cell">
+              <strong>{{ rule.name }}</strong>
+            </div>
+          </td>
+          <td><p-tag [value]="enabledLabel(rule.isEnabled)" [severity]="enabledSeverity(rule.isEnabled)"></p-tag></td>
+          <td>
+            <div class="row-actions">
+              <button
+                pButton
+                type="button"
+                label="{{ 'common.edit' | translate }}"
+                size="small"
+                severity="info"
+                (click)="openEditDialog(rule)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ 'common.delete' | translate }}"
+                size="small"
+                severity="danger"
+                (click)="deleteRule(rule)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4"><app-empty-state text="{{ 'agentRoles.actionRules.noData' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  @if (dialogVisible()) {
+    <div class="rule-modal-backdrop" (click)="closeDialog()">
+      <section class="rule-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header class="rule-modal-header">
+          <h3>{{ editingRuleId() ? ('agentRoles.actionRules.editTitle' | translate) : ('agentRoles.actionRules.createTitle' | translate) }}</h3>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            (click)="closeDialog()"
+          ></button>
+        </header>
+        <div class="rule-modal-body">
+          <form [formGroup]="form" class="rule-form">
+            <div class="rule-help-card">
+              <strong>{{ 'agentRoles.actionRules.helpTitle' | translate }}</strong>
+              <span>{{ 'agentRoles.actionRules.helpDescription' | translate }}</span>
+            </div>
+            <div class="field-group">
+              <label>{{ 'agentRoles.actionRules.type' | translate }} <span class="required">*</span></label>
+              <div class="rule-type-cards">
+                @for (type of actionTypes; track type) {
+                  <label
+                    class="rule-type-card"
+                    [class.rule-type-card--active]="form.controls.actionType.value === type"
+                  >
+                    <input
+                      type="radio"
+                      formControlName="actionType"
+                      [value]="type"
+                      (change)="applyActionTypeDefaults(type)"
+                    />
+                    <strong>{{ actionTypeLabel(type) }}</strong>
+                    <span>{{ actionTypeDescription(type) }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="ruleName">{{ 'agentRoles.actionRules.ruleName' | translate }} <span class="required">*</span></label>
+              <input id="ruleName" type="text" pInputText formControlName="name" placeholder="{{ 'agentRoles.actionRules.namePlaceholder' | translate }}" />
+            </div>
+            <div class="field-group">
+              <label for="instruction">{{ 'agentRoles.actionRules.instruction' | translate }}</label>
+              <textarea
+                id="instruction"
+                class="native-textarea"
+                formControlName="instruction"
+                rows="4"
+                placeholder="{{ 'agentRoles.actionRules.instructionPlaceholder' | translate }}"
+              ></textarea>
+              <span class="field-help">{{ 'agentRoles.actionRules.instructionHelp' | translate }}</span>
+            </div>
+            <div class="form-row">
+              <div class="field-group">
+                <label>{{ 'agentRoles.actionRules.enabledState' | translate }}</label>
+                <div class="switch-field">
+                  <input id="isEnabled" type="checkbox" class="custom-switch" formControlName="isEnabled" />
+                  <span>{{ form.getRawValue().isEnabled ? ('agentRoles.actionRules.enableNow' | translate) : ('agentRoles.actionRules.saveDisabled' | translate) }}</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <footer class="rule-modal-footer">
+          <button pButton type="button" label="{{ 'common.cancel' | translate }}" severity="secondary" (click)="closeDialog()"></button>
+          <button
+            pButton
+            type="button"
+            label="{{ 'common.save' | translate }}"
+            severity="primary"
+            [loading]="dialogSubmitting()"
+            (click)="submitRule()"
+          ></button>
+        </footer>
+      </section>
+    </div>
+  }
+</section>

@@ -1,0 +1,95 @@
+<div class="auth-page">
+  <div class="auth-hero">
+    <p class="auth-badge">{{ branding.registerBadge }}</p>
+    <h1>{{ branding.registerTitle | translate }}</h1>
+    <p>{{ branding.registerDescription | translate }}</p>
+  </div>
+
+  <p-card styleClass="auth-card">
+    <ng-template pTemplate="header">
+      <div class="auth-card-header">
+        <p class="mobile-brand">{{ branding.registerBadge }}</p>
+        <h2>{{ 'auth.registerAccount' | translate }}</h2>
+        <p>{{ 'auth.registerAccountDescription' | translate }}</p>
+      </div>
+    </ng-template>
+
+    @if (config()?.allowUserRegister === false) {
+      <app-feedback-message
+        [text]="'auth.registerClosedContactAdmin' | translate"
+        [severity]="'warn'"
+      ></app-feedback-message>
+    }
+
+    <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field-group">
+        <label for="phone">{{ 'auth.phone' | translate }}</label>
+        <input
+          id="phone"
+          type="tel"
+          pInputText
+          formControlName="phone"
+          [placeholder]="'auth.enterPhone' | translate"
+          [disabled]="config()?.allowUserRegister === false"
+        />
+        @if (phoneInvalid) {
+          <small class="field-error">{{ 'auth.enterPhoneValidation' | translate }}</small>
+        }
+      </div>
+
+      <div class="field-group">
+        <label for="mobileCaptcha">{{ 'auth.smsCode' | translate }}</label>
+        <div class="inline-action-row">
+          <input
+            id="mobileCaptcha"
+            type="text"
+            pInputText
+            formControlName="mobileCaptcha"
+            [placeholder]="'auth.enterSmsCode' | translate"
+            [disabled]="config()?.allowUserRegister === false"
+          />
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            [label]="'auth.sendSmsCode' | translate"
+            [loading]="sendingCode()"
+            [disabled]="config()?.allowUserRegister === false"
+            (click)="sendSmsCode()"
+          ></button>
+        </div>
+        @if (mobileCaptchaInvalid) {
+          <small class="field-error">{{ 'auth.enterSmsCodeValidation' | translate }}</small>
+        }
+      </div>
+
+      @if (smsMessage()) {
+        <app-feedback-message [text]="smsMessage() | translate" [severity]="'info'"></app-feedback-message>
+      }
+
+      @if (errorMessage()) {
+        <app-feedback-message [text]="errorMessage() | translate" [severity]="'error'"></app-feedback-message>
+      }
+
+      @if (successMessage()) {
+        <app-feedback-message [text]="successMessage() | translate" [severity]="'success'"></app-feedback-message>
+      }
+
+      <app-turnstile #turnstile></app-turnstile>
+
+      <button
+        pButton
+        type="submit"
+        [loading]="submitting()"
+        [disabled]="config()?.allowUserRegister === false"
+        [label]="'auth.register' | translate"
+        icon="pi pi-user-plus"
+      ></button>
+    </form>
+
+    <div class="auth-links">
+      <a routerLink="/login">{{ 'auth.backToLogin' | translate }}</a>
+      <a routerLink="/retrieve-password">{{ 'auth.retrievePassword' | translate }}</a>
+    </div>
+  </p-card>
+</div>

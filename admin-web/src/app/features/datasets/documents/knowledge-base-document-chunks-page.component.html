@@ -1,0 +1,143 @@
+<section class="knowledge-base-document-chunks-page">
+  <div class="page-hero">
+    <div>
+      <h1>切片明细</h1>
+      <p>查看文档被拆分后的检索片段，用于确认知识内容是否已经按预期进入检索库。</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a
+      pButton
+      [routerLink]="['/datasets', datasetId(), 'documents']"
+      label="返回内容管理"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      size="small"
+    ></a>
+    <a
+      pButton
+      [routerLink]="['/datasets', datasetId(), 'retrieval-test']"
+      label="检索测试"
+      icon="pi pi-search"
+      severity="contrast"
+      size="small"
+    ></a>
+  </app-page-toolbar>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <div class="chunks-metrics">
+    <p-card
+      ><div class="metric-card">
+        <span>切片总数</span><strong>{{ chunkTotal() }}</strong>
+      </div></p-card
+    >
+    <p-card
+      ><div class="metric-card">
+        <span>当前页切片</span><strong>{{ chunks().length }}</strong>
+      </div></p-card
+    >
+    <p-card
+      ><div class="metric-card">
+        <span>文档状态</span><strong>{{ statusLabel(documentStatus()) }}</strong>
+      </div></p-card
+    >
+  </div>
+
+  <div class="chunks-grid">
+    <div class="chunks-main">
+      <p-card header="文档信息">
+        <div class="document-meta">
+          <span>知识库：{{ datasetId() || '-' }}</span>
+          <span>文档：{{ documentName() || documentId() || '-' }}</span>
+          <p-tag [value]="statusLabel(documentStatus())" [severity]="statusSeverity(documentStatus())"></p-tag>
+        </div>
+      </p-card>
+
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="card-header-row"><span>切片列表</span></div>
+        </ng-template>
+
+        <app-search-filter-card
+          [formGroup]="queryForm"
+          [loading]="loading()"
+          [columns]="1"
+          (submitted)="loadChunks()"
+          (resetTriggered)="reset()"
+        >
+          <div filterField class="filter-field">
+            <label for="keywords">关键词</label>
+            <input id="keywords" type="text" pInputText formControlName="keywords" placeholder="搜索切片内容" />
+          </div>
+        </app-search-filter-card>
+
+        <p-table [value]="chunks()" [loading]="loading()" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>序号</th>
+              <th>内容摘要</th>
+              <th>Token</th>
+              <th>操作</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+            <tr>
+              <td>{{ chunkKey(item, rowIndex) }}</td>
+              <td>{{ chunkSummary(item) }}</td>
+              <td>{{ chunkTokenLabel(item) }}</td>
+              <td>
+                <button
+                  pButton
+                  type="button"
+                  label="预览"
+                  size="small"
+                  severity="secondary"
+                  (click)="preview(item)"
+                ></button>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4"><app-empty-state text="暂无切片数据。"></app-empty-state></td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <app-pagination-bar
+          [total]="chunkTotal()"
+          [page]="queryForm.getRawValue().page"
+          [limit]="queryForm.getRawValue().page_size"
+          [loading]="loading()"
+          (pageChange)="changePage($event)"
+          (limitChange)="changePageSize($event)"
+        >
+        </app-pagination-bar>
+      </p-card>
+    </div>
+
+    <div class="chunks-side">
+      <p-card header="切片预览">
+        @if (selectedChunk()) {
+          <pre class="chunk-preview">{{ previewText() }}</pre>
+        } @else {
+          <p class="detail-empty">请选择左侧切片进行预览。</p>
+        }
+      </p-card>
+
+      <p-card header="查看建议">
+        <div class="tips-list">
+          <div><strong>摘要是否完整</strong><span>确认每个切片能独立表达一个问题、步骤或规则。</span></div>
+          <div>
+            <strong>内容是否重复</strong><span>如果多个切片大量重复，建议回到内容管理页清理原文后重新导入。</span>
+          </div>
+          <div>
+            <strong>检索是否命中</strong><span>切片已生成后，可进入检索测试验证用户问题是否能召回正确内容。</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,86 @@
+@import '../../../../shared/styles/list-page.shared.css';
+
+.knowledge-bases-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.page-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.75rem;
+  border-radius: 24px;
+  border: 1px solid var(--surface-border);
+  background: linear-gradient(135deg, var(--surface-card) 0%, rgba(4, 120, 87, 0.12) 100%);
+}
+
+.dataset-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.metric-card span,
+td small,
+.stat-cell span {
+  color: var(--text-color-muted);
+}
+
+.metric-card strong {
+  font-size: 1.8rem;
+  color: var(--text-color);
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-field label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.inline-meta,
+.stat-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.inline-meta {
+  margin-top: 0.5rem;
+}
+
+.stat-cell span {
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  background: var(--surface-ground);
+}
+
+@media (max-width: 768px) {
+  .page-hero,
+  .dataset-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .page-hero {
+    flex-direction: column;
+  }
+}

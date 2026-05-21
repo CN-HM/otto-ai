@@ -1,0 +1,29 @@
+@import '../../../shared/styles/list-page.shared.css';
+
+.mcp-tools-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-muted {
+  color: var(--text-color-secondary);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.p-8 {
+  padding: 2rem;
+}

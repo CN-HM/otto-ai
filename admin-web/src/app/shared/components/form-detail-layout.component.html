@@ -1,0 +1,9 @@
+<div class="form-detail-layout">
+  <p-card [header]="formTitle() | translate">
+    <ng-content select="[formPane]"></ng-content>
+  </p-card>
+
+  <p-card [header]="asideTitle() | translate">
+    <ng-content select="[asidePane]"></ng-content>
+  </p-card>
+</div>

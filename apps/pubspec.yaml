@@ -1,0 +1,9 @@
+name: ai_admin_workspace
+description: AI Admin Flutter apps workspace
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dev_dependencies:
+  melos: ^6.3.2

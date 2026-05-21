@@ -1,0 +1,23 @@
+<p-card [header]="title() | translate">
+  <form class="filter-form" [formGroup]="formGroup()" [style.--filter-columns]="columns()" (ngSubmit)="onSubmit()">
+    <ng-content select="[filterField]"></ng-content>
+
+    <div class="filter-actions">
+      <button
+        pButton
+        type="submit"
+        [label]="submitLabel() | translate"
+        [icon]="submitIcon()"
+        [loading]="loading()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        [label]="resetLabel() | translate"
+        [icon]="resetIcon()"
+        severity="secondary"
+        (click)="onReset()"
+      ></button>
+    </div>
+  </form>
+</p-card>

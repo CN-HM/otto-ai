@@ -1,0 +1,122 @@
+<section class="dashboard-page">
+  <div class="dashboard-hero">
+    <div>
+      <h1>{{ branding.dashboardTitle | translate }}</h1>
+      <p>{{ branding.dashboardDescription | translate }}</p>
+      @if (heroPills().length > 0) {
+        <div class="dashboard-hero__pills">
+          @for (pill of heroPills(); track pill) {
+            <p-tag [value]="pill | translate" severity="contrast"></p-tag>
+          }
+        </div>
+      }
+    </div>
+    <div class="dashboard-hero__status">
+      <p-tag [value]="getRuntimeBadgeLabel() | translate" [severity]="getRuntimeBadgeSeverity()"></p-tag>
+      <span>{{ 'dashboard.nodeLabel' | translate }} {{ runtime().nodeId }}</span>
+      <span>{{ 'dashboard.startedAtLabel' | translate }} {{ formatDateTime(runtime().nodeStartedAtUtc) }}</span>
+    </div>
+  </div>
+
+  <app-feedback-message [text]="errorMessage() | translate"></app-feedback-message>
+
+  @if (readinessBanners().length > 0) {
+    <div class="dashboard-readiness-banners">
+      @for (banner of readinessBanners(); track banner.key) {
+        <div class="readiness-banner" [class]="'readiness-banner--' + banner.severity">
+          <span class="readiness-banner__icon">
+            @if (banner.ready) {
+              <i class="pi pi-check-circle"></i>
+            } @else if (banner.blocking) {
+              <i class="pi pi-exclamation-triangle"></i>
+            } @else {
+              <i class="pi pi-info-circle"></i>
+            }
+          </span>
+          <div class="readiness-banner__body">
+            <strong>{{ banner.title }}</strong>
+            <p>{{ banner.summary }}</p>
+            @if (banner.details.length > 0) {
+              <small>{{ banner.details.join(' · ') }}</small>
+            }
+          </div>
+          <button class="readiness-banner__close" (click)="dismissBanner(banner.key)" [attr.aria-label]="'关闭'">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @for (section of orderedSectionKeys(); track section) {
+    @switch (section) {
+      @case ('metrics') {
+        <div class="dashboard-section-heading">
+          <div>
+            <h2>{{ layoutCopy().metrics.title | translate }}</h2>
+            <p>{{ layoutCopy().metrics.description | translate }}</p>
+          </div>
+        </div>
+
+        <app-summary-metric-grid [items]="primaryMetricItems()" [columns]="4"></app-summary-metric-grid>
+      }
+
+      @case ('runtimeOverview') {
+        <div class="dashboard-section-heading">
+          <div>
+            <h2>{{ layoutCopy().runtimeOverview.title | translate }}</h2>
+            <p>{{ layoutCopy().runtimeOverview.description | translate }}</p>
+          </div>
+        </div>
+
+        <p-card>
+          <app-summary-metric-grid [items]="runtimeOverviewItems()" [columns]="4"></app-summary-metric-grid>
+        </p-card>
+      }
+
+      @case ('runtimeServices') {
+        <div class="dashboard-section-heading">
+          <div>
+            <h2>{{ layoutCopy().runtimeServices.title | translate }}</h2>
+            <p>{{ layoutCopy().runtimeServices.description | translate }}</p>
+          </div>
+        </div>
+
+        <div class="dashboard-runtime-services">
+          @for (service of runtimeServices(); track service.key) {
+            <p-card>
+              <div class="runtime-service-card">
+                <div class="runtime-service-card__header">
+                  <div>
+                    <h3>{{ service.name }}</h3>
+                    <small>{{ service.protocol }}</small>
+                  </div>
+                  <p-tag [value]="service.statusText" [severity]="service.severity"></p-tag>
+                </div>
+                <p class="runtime-service-card__endpoint">{{ service.endpoint || '-' }}</p>
+                <p class="runtime-service-card__description">{{ service.description }}</p>
+              </div>
+            </p-card>
+          }
+        </div>
+      }
+
+      @case ('panels') {
+        <div class="dashboard-section-heading">
+          <div>
+            <h2>{{ layoutCopy().panels.title | translate }}</h2>
+            <p>{{ layoutCopy().panels.description | translate }}</p>
+          </div>
+        </div>
+
+        <div class="dashboard-panels">
+          @for (panel of visiblePanels(); track panel.key) {
+            <p-card [header]="panel.title">
+              <p class="dashboard-panel-description">{{ panel.description }}</p>
+            </p-card>
+          }
+        </div>
+      }
+    }
+  }
+</section>

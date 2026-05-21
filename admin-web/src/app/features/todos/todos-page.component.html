@@ -1,0 +1,128 @@
+<section class="todos-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ 'todos.title' | translate }}</h1>
+      <p>{{ 'todos.description' | translate }}</p>
+    </div>
+  </div>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="3"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="queryForm"
+    [loading]="loading()"
+    [columns]="2"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keyword">{{ 'todos.keyword' | translate }}</label>
+      <input id="keyword" type="text" pInputText formControlName="keyword" placeholder="{{ 'todos.searchPlaceholder' | translate }}" />
+    </div>
+    <div filterField class="filter-field">
+      <label for="status">{{ 'todos.status' | translate }}</label>
+      <select id="status" class="native-select" formControlName="status">
+        <option value="">{{ 'todos.allStatus' | translate }}</option>
+        <option value="pending">{{ 'todos.pending' | translate }}</option>
+        <option value="scheduled">{{ 'todos.scheduled' | translate }}</option>
+        <option value="processing">{{ 'todos.processing' | translate }}</option>
+        <option value="completed">{{ 'todos.completed' | translate }}</option>
+        <option value="ignored">{{ 'todos.ignored' | translate }}</option>
+        <option value="failed">{{ 'todos.failed' | translate }}</option>
+      </select>
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  <p-card header="{{ 'todos.listTitle' | translate }}">
+    <p-table [value]="todos()" [loading]="loading()" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ 'todos.content' | translate }}</th>
+          <th>{{ 'todos.status' | translate }}</th>
+          <th>{{ 'todos.context' | translate }}</th>
+          <th>{{ 'todos.time' | translate }}</th>
+          <th>{{ 'todos.operation' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <strong>{{ item.signalCode || item.id }}</strong>
+            <p>{{ item.sourceText || '-' }}</p>
+            @if (item.errorMessage) {
+              <small class="error-text">{{ item.errorMessage }}</small>
+            }
+          </td>
+          <td><p-tag [value]="statusLabel(item.status)" [severity]="statusSeverity(item.status)"></p-tag></td>
+          <td>
+            <small>{{ 'todos.device' | translate }}：{{ item.deviceId || '-' }}</small
+            ><br />
+            <small>{{ 'todos.session' | translate }}：{{ item.sessionId || '-' }}</small
+            ><br />
+            <small>{{ 'todos.user' | translate }}：{{ item.userId || '-' }}</small>
+          </td>
+          <td>
+            <small>{{ 'todos.createdAt' | translate }}：{{ item.createdAt ? (item.createdAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</small
+            ><br />
+            <small>{{ 'todos.scheduledAt' | translate }}：{{ item.scheduledAt ? (item.scheduledAt | date: 'yyyy-MM-dd HH:mm') : '-' }}</small>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button
+                pButton
+                type="button"
+                label="{{ 'todos.markCompleted' | translate }}"
+                size="small"
+                severity="success"
+                [text]="true"
+                (click)="updateStatus(item, 'completed')"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ 'todos.ignore' | translate }}"
+                size="small"
+                severity="secondary"
+                [text]="true"
+                (click)="updateStatus(item, 'ignored')"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ 'todos.reset' | translate }}"
+                size="small"
+                severity="warn"
+                [text]="true"
+                (click)="updateStatus(item, 'pending')"
+              ></button>
+              <button
+                pButton
+                type="button"
+                label="{{ 'common.delete' | translate }}"
+                size="small"
+                severity="danger"
+                [text]="true"
+                (click)="deleteTodo(item)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5"><app-empty-state text="{{ 'todos.noData' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <app-pagination-bar
+      [total]="total()"
+      [page]="queryForm.getRawValue().page"
+      [limit]="queryForm.getRawValue().limit"
+      [loading]="loading()"
+      (pageChange)="changePage($event)"
+      (limitChange)="changeLimit($event)"
+    ></app-pagination-bar>
+  </p-card>
+</section>

@@ -1,0 +1,109 @@
+.knowledge-base-document-chunks-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.page-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.75rem;
+  border-radius: 24px;
+  border: 1px solid var(--surface-border);
+  background: linear-gradient(135deg, var(--surface-card) 0%, rgba(4, 120, 87, 0.12) 100%);
+}
+
+.chunks-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.metric-card,
+.tips-list,
+.tips-list div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.metric-card span,
+.document-meta span,
+.tips-list span {
+  color: var(--text-color-muted);
+}
+
+.metric-card strong {
+  font-size: 1.8rem;
+  color: var(--text-color);
+}
+
+.chunks-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.chunks-main,
+.chunks-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.document-meta,
+.card-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.card-header-row {
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: min(24rem, 100%);
+}
+
+.filter-field label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+.chunk-preview {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 32rem;
+  overflow: auto;
+  padding: 1rem;
+  border-radius: 14px;
+  background: var(--surface-ground);
+  color: var(--text-color);
+}
+
+.detail-empty {
+  margin: 0;
+  color: var(--text-color-muted);
+}
+
+@media (max-width: 768px) {
+  .page-hero,
+  .chunks-grid,
+  .chunks-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .page-hero {
+    flex-direction: column;
+  }
+}

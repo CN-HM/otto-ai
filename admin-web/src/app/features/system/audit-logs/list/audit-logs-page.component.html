@@ -1,0 +1,257 @@
+<section class="audit-logs-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ 'auditLogs.title' | translate }}</h1>
+      <p>{{ 'auditLogs.description' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      label="{{ 'auditLogs.refresh' | translate }}"
+      icon="pi pi-refresh"
+      severity="secondary"
+      size="small"
+      [loading]="loading()"
+      (click)="loadAuditLogs()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="3"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="searchForm"
+    [loading]="loading()"
+    [columns]="3"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keyword">{{ 'auditLogs.keywords' | translate }}</label>
+      <input
+        id="keyword"
+        type="text"
+        pInputText
+        formControlName="keyword"
+        placeholder="{{ 'auditLogs.searchPlaceholder' | translate }}"
+      />
+    </div>
+    <div filterField class="filter-field">
+      <label for="method">{{ 'auditLogs.requestMethod' | translate }}</label>
+      <select id="method" class="native-select" formControlName="method">
+        <option value="">{{ 'auditLogs.all' | translate }}</option>
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="PATCH">PATCH</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+    </div>
+    <div filterField class="filter-field">
+      <label for="result">{{ 'auditLogs.result' | translate }}</label>
+      <select id="result" class="native-select" formControlName="result">
+        <option value="">{{ 'auditLogs.all' | translate }}</option>
+        <option value="success">{{ 'auditLogs.success' | translate }}</option>
+        <option value="error">{{ '异常' | translate }}</option>
+      </select>
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="errorMessage()" [severity]="'error'"></app-feedback-message>
+
+  <p-card header="{{ '审计记录' | translate }}">
+    <p-table
+      [value]="auditLogs()"
+      [loading]="loading()"
+      dataKey="id"
+      [expandedRowKeys]="expandedRows"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th>{{ 'auditLogs.executionTime' | translate }}</th>
+          <th>{{ 'auditLogs.operator' | translate }}</th>
+          <th>{{ 'auditLogs.request' | translate }}</th>
+          <th>{{ 'auditLogs.result' | translate }}</th>
+          <th>{{ 'auditLogs.actionChange' | translate }}</th>
+          <th>{{ 'auditLogs.duration' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-log let-expanded="expanded">
+        <tr>
+          <td>
+            <button
+              type="button"
+              pButton
+              [pRowToggler]="log"
+              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              severity="secondary"
+              [text]="true"
+              size="small"
+            ></button>
+          </td>
+          <td>{{ log.executionTime ? (log.executionTime | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
+          <td>
+            <div class="operator-cell">
+              <strong>{{ log.userName || ('auditLogs.anonymousSystem' | translate) }}</strong>
+              <span>{{ log.operatorId || '-' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="request-cell">
+              <p-tag [value]="log.httpMethod || '-'" [severity]="methodSeverity(log.httpMethod)"></p-tag>
+              <span class="request-url">{{ log.url || '-' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="result-cell">
+              <p-tag [value]="resultLabel(log)" [severity]="resultSeverity(log)"></p-tag>
+              <span>{{ formatValue(log.httpStatusCode) }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="count-cell">
+              <span>{{ 'auditLogs.action' | translate }} {{ log.actionCount ?? 0 }}</span>
+              <span>{{ 'auditLogs.change' | translate }} {{ log.entityChangeCount ?? 0 }}</span>
+            </div>
+          </td>
+          <td>{{ formatValue(log.executionDuration) }} {{ 'auditLogs.ms' | translate }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="rowexpansion" let-log>
+        <tr>
+          <td [attr.colspan]="7">
+            <table class="row-expand-detail">
+              <tr>
+                <th>{{ 'auditLogs.application' | translate }}</th>
+                <td>{{ log.applicationName || '-' }}</td>
+                <th>{{ 'auditLogs.requestTraceId' | translate }}</th>
+                <td>{{ log.correlationId || '-' }}</td>
+                <th>{{ 'auditLogs.clientIp' | translate }}</th>
+                <td>{{ log.clientIpAddress || '-' }}</td>
+              </tr>
+              <tr>
+                <th>{{ 'auditLogs.browser' | translate }}</th>
+                <td>{{ log.browserInfo || '-' }}</td>
+                <th>{{ 'auditLogs.httpStatus' | translate }}</th>
+                <td>{{ formatValue(log.httpStatusCode) }}</td>
+                <th>{{ 'auditLogs.execDuration' | translate }}</th>
+                <td>{{ formatValue(log.executionDuration) }} {{ 'auditLogs.ms' | translate }}</td>
+              </tr>
+              <tr>
+                <th>{{ 'auditLogs.url' | translate }}</th>
+                <td colspan="5">{{ log.url || '-' }}</td>
+              </tr>
+              @if (log.comments) {
+                <tr>
+                  <th>{{ 'auditLogs.remark' | translate }}</th>
+                  <td colspan="5">{{ log.comments }}</td>
+                </tr>
+              }
+              @if (log.exceptions) {
+                <tr class="detail-row-full">
+                  <th>{{ 'auditLogs.exception' | translate }}</th>
+                  <td colspan="5">{{ log.exceptions }}</td>
+                </tr>
+              }
+            </table>
+
+            <div class="detail-sections">
+              <div class="detail-section">
+                <div class="detail-section-header">
+                  <h3>{{ 'auditLogs.actionDetails' | translate }}</h3>
+                  <span>{{ log.actions?.length ?? 0 }} {{ 'auditLogs.count' | translate }}</span>
+                </div>
+                @if (log.actions?.length) {
+                  <div class="detail-chip-list">
+                    @for (
+                      action of log.actions;
+                      track action.serviceName + '-' + action.methodName + '-' + action.executionTime
+                    ) {
+                      <div class="detail-chip-card">
+                        <div class="detail-chip-title">{{ actionLabel(action) }}</div>
+                        <div class="detail-chip-meta">
+                          <span>{{
+                            action.executionTime ? (action.executionTime | date: 'yyyy-MM-dd HH:mm:ss') : '-'
+                          }}</span>
+                          <span>{{ formatValue(action.executionDuration) }} {{ 'auditLogs.ms' | translate }}</span>
+                        </div>
+                        <pre class="detail-code-block">{{ action.parameters || '-' }}</pre>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <app-empty-state text="{{ '当前记录没有动作明细。' | translate }}" variant="detail"></app-empty-state>
+                }
+              </div>
+
+              <div class="detail-section">
+                <div class="detail-section-header">
+                  <h3>{{ 'auditLogs.dataChange' | translate }}</h3>
+                  <span>{{ log.entityChanges?.length ?? 0 }} {{ 'auditLogs.count' | translate }}</span>
+                </div>
+                @if (log.entityChanges?.length) {
+                  <div class="detail-chip-list">
+                    @for (
+                      change of log.entityChanges;
+                      track change.entityTypeFullName + '-' + change.entityId + '-' + change.changeTime
+                    ) {
+                      <div class="detail-chip-card">
+                        <div class="detail-chip-title-row">
+                          <strong>{{ shortEntityName(change.entityTypeFullName) }}</strong>
+                          <p-tag [value]="changeTypeLabel(change)" [severity]="changeTypeSeverity(change)"></p-tag>
+                        </div>
+                        <div class="detail-chip-meta">
+                          <span>ID: {{ change.entityId || '-' }}</span>
+                          <span>{{ change.changeTime ? (change.changeTime | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</span>
+                        </div>
+                        @if (change.propertyChanges?.length) {
+                          <table class="json-kv-table">
+                            @for (
+                              property of change.propertyChanges;
+                              track property.propertyName + '-' + property.originalValue + '-' + property.newValue
+                            ) {
+                              <tr>
+                                <td class="json-key">{{ property.propertyName || '-' }}</td>
+                                <td class="json-val">
+                                  {{ '旧值：' | translate }}{{ formatValue(property.originalValue) }} {{ '新值：' | translate }}{{
+                                    formatValue(property.newValue)
+                                  }}
+                                </td>
+                              </tr>
+                            }
+                          </table>
+                        } @else {
+                          <app-empty-state text="{{ '当前变更没有字段级差异。' | translate }}" variant="detail"></app-empty-state>
+                        }
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <app-empty-state text="{{ '当前记录没有数据变更。' | translate }}" variant="detail"></app-empty-state>
+                }
+              </div>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7"><app-empty-state text="{{ 'auditLogs.noAuditData' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <app-pagination-bar
+      [total]="total()"
+      [page]="page()"
+      [limit]="pageSize()"
+      [loading]="loading()"
+      (pageChange)="onPageChange($event)"
+      (limitChange)="onLimitChange($event)"
+    ></app-pagination-bar>
+  </p-card>
+</section>

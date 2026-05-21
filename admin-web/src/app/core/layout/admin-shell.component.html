@@ -1,0 +1,133 @@
+<div class="shell-layout">
+  @if (sidebarOpen()) {
+    <div class="shell-sidebar-overlay" (click)="closeSidebar()"></div>
+  }
+
+  <aside class="shell-sidebar" [class.is-open]="sidebarOpen()">
+    <div class="shell-brand">
+      <div>
+        <h1>{{ branding.appName }}</h1>
+        <p>{{ branding.shellSubtitle | translate }}</p>
+      </div>
+      <p-tag [value]="branding.shellVersion" severity="contrast"></p-tag>
+    </div>
+
+    <nav class="shell-nav">
+      @for (item of navigationItems(); track item.label) {
+        @if (item.children && item.children.length > 0) {
+          <div class="shell-nav-link shell-nav-parent">
+            @if (item.route) {
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="shell-nav-parent-link"
+                (click)="closeSidebar()"
+              >
+                <i [class]="item.icon"></i>
+                <span>{{ item.label | translate }}</span>
+              </a>
+            } @else {
+              <button
+                type="button"
+                class="shell-nav-parent-link"
+                (click)="toggleGroup(item.label)"
+              >
+                <i [class]="item.icon"></i>
+                <span>{{ item.label | translate }}</span>
+              </button>
+            }
+            <button
+              type="button"
+              class="shell-nav-chevron-btn"
+              (click)="toggleGroup(item.label)"
+            >
+              <i
+                class="pi"
+                [class.pi-chevron-down]="!isGroupCollapsed(item.label)"
+                [class.pi-chevron-right]="isGroupCollapsed(item.label)"
+              ></i>
+            </button>
+          </div>
+          @if (!isGroupCollapsed(item.label)) {
+            <div class="shell-nav-children">
+              @for (child of item.children; track child.route) {
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="is-active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="shell-nav-link shell-nav-child"
+                  (click)="closeSidebar()"
+                >
+                  <i [class]="child.icon"></i>
+                  <span>{{ child.label | translate }}</span>
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="is-active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="shell-nav-link"
+            (click)="closeSidebar()"
+          >
+            <i [class]="item.icon"></i>
+            <span>{{ item.label | translate }}</span>
+          </a>
+        }
+      }
+    </nav>
+  </aside>
+
+  <div class="shell-main">
+    <header class="shell-header">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-bars"
+        class="shell-hamburger"
+        severity="secondary"
+        (click)="toggleSidebar()"
+      ></button>
+      <div class="shell-header-main">
+        <h2>{{ branding.headerTitle | translate }}</h2>
+        <p-tag class="shell-user-tag" [value]="username" icon="pi pi-user" severity="info"></p-tag>
+        <nav class="shell-breadcrumbs" aria-label="Breadcrumb">
+          @for (breadcrumb of breadcrumbs; track breadcrumb.route; let last = $last) {
+            @if (!last) {
+              <a [routerLink]="breadcrumb.route">{{ breadcrumb.label | translate }}</a>
+              <span>/</span>
+            } @else {
+              <strong>{{ breadcrumb.label | translate }}</strong>
+            }
+          }
+        </nav>
+      </div>
+      <div class="shell-header-actions">
+        <app-language-switcher></app-language-switcher>
+        <button
+          pButton
+          type="button"
+          [label]="'common.changePassword' | translate"
+          icon="pi pi-key"
+          severity="secondary"
+          routerLink="/change-password"
+        ></button>
+        <button
+          pButton
+          type="button"
+          [label]="'common.logout' | translate"
+          icon="pi pi-sign-out"
+          severity="secondary"
+          (click)="logout()"
+        ></button>
+      </div>
+    </header>
+
+    <main class="shell-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

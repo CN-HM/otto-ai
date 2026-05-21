@@ -1,0 +1,126 @@
+<section class="billing-orders-page">
+  <div class="page-hero">
+    <div>
+      <h1>{{ '订单管理' | translate }}</h1>
+      <p>{{ '查看订阅升级、加量包订单状态，并支持后台人工确认支付完成激活。' | translate }}</p>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      label="{{ '刷新' | translate }}"
+      severity="secondary"
+      size="small"
+      [loading]="loading()"
+      (click)="loadOrders()"
+    ></button>
+  </app-page-toolbar>
+
+  <app-summary-metric-grid [items]="metricItems()" [columns]="4"></app-summary-metric-grid>
+
+  <app-search-filter-card
+    [formGroup]="searchForm"
+    [loading]="loading()"
+    [columns]="2"
+    (submitted)="search()"
+    (resetTriggered)="reset()"
+  >
+    <div filterField class="filter-field">
+      <label for="keyword">{{ '关键词' | translate }}</label>
+      <input
+        id="keyword"
+        type="text"
+        pInputText
+        formControlName="keyword"
+        placeholder="{{ '订单号 / 手机号 / 用户名 / 外部流水' | translate }}"
+      />
+    </div>
+    <div filterField class="filter-field">
+      <label for="status">{{ '状态' | translate }}</label>
+      <input id="status" type="text" pInputText formControlName="status" placeholder="created / pending / activated" />
+    </div>
+  </app-search-filter-card>
+
+  <app-feedback-message [text]="errorMessage()" severity="warn"></app-feedback-message>
+
+  <p-card header="{{ '订单列表' | translate }}">
+    <p-table [value]="items()" [loading]="loading()" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ '订单号' | translate }}</th>
+          <th>{{ '用户' | translate }}</th>
+          <th>{{ '套餐' | translate }}</th>
+          <th>{{ '类型' | translate }}</th>
+          <th>{{ '金额' | translate }}</th>
+          <th>{{ '额度' | translate }}</th>
+          <th>{{ '渠道' | translate }}</th>
+          <th>{{ '状态' | translate }}</th>
+          <th>{{ '创建时间' | translate }}</th>
+          <th>{{ '操作' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <div class="order-cell">
+              <strong>{{ item.orderNo }}</strong>
+              <span>{{ item.externalTradeNo || '-' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="user-cell">
+              <strong>{{ item.username || '-' }}</strong>
+              <span>{{ item.mobile || '-' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="plan-cell">
+              <strong>{{ item.planName || '-' }}</strong>
+              <span>{{ item.planCode || item.planId }}</span>
+            </div>
+          </td>
+          <td>{{ item.orderType }}</td>
+          <td>{{ item.currencyCode }} {{ item.amount }}</td>
+          <td>{{ item.grantedTokens }}</td>
+          <td>{{ item.providerCode }}</td>
+          <td>
+            <p-tag [value]="statusLabel(item.status)" [severity]="statusSeverity(item.status)"></p-tag>
+          </td>
+          <td>{{ item.createDate || '-' }}</td>
+          <td>
+            <div class="row-actions">
+              <button
+                *appHasPermission="'billing-order:mark-paid'"
+                pButton
+                type="button"
+                label="{{ '确认支付' | translate }}"
+                size="small"
+                severity="success"
+                [disabled]="!canMarkPaid(item) || loading()"
+                (click)="markPaid(item)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="10"><app-empty-state text="{{ '暂无订单数据。' | translate }}"></app-empty-state></td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <app-pagination-bar
+      [total]="total()"
+      [page]="page()"
+      [limit]="pageSize()"
+      [loading]="loading()"
+      (pageChange)="onPageChange($event)"
+      (limitChange)="onLimitChange($event)"
+    >
+    </app-pagination-bar>
+  </p-card>
+</section>

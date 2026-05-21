@@ -1,0 +1,25 @@
+@import '../../../shared/styles/list-page.shared.css';
+
+.billing-usage-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.page-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.user-cell,
+.usage-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.user-cell span,
+.usage-cell span {
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+}

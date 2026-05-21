@@ -1,0 +1,82 @@
+<section class="mcp-tool-form-page">
+  <div class="page-header">
+    <h1>{{ pageTitle }}</h1>
+    <a pButton routerLink="/mcp-tools" label="返回列表" icon="pi pi-arrow-left" [text]="true"></a>
+  </div>
+
+  <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+
+  @if (isSystemTool()) {
+    <p-card>
+      <strong>系统 MCP 工具</strong>
+      <p class="field-hint">
+        该工具由系统内置维护，可以编辑名称、描述、参数模板、状态和排序，但不能修改编码、分类或删除。
+      </p>
+    </p-card>
+  }
+
+  <p-card *ngIf="!loading()">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="code">工具编码 <span class="required">*</span></label>
+          <input pInputText id="code" formControlName="code" placeholder="如：weather" style="width: 100%" />
+          <small class="field-hint">唯一标识符，用于系统内部识别该工具</small>
+        </div>
+
+        <div class="form-field">
+          <label for="name">工具名称 <span class="required">*</span></label>
+          <input pInputText id="name" formControlName="name" placeholder="如：天气查询" style="width: 100%" />
+        </div>
+
+        <div class="form-field full-width">
+          <label for="description">功能描述</label>
+          <textarea
+            pInputTextarea
+            id="description"
+            formControlName="description"
+            rows="3"
+            placeholder="简要描述该工具的功能和使用场景"
+            style="width: 100%"
+          ></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="category">分类</label>
+          <input pInputText id="category" formControlName="category" placeholder="如：weather" style="width: 100%" />
+          <small class="field-hint">可用于分组管理，如 weather、search、calculator</small>
+        </div>
+
+        <div class="form-field full-width">
+          <label for="paramSchema">参数模板 (JSON)</label>
+          <app-json-editor formControlName="paramSchema" [minHeight]="260"></app-json-editor>
+          <small class="field-hint">JSON Schema 格式，定义工具调用时的参数结构和验证规则</small>
+        </div>
+
+        <div class="form-field form-field-switch">
+          <label for="statusToggle">状态 <span class="required">*</span></label>
+          <div class="toggle-status-row">
+            <p-toggleswitch
+              inputId="statusToggle"
+              [ngModel]="isStatusActive()"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="setStatusByToggle(!!$event)"
+            ></p-toggleswitch>
+            <small class="field-hint">{{ isStatusActive() ? '启用' : '停用' }}</small>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="sort">排序权重</label>
+          <p-inputNumber id="sort" formControlName="sort" styleClass="w-full" [min]="0"></p-inputNumber>
+          <small class="field-hint">数字越小排序越靠前</small>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <p-button type="submit" label="保存" icon="pi pi-save" severity="primary" [loading]="saving()"></p-button>
+        <a pButton routerLink="/mcp-tools" label="取消" icon="pi pi-times" [text]="true" type="button"></a>
+      </div>
+    </form>
+  </p-card>
+</section>

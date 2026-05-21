@@ -1,0 +1,147 @@
+@import './form-page.shared.css';
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metric-card span {
+  color: var(--text-color-muted);
+}
+
+.metric-card strong {
+  font-size: 1.8rem;
+  color: var(--text-color);
+}
+
+.filter-form {
+  display: grid;
+  gap: 1rem;
+  align-items: end;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-field label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+.filter-actions,
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.page-hero + app-page-toolbar {
+  margin-top: 0;
+}
+
+.detail-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+}
+
+.detail-list dt {
+  color: var(--text-color-muted);
+  font-size: 0.9rem;
+}
+
+.detail-list dd {
+  margin: 0.35rem 0 0;
+  color: var(--text-color);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.detail-empty {
+  margin: 0;
+  color: var(--text-color-muted);
+}
+
+/* ── Inline detail table inside row expansion ── */
+.row-expand-detail {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0.5rem 0;
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.row-expand-detail th,
+.row-expand-detail td {
+  padding: 0.55rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.row-expand-detail tr:last-child th,
+.row-expand-detail tr:last-child td {
+  border-bottom: none;
+}
+
+.row-expand-detail th {
+  color: var(--text-color-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  width: 110px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.row-expand-detail td {
+  color: var(--text-color);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.row-expand-detail .detail-row-full td {
+  color: var(--text-color-secondary);
+  font-weight: 400;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* ── JSON key-value table inside row expansion ── */
+.json-kv-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.82rem;
+}
+
+.json-kv-table tr:not(:last-child) td {
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.json-kv-table .json-key {
+  padding: 0.4rem 0.75rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  white-space: nowrap;
+  width: 160px;
+  background: rgba(255, 255, 255, 0.02);
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+}
+
+.json-kv-table .json-val {
+  padding: 0.4rem 0.75rem;
+  color: var(--text-color);
+  word-break: break-word;
+  white-space: pre-wrap;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+}

@@ -1,0 +1,194 @@
+<section class="device-detail-page">
+  <div class="page-hero">
+    <div>
+      <p class="page-label">{{ '设备详情' | translate }}</p>
+      <h1>{{ '设备' | translate }} {{ deviceId() || '-' }}</h1>
+    </div>
+  </div>
+
+  <app-page-toolbar>
+    <a pButton routerLink="/devices" icon="pi pi-arrow-left" severity="secondary" size="small">{{ '返回' | translate }}</a>
+    @if (activeTab() === 'tools') {
+      <button
+        pButton
+        type="button"
+        label="{{ '刷新工具列表' | translate }}"
+        icon="pi pi-refresh"
+        severity="secondary"
+        size="small"
+        [loading]="toolsLoading()"
+        (click)="loadTools()"
+      ></button>
+    }
+  </app-page-toolbar>
+
+  <div class="detail-toolbar">
+    <div class="detail-tabs">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.is-active]="activeTab() === 'basic'"
+        (click)="activeTab.set('basic')"
+      >
+        {{ '基础信息' | translate }}
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.is-active]="activeTab() === 'update'"
+        (click)="activeTab.set('update')"
+      >
+        {{ '更新设备' | translate }}
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.is-active]="activeTab() === 'tools'"
+        (click)="activeTab.set('tools'); loadTools()"
+      >
+        {{ '设备工具' | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (feedbackMessage()) {
+    <app-feedback-message [text]="feedbackMessage()"></app-feedback-message>
+  }
+
+  @if (activeTab() === 'basic') {
+    <p-card header="{{ '基础信息' | translate }}">
+      <dl class="detail-list">
+        <div>
+          <dt>{{ '设备 ID' | translate }}</dt>
+          <dd>{{ snapshot()?.id || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'MAC 地址' | translate }}</dt>
+          <dd>{{ snapshot()?.macAddress || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ '绑定用户' | translate }}</dt>
+          <dd>{{ snapshot()?.bindUserName || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ '设备型号' | translate }}</dt>
+          <dd>{{ snapshot()?.deviceType || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ '固件版本' | translate }}</dt>
+          <dd>{{ snapshot()?.appVersion || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ '最近会话时间' | translate }}</dt>
+          <dd>{{ snapshot()?.recentChatTime || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ '绑定智能体角色' | translate }}</dt>
+          <dd>{{ snapshot()?.agentRoleName || snapshot()?.agentRoleId || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ '智能体角色版本' | translate }}</dt>
+          <dd>{{ snapshot()?.agentRoleVersion || snapshot()?.agentRoleReleaseId || '-' }}</dd>
+        </div>
+        <div>
+          <dt>{{ '在线状态' | translate }}</dt>
+          <dd>{{ snapshot()?.isOnline ? ('在线' | translate) : ('离线' | translate) }}</dd>
+        </div>
+      </dl>
+    </p-card>
+  }
+
+  @if (activeTab() === 'update') {
+    <p-card header="{{ '更新设备信息' | translate }}">
+      <form class="detail-form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field-group">
+          <label for="alias">{{ '设备别名' | translate }}</label>
+          <input id="alias" type="text" pInputText formControlName="alias" placeholder="{{ '请输入设备别名' | translate }}" />
+        </div>
+
+        <div class="field-group">
+          <label for="autoUpdate">{{ '自动更新' | translate }}</label>
+          <select id="autoUpdate" class="native-select" formControlName="autoUpdate">
+            <option [ngValue]="1">{{ '开启' | translate }}</option>
+            <option [ngValue]="0">{{ '关闭' | translate }}</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="agentRoleId">{{ '智能体角色' | translate }}</label>
+          <select id="agentRoleId" class="native-select" formControlName="agentRoleId" (change)="onAgentRoleChange()">
+            <option value="">{{ '不绑定智能体角色' | translate }}</option>
+            @for (item of agentRoleOptions(); track item.value) {
+              <option [value]="item.value">{{ item.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="agentRoleReleaseId">{{ '智能体角色发布版本' | translate }}</label>
+          <select
+            id="agentRoleReleaseId"
+            class="native-select"
+            formControlName="agentRoleReleaseId"
+            [disabled]="!form.controls.agentRoleId.value"
+          >
+            <option value="">{{ '跟随当前激活版本' | translate }}</option>
+            @for (item of agentRoleReleaseOptions(); track item.value) {
+              <option [value]="item.value">{{ item.label }}</option>
+            }
+          </select>
+        </div>
+
+        <button pButton type="submit" label="{{ '保存更新' | translate }}" icon="pi pi-save" [loading]="submitting()"></button>
+      </form>
+    </p-card>
+  }
+
+  @if (activeTab() === 'tools') {
+    <p-card header="{{ '设备工具' | translate }}">
+      @if (tools().length > 0) {
+        <p-table [value]="tools()" [loading]="toolsLoading()" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>{{ '工具名称' | translate }}</th>
+              <th>{{ '描述' | translate }}</th>
+              <th>{{ '操作' | translate }}</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-tool>
+            <tr>
+              <td>{{ tool['name'] || tool['toolName'] || '-' }}</td>
+              <td>{{ tool['description'] || tool['desc'] || '-' }}</td>
+              <td>
+                <button
+                  pButton
+                  type="button"
+                  label="{{ '调用' | translate }}"
+                  icon="pi pi-play"
+                  severity="info"
+                  size="small"
+                  [loading]="toolCalling()"
+                  (click)="callTool(tool)"
+                ></button>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3">{{ '暂无工具数据。' | translate }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      } @else if (!toolsLoading()) {
+        <p class="tools-empty">{{ '暂无可用工具，请点击“刷新工具列表”重试。' | translate }}</p>
+      }
+
+      @if (toolCallResult()) {
+        <div class="tool-result">
+          <label>{{ '调用结果' | translate }}</label>
+          <pre>{{ toolCallResult() }}</pre>
+        </div>
+      }
+    </p-card>
+  }
+</section>
