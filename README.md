@@ -1,6 +1,6 @@
-# AI Admin
+# otto ai
 
-> AI Admin 设备管理后台 —— 集设备配网、智能体编排、知识库、语音对话运行时于一体
+> otto ai 设备管理后台 —— 集设备配网、智能体编排、知识库、语音对话运行时于一体
 
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular)](https://angular.dev/)
@@ -13,7 +13,7 @@
 ## 📦 项目组成
 
 ```text
-ai-admin/
+otto-ai/
 ├── admin-api/          🟣 .NET 10 + ABP vNext 后端 API
 ├── admin-web/          🟠 Angular 18 管理后台前端
 ├── apps/               🔵 Flutter 移动端（Android / iOS / Web）

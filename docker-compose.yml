@@ -1,18 +1,18 @@
 services:
   redis:
     image: redis:7-alpine
-    container_name: ai-redis
+    container_name: otto-redis
     ports:
       - "6379:6379"
     restart: unless-stopped
     networks:
-      - ai-net
+      - otto-net
 
   admin-api:
     build:
       context: ./admin-api
       dockerfile: Dockerfile
-    container_name: ai-api
+    container_name: otto-api
     ports:
       - "8080:8080"
       - "1883:1883"
@@ -23,7 +23,7 @@ services:
       - IoTRuntime__Enabled=true
       - IoTRuntime__EnableMqtt=true
       - IoTRuntime__EnableUdp=true
-      - IoTRuntime__NodeId=ai-api
+      - IoTRuntime__NodeId=otto-api
       - IoTRuntime__MqttPort=1883
       - IoTRuntime__UdpPort=8884
       - IoTRuntime__LocalSpeechIdleTimeoutMs=${IOT_LOCAL_SPEECH_IDLE_TIMEOUT_MS:-900}
@@ -37,24 +37,24 @@ services:
       - redis
     restart: unless-stopped
     networks:
-      - ai-net
+      - otto-net
 
   admin-web:
     build:
       context: ./admin-web
       dockerfile: Dockerfile
-    container_name: ai-web
+    container_name: otto-web
     ports:
       - "80:80"
     depends_on:
       - admin-api
     restart: unless-stopped
     networks:
-      - ai-net
+      - otto-net
 
 volumes:
   api-uploads:
 
 networks:
-  ai-net:
+  otto-net:
     driver: bridge

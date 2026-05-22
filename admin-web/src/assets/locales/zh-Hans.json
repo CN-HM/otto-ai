@@ -1,6 +1,6 @@
 {
   "common": {
-    "welcome": "欢迎使用 AI",
+    "welcome": "欢迎使用 otto ai",
     "login": "登录",
     "save": "保存",
     "cancel": "取消",
@@ -235,16 +235,16 @@
     "noOtaData": "暂无固件升级数据。"
   },
   "branding": {
-    "shellSubtitle": "可复用的 AI 管控平台基线版本",
+    "shellSubtitle": "可复用的 otto ai 管控平台基线版本",
     "headerTitle": "后台管理基线",
-    "headerDescription": "AI 设备、智能体、知识库与计费能力的可扩展管理基线",
+    "headerDescription": "otto ai 设备、智能体、知识库与计费能力的可扩展管理基线",
     "loginTitle": "欢迎回来，进入您的基线管理台",
     "loginDescription": "使用统一基线管理台登录并管理设备、智能体、知识库与平台配置。",
-    "registerTitle": "欢迎使用 AI",
+    "registerTitle": "欢迎使用 otto ai",
     "registerDescription": "注册后即可在基线管理台中开展后续定制化开发与平台管理。",
     "retrievePasswordTitle": "重置您的登录密码",
     "retrievePasswordDescription": "通过手机短信验证码快速重置密码，恢复账号访问权限。",
-    "dashboardTitle": "AI 控制台",
+    "dashboardTitle": "otto ai 控制台",
     "dashboardDescription": "实时掌握设备、智能体、知识库、模型与运行时服务的状态。"
   },
   "auth": {

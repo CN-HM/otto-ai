@@ -1,7 +1,7 @@
 {
   "culture": "fi",
   "texts": {
-    "AppName": "AI",
+    "AppName": "otto ai",
     "Welcome_Title": "Tervetuloa",
     "Welcome_Text": "Tämä on minimalistinen yksikerroksinen sovelluksen käynnistysmalli ABP Frameworkille.",
     "Menu:Home": "Koti"

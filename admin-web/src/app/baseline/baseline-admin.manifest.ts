@@ -16,18 +16,18 @@ import { usersFeature } from './features/users.feature';
 import { voicesFeature } from './features/voices.feature';
 
 const baselineBranding = {
-  appName: 'AI',
+  appName: 'otto ai',
   shellSubtitle: 'branding.shellSubtitle',
   shellVersion: '1.0',
   headerTitle: 'branding.headerTitle',
   headerDescription: 'branding.headerDescription',
-  loginBadge: 'AI',
+  loginBadge: 'otto ai',
   loginTitle: 'branding.loginTitle',
   loginDescription: 'branding.loginDescription',
-  registerBadge: 'AI',
+  registerBadge: 'otto ai',
   registerTitle: 'branding.registerTitle',
   registerDescription: 'branding.registerDescription',
-  retrievePasswordBadge: 'AI',
+  retrievePasswordBadge: 'otto ai',
   retrievePasswordTitle: 'branding.retrievePasswordTitle',
   retrievePasswordDescription: 'branding.retrievePasswordDescription',
   dashboardTag: 'Dashboard',
@@ -36,7 +36,7 @@ const baselineBranding = {
 };
 
 export const baselineAdminManifest: AdminAppManifest = composeAdminManifest({
-  appId: 'ai_admin',
+  appId: 'otto_ai',
   branding: baselineBranding,
   features: [
     authFeature,

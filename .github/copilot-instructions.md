@@ -1,8 +1,8 @@
-# Project Guidelines — AI Admin Platform
+# Project Guidelines — otto ai Platform
 
 ## 项目概述
 
-AI Admin Platform 是一个 AI 设备管理后台，包含以下子项目：
+otto ai Platform 是一个 otto ai 设备管理后台，包含以下子项目：
 
 | 目录 | 技术栈 | 说明 |
 |------|--------|------|

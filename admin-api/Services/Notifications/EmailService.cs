@@ -24,7 +24,7 @@ public class EmailService : ITransientDependency
         var username = _config["Email:Smtp:Username"] ?? throw new InvalidOperationException("SMTP username not configured");
         var password = _config["Email:Smtp:Password"] ?? throw new InvalidOperationException("SMTP password not configured");
         var from = _config["Email:Smtp:From"] ?? username;
-        var fromName = _config["Email:Smtp:FromName"] ?? "AI Admin";
+        var fromName = _config["Email:Smtp:FromName"] ?? "otto ai";
 
         using var client = new SmtpClient(host, port)
         {

@@ -1,4 +1,4 @@
-# AI Platform — 管理后台 API
+# otto ai Platform — 管理后台 API
 
 ## 技术栈
 

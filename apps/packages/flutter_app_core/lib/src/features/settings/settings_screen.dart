@@ -505,7 +505,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 12),
-            Text('AI'),
+            Text('otto ai'),
             SizedBox(height: 4),
             Text('版本 1.0.0'),
           ],

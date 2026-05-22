@@ -1,6 +1,6 @@
-# AI Admin Web
+# otto ai Web
 
-`admin-web` 是当前仓库中的 Angular 18 管理端，负责 AI 设备、智能体、模型、知识库、音色、计费和系统配置等后台运营能力。
+`admin-web` 是当前仓库中的 Angular 18 管理端，负责 otto ai 设备、智能体、模型、知识库、音色、计费和系统配置等后台运营能力。
 
 ## 当前定位
 
@@ -151,13 +151,13 @@ npm run build
 构建产物默认输出到：
 
 ```text
-dist/AI-admin-web/browser
+dist/otto-ai-web/browser
 ```
 
 ### Docker 镜像构建
 
 ```bash
-docker build -t AI-admin-web:latest .
+docker build -t otto-ai-web:latest .
 ```
 
 ### Nginx 反向代理

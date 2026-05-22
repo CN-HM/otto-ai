@@ -2,12 +2,12 @@
 
 `apps/` 是当前仓库的 Flutter 工作区，而不是单个应用根目录。
 
-工作区由 `melos` 管理，当前真实可运行的 AI Admin App 壳工程是 `ai_admin_app/`。
+工作区由 `melos` 管理，当前真实可运行的 otto ai App 壳工程是 `ai_admin_app/`。
 
 ## 目录结构
 
 - `ai_admin_app/`
-  - 当前落地的 AI Admin Flutter App 壳工程
+  - 当前落地的 otto ai Flutter App 壳工程
   - 只保留入口、品牌配置和平台目录
 - `packages/flutter_app_core/`
   - 共享业务层与 UI 层

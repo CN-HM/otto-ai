@@ -12,9 +12,9 @@ const _baselineAppConfig = AiAppConfig(
   logFilePrefix: 'ai-admin-app',
   tokenStorageKey: 'ai_admin_app.auth_token',
   branding: AppBranding(
-    appTitle: 'AI',
-    heroTitle: 'AI',
-    heroSubtitle: 'AI 移动端',
+    appTitle: 'otto ai',
+    heroTitle: 'otto ai',
+    heroSubtitle: 'otto ai 移动端',
     loginDescription: '请输入账号信息完成身份验证',
     registerDescription: '填写用户名、密码并用短信验证码完成注册',
   ),

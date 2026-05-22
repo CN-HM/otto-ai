@@ -1,7 +1,7 @@
 {
   "culture": "hu",
   "texts": {
-    "AppName": "AI",
+    "AppName": "otto ai",
     "Welcome_Title": "Üdvözöljük",
     "Welcome_Text": "Ez egy minimalista, egyrétegű alkalmazásindítási sablon az ABP-keretrendszerhez.",
     "Menu:Home": "Kezdőlap"

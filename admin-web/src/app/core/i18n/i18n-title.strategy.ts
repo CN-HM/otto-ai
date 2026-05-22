@@ -22,6 +22,6 @@ export class I18nTitleStrategy extends TitleStrategy {
   }
 
   private applyTitle(rawTitle?: string): void {
-    this.title.setTitle(rawTitle ? this.i18n.translate(rawTitle) : 'AI');
+    this.title.setTitle(rawTitle ? this.i18n.translate(rawTitle) : 'otto ai');
   }
 }
