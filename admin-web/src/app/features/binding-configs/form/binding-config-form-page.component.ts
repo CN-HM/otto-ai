@@ -3,7 +3,7 @@ import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -26,6 +26,7 @@ import {
   resolveProviderScope
 } from '../shared/binding-config.models';
 import { BindingConfigService } from '../shared/binding-config.service';
+import { CommonService } from '../../../core/http/common.service';
 
 type PipelineStageEnabled = Record<PipelineStageKind, boolean>;
 
@@ -77,7 +78,11 @@ function createDefaultPipelineStageEnabled(): PipelineStageEnabled {
         @if (meta()?.supportsCode) {
           <div class="field-group">
             <label for="code">编码</label>
-            <input id="code" pInputText formControlName="code" />
+            <div class="code-input-row">
+              <input id="code" pInputText formControlName="code" />
+              <button pButton type="button" icon="pi pi-refresh" severity="secondary" [text]="true"
+                title="重新生成编码" (click)="regenerateCode()"></button>
+            </div>
           </div>
         }
         <div class="field-group">
@@ -474,6 +479,7 @@ export class BindingConfigFormPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly bindingConfigService = inject(BindingConfigService);
+  private readonly commonService = inject(CommonService);
 
   readonly submitting = signal(false);
   readonly loading = signal(false);
@@ -608,6 +614,10 @@ export class BindingConfigFormPageComponent implements OnInit {
             },
             { emitEvent: false }
           );
+        }
+
+        if (!this.isEdit() && meta.supportsCode) {
+          this.generateCode();
         }
 
         if (this.showPipelineStagePanel()) {
@@ -750,6 +760,27 @@ export class BindingConfigFormPageComponent implements OnInit {
         this.integrationOptions.set([]);
       }
     });
+  }
+
+  private readonly codePrefixByKind: Record<string, string> = {
+    integration: 'int',
+    pipeline: 'pipe'
+  };
+
+  private async generateCode(): Promise<void> {
+    const prefix = this.codePrefixByKind[this.kind()] || this.kind();
+    try {
+      const res = await firstValueFrom(this.commonService.generateCode(prefix));
+      if (res.code === 0 && res.data?.code) {
+        this.form.controls.code.setValue(res.data.code, { emitEvent: false });
+      }
+    } catch {
+      // leave code empty if generation fails
+    }
+  }
+
+  async regenerateCode(): Promise<void> {
+    await this.generateCode();
   }
 
   submit(): void {

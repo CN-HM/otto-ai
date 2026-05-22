@@ -51,6 +51,16 @@
   margin-top: 0.25rem;
 }
 
+.code-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.code-input-row input {
+  flex: 1;
+}
+
 .toggle-status-row {
   display: inline-flex;
   align-items: center;

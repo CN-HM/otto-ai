@@ -11,6 +11,7 @@ import { CardModule } from 'primeng/card';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { McpToolService } from '../shared/mcp-tool.service';
 import { McpToolItem, McpToolPayload } from '../shared/mcp-tool.models';
+import { CommonService } from '../../../core/http/common.service';
 import { FeedbackMessageComponent } from '../../../shared/components/feedback-message.component';
 import { JsonEditorComponent } from '../../../shared/components/json-editor.component';
 
@@ -49,7 +50,8 @@ export class McpToolFormPageComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private mcpToolService: McpToolService
+    private mcpToolService: McpToolService,
+    private commonService: CommonService
   ) {
     this.form = this.fb.group({
       code: ['', [Validators.required, Validators.maxLength(50)]],
@@ -70,7 +72,24 @@ export class McpToolFormPageComponent implements OnInit {
       this.isEdit.set(true);
       this.toolId.set(id);
       this.loadTool(id);
+    } else {
+      this.generateCode();
     }
+  }
+
+  private async generateCode(): Promise<void> {
+    try {
+      const res = await firstValueFrom(this.commonService.generateCode('tool'));
+      if (res.code === 0 && res.data?.code) {
+        this.form.controls['code'].setValue(res.data.code, { emitEvent: false });
+      }
+    } catch {
+      // leave code empty if generation fails
+    }
+  }
+
+  async regenerateCode(): Promise<void> {
+    await this.generateCode();
   }
 
   private async loadCategories(): Promise<void> {

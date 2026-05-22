@@ -12,6 +12,16 @@
   gap: 1rem;
 }
 
+.code-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.code-input-row input {
+  flex: 1;
+}
+
 .field-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));

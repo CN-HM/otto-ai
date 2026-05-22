@@ -32,6 +32,7 @@ import {
   AgentRolePluginMappingItem
 } from '../shared/agent-role.models';
 import { AgentRoleService } from '../shared/agent-role.service';
+import { CommonService } from '../../../core/http/common.service';
 import { PageToolbarComponent } from '../../../shared/components/page-toolbar.component';
 import { ActionRulesComponent } from '../action-rules/action-rules.component';
 
@@ -92,6 +93,7 @@ export class AgentRoleFormPageComponent implements OnInit {
   private readonly voiceService = inject(VoiceService);
   private readonly knowledgeBaseService = inject(KnowledgeBaseService);
   private readonly mcpToolService = inject(McpToolService);
+  private readonly commonService = inject(CommonService);
   private readonly i18n = inject(I18nService);
 
   readonly roleId = signal('');
@@ -215,7 +217,23 @@ export class AgentRoleFormPageComponent implements OnInit {
       this.loadDetail(roleId);
     } else {
       this.applyPromptTemplate();
+      this.generateCode();
     }
+  }
+
+  private async generateCode(): Promise<void> {
+    try {
+      const res = await firstValueFrom(this.commonService.generateCode('agent'));
+      if (res.code === 0 && res.data?.code) {
+        this.form.controls.code.setValue(res.data.code, { emitEvent: false });
+      }
+    } catch {
+      // leave code empty if generation fails
+    }
+  }
+
+  async regenerateCode(): Promise<void> {
+    await this.generateCode();
   }
 
   goToStep(index: number): void {

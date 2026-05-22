@@ -27,16 +27,28 @@
         <div class="field-grid">
           <div class="field-group">
             <label for="code">{{ '记忆库编码' | translate }} <span class="required">*</span></label>
-            <input
-              id="code"
-              type="text"
-              pInputText
-              formControlName="code"
-              placeholder="{{ '请输入唯一编码' | translate }}"
-              [readonly]="!!libraryId()"
-            />
             @if (libraryId()) {
+              <input
+                id="code"
+                type="text"
+                pInputText
+                formControlName="code"
+                placeholder="{{ '请输入唯一编码' | translate }}"
+                [readonly]="true"
+              />
               <span class="field-help">{{ '编码创建后不可修改。' | translate }}</span>
+            } @else {
+              <div class="code-input-row">
+                <input
+                  id="code"
+                  type="text"
+                  pInputText
+                  formControlName="code"
+                  placeholder="{{ '请输入唯一编码' | translate }}"
+                />
+                <button pButton type="button" icon="pi pi-refresh" severity="secondary" [text]="true"
+                  title="重新生成编码" (click)="regenerateCode()"></button>
+              </div>
             }
           </div>
           <div class="field-group">

@@ -31,6 +31,16 @@
   grid-column: span 2;
 }
 
+.code-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.code-input-row input {
+  flex: 1;
+}
+
 .form-field label {
   font-weight: 500;
   font-size: 0.875rem;

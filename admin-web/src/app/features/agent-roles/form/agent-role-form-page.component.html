@@ -37,8 +37,12 @@
           <p class="step-desc">{{ 'agentRoles.form.basicDescription' | translate }}</p>
           <div class="field-grid">
             <div class="field-group">
-              <label for="code">{{ 'agentRoles.form.code' | translate }} <span class="required">*</span></label
-              ><input id="code" type="text" pInputText formControlName="code" placeholder="{{ 'agentRoles.form.codePlaceholder' | translate }}" />
+              <label for="code">{{ 'agentRoles.form.code' | translate }} <span class="required">*</span></label>
+              <div class="code-input-row">
+                <input id="code" type="text" pInputText formControlName="code" placeholder="{{ 'agentRoles.form.codePlaceholder' | translate }}" />
+                <button pButton type="button" icon="pi pi-refresh" severity="secondary" [text]="true"
+                  title="重新生成编码" (click)="regenerateCode()"></button>
+              </div>
             </div>
             <div class="field-group">
               <label for="name">{{ 'agentRoles.form.name' | translate }} <span class="required">*</span></label

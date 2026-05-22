@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -22,6 +22,7 @@ import { MemoryLibraryService } from '../shared/memory-library.service';
 import { PageToolbarComponent } from '../../../shared/components/page-toolbar.component';
 import { BindingConfigItem } from '../../binding-configs/shared/binding-config.models';
 import { BindingConfigService } from '../../binding-configs/shared/binding-config.service';
+import { CommonService } from '../../../core/http/common.service';
 
 @Component({
   selector: 'app-memory-library-form-page',
@@ -47,6 +48,7 @@ export class MemoryLibraryFormPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly memoryLibraryService = inject(MemoryLibraryService);
   private readonly bindingConfigService = inject(BindingConfigService);
+  private readonly commonService = inject(CommonService);
   private readonly i18n = inject(I18nService);
 
   readonly libraryId = signal('');
@@ -84,7 +86,24 @@ export class MemoryLibraryFormPageComponent implements OnInit {
     if (libraryId) {
       this.libraryId.set(libraryId);
       this.loadDetail(libraryId);
+    } else {
+      this.generateCode();
     }
+  }
+
+  private async generateCode(): Promise<void> {
+    try {
+      const res = await firstValueFrom(this.commonService.generateCode('mem'));
+      if (res.code === 0 && res.data?.code) {
+        this.form.controls.code.setValue(res.data.code, { emitEvent: false });
+      }
+    } catch {
+      // leave code empty if generation fails
+    }
+  }
+
+  async regenerateCode(): Promise<void> {
+    await this.generateCode();
   }
 
   loadMemoryModelOptions(): void {

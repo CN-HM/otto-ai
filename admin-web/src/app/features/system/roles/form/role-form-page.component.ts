@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -13,6 +13,7 @@ import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { FeedbackMessageComponent } from '../../../../shared/components/feedback-message.component';
 import { FormDetailLayoutComponent } from '../../../../shared/components/form-detail-layout.component';
 import { RoleService } from '../shared/role.service';
+import { CommonService } from '../../../../core/http/common.service';
 import { PageToolbarComponent } from '../../../../shared/components/page-toolbar.component';
 
 @Component({
@@ -38,6 +39,7 @@ export class RoleFormPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly roleService = inject(RoleService);
+  private readonly commonService = inject(CommonService);
   private readonly i18n = inject(I18nService);
 
   readonly roleId = signal(0);
@@ -68,7 +70,24 @@ export class RoleFormPageComponent implements OnInit {
       this.roleId.set(Number(id));
       this.isEdit.set(true);
       this.loadDetail(Number(id));
+    } else {
+      this.generateCode();
     }
+  }
+
+  private async generateCode(): Promise<void> {
+    try {
+      const res = await firstValueFrom(this.commonService.generateCode('role'));
+      if (res.code === 0 && res.data?.code) {
+        this.form.controls.code.setValue(res.data.code, { emitEvent: false });
+      }
+    } catch {
+      // leave code empty if generation fails
+    }
+  }
+
+  async regenerateCode(): Promise<void> {
+    await this.generateCode();
   }
 
   loadDetail(id: number): void {

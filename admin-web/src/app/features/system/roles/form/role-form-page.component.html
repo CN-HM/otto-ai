@@ -27,8 +27,12 @@
         <label for="name">{{ '角色名称' | translate }}</label><input id="name" type="text" pInputText formControlName="name" />
       </div>
       <div class="field-group">
-        <label for="code">{{ '角色编码' | translate }}</label
-        ><input id="code" type="text" pInputText formControlName="code" placeholder="{{ '如 admin, user, editor' | translate }}" />
+        <label for="code">{{ '角色编码' | translate }}</label>
+        <div class="code-input-row">
+          <input id="code" type="text" pInputText formControlName="code" placeholder="{{ '如 admin, user, editor' | translate }}" />
+          <button pButton type="button" icon="pi pi-refresh" severity="secondary" [text]="true"
+            title="重新生成编码" (click)="regenerateCode()"></button>
+        </div>
       </div>
       <div class="field-group">
         <label for="status">{{ '状态' | translate }}</label>

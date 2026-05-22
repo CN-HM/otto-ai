@@ -20,7 +20,11 @@
       <div class="form-grid">
         <div class="form-field">
           <label for="code">工具编码 <span class="required">*</span></label>
-          <input pInputText id="code" formControlName="code" placeholder="如：weather" style="width: 100%" />
+          <div class="code-input-row">
+            <input pInputText id="code" formControlName="code" placeholder="如：weather" style="width: 100%" />
+            <button pButton type="button" icon="pi pi-refresh" severity="secondary" [text]="true"
+              title="重新生成编码" (click)="regenerateCode()"></button>
+          </div>
           <small class="field-hint">唯一标识符，用于系统内部识别该工具</small>
         </div>
 
