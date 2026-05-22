@@ -5,13 +5,15 @@ namespace AiAdmin.Data;
 
 public partial class AiAdminDataSeeder
 {
-    private const string DoubaoDefaultProviderIntegrationId = "INTEGRATION_DoubaoDefault";
-    private const string AliyunDefaultProviderIntegrationId = "INTEGRATION_AliyunDefault";
+    private const string ArkDefaultProviderIntegrationId = "INTEGRATION_ArkDefault";
+    private const string DoubaoSpeechDefaultProviderIntegrationId = "INTEGRATION_DoubaoSpeechDefault";
+    private const string DashScopeDefaultProviderIntegrationId = "INTEGRATION_DashScopeDefault";
 
     private static readonly string[] BuiltInProviderIntegrationIds =
     [
-        DoubaoDefaultProviderIntegrationId,
-        AliyunDefaultProviderIntegrationId
+        ArkDefaultProviderIntegrationId,
+        DoubaoSpeechDefaultProviderIntegrationId,
+        DashScopeDefaultProviderIntegrationId
     ];
 
     private async Task SeedProviderIntegrations()
@@ -21,31 +23,55 @@ public partial class AiAdminDataSeeder
         {
             new()
             {
-                Id = DoubaoDefaultProviderIntegrationId,
-                Code = "DoubaoDefault",
-                Name = "豆包默认集成",
-                Description = "供 ASR / LLM / TTS / Embedding 共用的豆包云平台接入凭据。",
-                ProviderCode = "doubao",
+                Id = ArkDefaultProviderIntegrationId,
+                Code = "ArkDefault",
+                Name = "火山方舟",
+                Description = "火山引擎豆包大模型平台，支持 ASR / LLM / TTS / Embedding 全栈能力。",
+                ProviderType = ProviderType.Ark,
                 Status = "active",
                 IsEnabled = true,
                 IsDefault = true,
-                VoiceCatalogEndpoint = "https://open.volcengineapi.com/",
+                SupportsAsr = true,
+                SupportsTts = true,
+                SupportsLlm = true,
+                SupportsMem = true,
                 Sort = 1,
                 CreatedAt = now,
                 UpdatedAt = now
             },
             new()
             {
-                Id = AliyunDefaultProviderIntegrationId,
-                Code = "AliyunDefault",
-                Name = "阿里云默认集成",
-                Description = "供 ASR / LLM / TTS / Embedding 共用的阿里云接入凭据。",
-                ProviderCode = "aliyun",
+                Id = DoubaoSpeechDefaultProviderIntegrationId,
+                Code = "DoubaoSpeechDefault",
+                Name = "豆包语音",
+                Description = "火山引擎豆包语音平台，专注于 ASR 语音识别与 TTS 语音合成。",
+                ProviderType = ProviderType.DoubaoSpeech,
                 Status = "active",
                 IsEnabled = true,
                 IsDefault = false,
-                VoiceCatalogEndpoint = "https://dashscope.aliyuncs.com/api/v1/services/audio/tts/customization",
+                SupportsAsr = true,
+                SupportsTts = true,
+                SupportsLlm = false,
+                SupportsMem = false,
                 Sort = 2,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new()
+            {
+                Id = DashScopeDefaultProviderIntegrationId,
+                Code = "DashScopeDefault",
+                Name = "阿里百炼",
+                Description = "阿里云 DashScope 百炼平台，支持 LLM / TTS / Embedding 能力。",
+                ProviderType = ProviderType.DashScope,
+                Status = "active",
+                IsEnabled = true,
+                IsDefault = false,
+                SupportsAsr = false,
+                SupportsTts = true,
+                SupportsLlm = true,
+                SupportsMem = true,
+                Sort = 3,
                 CreatedAt = now,
                 UpdatedAt = now
             }
@@ -69,9 +95,14 @@ public partial class AiAdminDataSeeder
                 current.Code = integration.Code;
                 current.Name = integration.Name;
                 current.Description = integration.Description;
-                current.ProviderCode = integration.ProviderCode;
+                current.ProviderType = integration.ProviderType;
                 current.Status = integration.Status;
                 current.IsEnabled = integration.IsEnabled;
+                current.IsDefault = integration.IsDefault;
+                current.SupportsAsr = integration.SupportsAsr;
+                current.SupportsTts = integration.SupportsTts;
+                current.SupportsLlm = integration.SupportsLlm;
+                current.SupportsMem = integration.SupportsMem;
                 current.ApiKey = PreserveCurrentValue(current.ApiKey, integration.ApiKey);
                 current.SecretKey = PreserveCurrentValue(current.SecretKey, integration.SecretKey);
                 current.AppId = PreserveCurrentValue(current.AppId, integration.AppId);

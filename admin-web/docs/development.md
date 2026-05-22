@@ -195,3 +195,100 @@ error: (error: unknown) => {
 3. 统一接入共享错误处理工具
 4. 若联调排查需要，再临时开启 HTTP 调试日志
 5. 完成后同步更新 `docs/modules/*.md`、`README.md`、`TODO.md`、`CHANGELOG.md`
+
+## 6. 接口自动生成规范
+
+### 6.1 基本原则
+
+前端 API 接口层代码 **必须由自动化工具生成**，禁止手动编写 HTTP 请求方法（禁止在 Service 中手写 URL 路径和请求方法）。
+
+### 6.2 工具链
+
+- 后端基于 ABP vNext，Swagger / OpenAPI 规范自动可用
+- 前端使用 **Kiota** 作为 API client 生成工具
+- 生成命令：`npm run api:generate`
+- 生成代码产出目录：`src/app/api/kiota/`
+
+### 6.3 标准流程
+
+1. 后端新增 / 修改 Controller 端点
+2. 启动 `admin-api`，确保 Swagger 端点可访问
+3. 运行 `npm run api:generate`（Kiota 从 OpenAPI spec 生成 TypeScript client）
+4. 前端 Service 层通过 Kiota 生成的 client 调用接口，不手写 HTTP URL
+
+### 6.4 反例
+
+```ts
+// 禁止：手写 HTTP URL 和请求方法
+this.api.get<Foo[]>('/admin/foo');
+this.api.post<Foo>('/admin/foo', payload);
+```
+
+### 6.5 正例
+
+```ts
+// 正确：通过 Kiota 生成的 client 调用
+// Service 中注入 Kiota client，调用生成的强类型方法
+this.kiotaClient.foo.list();
+this.kiotaClient.foo.create({ body: payload });
+```
+
+### 6.6 例外
+
+- 若 Kiota 暂不支持某个复杂请求模式（如文件上传 + 表单混合），需在代码中标注 `// EXCEPTION: Kiota limitation` 并记录到对应的模块设计文档
+- `IntegrationPreset` 等纯查询端点，如 Kiota 暂未覆盖，允许存在临时 HTTP 调用，但必须在对应 Service 方法上标注 `// TODO: migrate to Kiota client`
+
+## 7. 多语言规范
+
+### 7.1 基础设施
+
+- locale 文件：`src/assets/locales/zh-Hans.json` / `zh-TW.json`
+- 翻译服务：`I18nService`（`src/app/core/i18n/`）
+- 模板 pipe：`translate`（`| translate`）
+- 指令式翻译：`domI18n` directive
+- 自动同步脚本：`scripts/i18n-sync-ui-text.mjs`（扫描 `.ts`/`.html` 中的中文文本并同步到 `uiText` 映射）
+
+### 7.2 命名空间约定
+
+- 业务模块相关文案：按模块创建命名空间（如 `preset`、`agentRole`、`billing`）
+- 通用 UI 文案：放在 `common` 或 `shared` 命名空间
+- 自动同步的 UI 文本：放在 `uiText` 命名空间
+
+### 7.3 新增翻译的标准流程
+
+1. 确定文案所属命名空间
+2. 在 `zh-Hans.json` 中添加简体中文 key-value
+3. 在 `zh-TW.json` 中对应添加繁体中文 key-value
+4. 模板中使用 `translate` pipe：`{{ 'namespace.key' | translate }}`
+5. 组件 TS 代码中使用 `I18nService.translate('namespace.key')`
+
+### 7.4 种子数据 / 数据库文案的多语言处理
+
+- 数据库种子数据保存默认语言（zh-Hans）的值
+- 前端展示时，对于内置数据（通过固定标识如 `Code` 前缀识别），优先使用 i18n key 渲染
+- 用户自定义数据直接展示数据库存储值
+
+### 7.5 命名空间示例
+
+```json
+{
+  "preset": {
+    "mode": {
+      "label": "配置模式",
+      "preset": "预设平台",
+      "custom": "自定义配置"
+    },
+    "ark": {
+      "name": "火山方舟",
+      "description": "火山引擎豆包大模型平台..."
+    }
+  }
+}
+```
+
+### 7.6 约束
+
+- 新增 UI 文案必须在两个 locale 文件中同时添加
+- `uiText` 命名空间由自动同步脚本维护，不应手动编辑其中的条目
+- 翻译 key 使用 camelCase，层级使用 `.` 分隔
+- 不在代码中硬编码中文字符串（除非在 `uiText` 自动同步范围内）

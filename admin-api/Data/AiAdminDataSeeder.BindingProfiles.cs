@@ -113,7 +113,7 @@ public partial class AiAdminDataSeeder
                 IsEnabled = true,
                 IsDefault = true,
                 Endpoint = "https://ark.cn-beijing.volces.com/api/v3/embeddings/multimodal",
-                IntegrationId = DoubaoDefaultProviderIntegrationId,
+                IntegrationId = ArkDefaultProviderIntegrationId,
                 Model = "doubao-embedding-vision-251215",
                 Dimension = 1024,
                 Sort = 1,

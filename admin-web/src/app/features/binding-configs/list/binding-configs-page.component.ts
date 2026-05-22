@@ -74,21 +74,10 @@ import { BindingConfigService } from '../shared/binding-config.service';
       <app-search-filter-card
         [formGroup]="queryForm"
         [loading]="loading()"
-        [columns]="3"
+        [columns]="4"
         (submitted)="loadPage()"
         (resetTriggered)="reset()"
       >
-        <div filterField class="filter-field">
-          <label for="kind">配置类型</label>
-          <p-select
-            id="kind"
-            [options]="kindOptions()"
-            formControlName="kind"
-            optionLabel="label"
-            optionValue="value"
-            (onChange)="switchKind()"
-          ></p-select>
-        </div>
         <div filterField class="filter-field">
           <label for="keyword">关键词</label>
           <input id="keyword" pInputText formControlName="keyword" placeholder="按编码、名称、描述搜索" />

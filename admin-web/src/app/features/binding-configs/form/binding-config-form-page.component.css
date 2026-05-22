@@ -16,6 +16,20 @@
   color: var(--text-color-secondary);
 }
 
+.config-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-ground);
+  border-radius: 0.75rem;
+  border: 1px solid var(--surface-border);
+}
+
+.preset-selector {
+  margin-top: 0.5rem;
+}
+
 .form-shell {
   display: flex;
   flex-direction: column;
@@ -36,6 +50,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+}
+
+.field-group input,
+.field-group textarea,
+.field-group :deep(.p-inputnumber-input),
+.field-group :deep(.p-select) {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .field-group-full {

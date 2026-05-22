@@ -10,6 +10,7 @@ import {
   BindingConfigPageData,
   BindingConfigPageQuery,
   BindingConfigPayload,
+  IntegrationPreset,
   ProviderScope
 } from './binding-config.models';
 
@@ -21,6 +22,10 @@ export class BindingConfigService {
 
   getKinds(): Observable<ApiResponse<BindingConfigKindMeta[]>> {
     return this.api.get<BindingConfigKindMeta[]>('/admin/binding-configs/kinds');
+  }
+
+  getIntegrationPresets(): Observable<ApiResponse<IntegrationPreset[]>> {
+    return this.api.get<IntegrationPreset[]>('/admin/binding-configs/integration-presets');
   }
 
   getIntegrationOptions(

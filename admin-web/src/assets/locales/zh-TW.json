@@ -1036,6 +1036,26 @@
       }
     }
   },
+  "preset": {
+    "mode": {
+      "label": "配置模式",
+      "preset": "預設平台",
+      "custom": "自訂配置"
+    },
+    "selectPlaceholder": "選擇預設平台...",
+    "ark": {
+      "name": "火山方舟",
+      "description": "火山引擎豆包大模型平台，提供 LLM、ASR、TTS、Embedding 全棧 AI 能力"
+    },
+    "doubao_speech": {
+      "name": "豆包語音",
+      "description": "火山引擎豆包語音平台，提供 ASR 語音辨識和 TTS 語音合成服務"
+    },
+    "dashscope": {
+      "name": "阿里百煉",
+      "description": "阿里雲 DashScope 百煉平台，提供 LLM、TTS、Embedding 等 AI 能力"
+    }
+  },
   "uiText": {
     ", 德语:": ", 德語:",
     ", 法语:": ", 法語:",

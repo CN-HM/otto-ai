@@ -22,8 +22,7 @@ public partial class AiAdminDataSeeder : IDataSeedContributor, ITransientDepende
     public async Task SeedAsync(DataSeedContext context)
     {
         await SeedAdminUser();
-        // 禁用 不初始化数据
-        // await SeedProviderIntegrations();
+        await SeedProviderIntegrations();
         // await SeedPipelineTemplates();
         // await SeedVadProfiles();
         // await SeedEmbeddingProfiles();

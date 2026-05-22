@@ -147,6 +147,79 @@ public class AiAdminTestDataBuilder : ITransientDependency
         return userRole;
     }
 
+    public async Task SeedProviderIntegrationsAsync()
+    {
+        var now = DateTime.UtcNow;
+
+        if (!await _db.AiProviderIntegrations.AnyAsync(x => x.Id == "INTEGRATION_ArkDefault"))
+        {
+            _db.AiProviderIntegrations.Add(new AiProviderIntegration
+            {
+                Id = "INTEGRATION_ArkDefault",
+                Code = "ArkDefault",
+                Name = "火山方舟",
+                Description = "火山引擎豆包大模型平台，支持 ASR / LLM / TTS / Embedding 全栈能力。",
+                ProviderType = ProviderType.Ark,
+                Status = "active",
+                IsEnabled = true,
+                IsDefault = true,
+                SupportsAsr = true,
+                SupportsTts = true,
+                SupportsLlm = true,
+                SupportsMem = true,
+                Sort = 1,
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+        }
+
+        if (!await _db.AiProviderIntegrations.AnyAsync(x => x.Id == "INTEGRATION_DoubaoSpeechDefault"))
+        {
+            _db.AiProviderIntegrations.Add(new AiProviderIntegration
+            {
+                Id = "INTEGRATION_DoubaoSpeechDefault",
+                Code = "DoubaoSpeechDefault",
+                Name = "豆包语音",
+                Description = "火山引擎豆包语音平台，专注于 ASR 语音识别与 TTS 语音合成。",
+                ProviderType = ProviderType.DoubaoSpeech,
+                Status = "active",
+                IsEnabled = true,
+                IsDefault = false,
+                SupportsAsr = true,
+                SupportsTts = true,
+                SupportsLlm = false,
+                SupportsMem = false,
+                Sort = 2,
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+        }
+
+        if (!await _db.AiProviderIntegrations.AnyAsync(x => x.Id == "INTEGRATION_DashScopeDefault"))
+        {
+            _db.AiProviderIntegrations.Add(new AiProviderIntegration
+            {
+                Id = "INTEGRATION_DashScopeDefault",
+                Code = "DashScopeDefault",
+                Name = "阿里百炼",
+                Description = "阿里云 DashScope 百炼平台，支持 LLM / TTS / Embedding 能力。",
+                ProviderType = ProviderType.DashScope,
+                Status = "active",
+                IsEnabled = true,
+                IsDefault = false,
+                SupportsAsr = false,
+                SupportsTts = true,
+                SupportsLlm = true,
+                SupportsMem = true,
+                Sort = 3,
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
     public async Task SeedSystemSettingsAsync()
     {
         if (!await _db.SystemSettings.AnyAsync())

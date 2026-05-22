@@ -27,6 +27,14 @@ public class BindingConfigController : AiAdminBaseController
         return Result<List<BindingConfigKindMetaDto>>.Ok(result);
     }
 
+    [HttpGet("integration-presets")]
+    [RequirePermission("agent-role:list")]
+    public async Task<Result<List<IntegrationPresetDto>>> GetIntegrationPresets(CancellationToken cancellationToken)
+    {
+        var result = await _bindingConfigService.GetIntegrationPresetsAsync(cancellationToken);
+        return Result<List<IntegrationPresetDto>>.Ok(result);
+    }
+
     [HttpGet("integration-options")]
     [RequirePermission("agent-role:list")]
     public async Task<Result<List<OptionItemDto>>> GetIntegrationOptions([FromQuery] string? providerCode, [FromQuery] string? scope, CancellationToken cancellationToken)

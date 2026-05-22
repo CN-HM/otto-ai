@@ -67,9 +67,13 @@ public class BindingConfigService : ITransientDependency
                 SupportsProviderScopes = true,
                 SupportsIsEnabled = true,
                 SupportsApiKey = true,
+                SupportsSecretKey = true,
                 SupportsAppId = true,
                 SupportsAccessToken = true,
-                SupportsOrganization = true
+                SupportsOrganization = true,
+                SupportsCatalogAccessKey = true,
+                SupportsCatalogSecretKey = true,
+                SupportsCatalogAppId = true
             },
             new()
             {
@@ -157,6 +161,49 @@ public class BindingConfigService : ITransientDependency
 
         return Task.FromResult(result);
     }
+
+    public async Task<List<IntegrationPresetDto>> GetIntegrationPresetsAsync(CancellationToken cancellationToken = default)
+    {
+        var builtInIds = new[]
+        {
+            "INTEGRATION_ArkDefault",
+            "INTEGRATION_DoubaoSpeechDefault",
+            "INTEGRATION_DashScopeDefault"
+        };
+
+        var integrations = await _db.AiProviderIntegrations
+            .AsNoTracking()
+            .Where(x => builtInIds.Contains(x.Id) && x.Status == "active")
+            .OrderBy(x => x.Sort)
+            .ToListAsync(cancellationToken);
+
+        return integrations.Select(MapToPresetDto).ToList();
+    }
+
+    private static IntegrationPresetDto MapToPresetDto(AiProviderIntegration integration)
+    {
+        var providerType = ProviderTypeConverter.ToStorageValue(integration.ProviderType);
+        return new IntegrationPresetDto
+        {
+            PresetKey = providerType,
+            Name = integration.Name,
+            Description = integration.Description ?? "",
+            ProviderType = providerType,
+            SupportsAsr = integration.SupportsAsr,
+            SupportsTts = integration.SupportsTts,
+            SupportsLlm = integration.SupportsLlm,
+            SupportsMem = integration.SupportsMem,
+            AuthFields = ResolveAuthFields(providerType)
+        };
+    }
+
+    private static List<string> ResolveAuthFields(string providerType) => providerType switch
+    {
+        "ark" => ["apiKey"],
+        "doubao_speech" => ["appId", "accessToken", "secretKey"],
+        "dashscope" => ["apiKey"],
+        _ => []
+    };
 
     public async Task<(List<BindingConfigDto> List, long Total)> GetPageAsync(string kind, BindingConfigListQuery query, CancellationToken cancellationToken = default)
     {

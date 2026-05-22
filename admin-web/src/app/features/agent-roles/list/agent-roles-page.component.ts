@@ -73,7 +73,7 @@ import { AgentRoleService } from '../shared/agent-role.service';
     <app-search-filter-card
       [formGroup]="queryForm"
       [loading]="loading()"
-      [columns]="2"
+      [columns]="4"
       (submitted)="search()"
       (resetTriggered)="reset()"
     >

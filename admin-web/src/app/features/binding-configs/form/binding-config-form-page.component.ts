@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize, firstValueFrom } from 'rxjs';
+import { finalize, firstValueFrom, startWith } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -20,6 +20,7 @@ import {
   BindingConfigKindMeta,
   BindingConfigOption,
   BindingConfigPayload,
+  IntegrationPreset,
   PipelineStageKind,
   ProviderScope,
   parsePipelineStage,
@@ -73,6 +74,36 @@ function createDefaultPipelineStageEnabled(): PipelineStageEnabled {
 
     <app-feedback-message [text]="feedbackMessage()" [severity]="feedbackSeverity()"></app-feedback-message>
 
+    @if (meta()?.supportsProviderType && !isEdit()) {
+      <div class="config-mode-bar">
+        <span>配置模式：</span>
+        <p-select
+          [options]="configModeOptions"
+          [ngModel]="configMode()"
+          [ngModelOptions]="{ standalone: true }"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-auto"
+          (ngModelChange)="configMode.set($event)"
+        ></p-select>
+      </div>
+
+      @if (configMode() === 'preset') {
+        <div class="preset-selector">
+          <p-select
+            [options]="presetOptions()"
+            [ngModel]="selectedPresetKey()"
+            [ngModelOptions]="{ standalone: true }"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="选择预设平台..."
+            styleClass="w-full"
+            (ngModelChange)="selectedPresetKey.set($event); applyPreset()"
+          ></p-select>
+        </div>
+      }
+    }
+
     <form class="form-shell" [formGroup]="form" (ngSubmit)="submit()">
       <div class="field-grid">
         @if (meta()?.supportsCode) {
@@ -116,13 +147,17 @@ function createDefaultPipelineStageEnabled(): PipelineStageEnabled {
         @if (meta()?.supportsProviderType) {
           <div class="field-group">
             <label for="providerType">Provider Type</label>
-            <p-select
-              id="providerType"
-              [options]="providerTypeOptions"
-              formControlName="providerType"
-              optionLabel="label"
-              optionValue="value"
-            ></p-select>
+            @if (selectVisible()) {
+              <p-select
+                id="providerType"
+                [options]="providerTypeOptions"
+                formControlName="providerType"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full"
+                [disabled]="isProviderTypeLocked()"
+              ></p-select>
+            }
             <span class="field-hint">平台体系强类型：火山方舟 / 豆包语音 / DashScope。</span>
           </div>
         }
@@ -349,58 +384,58 @@ function createDefaultPipelineStageEnabled(): PipelineStageEnabled {
           </div>
         }
 
-        @if (meta()?.supportsApiKey) {
+        @if (meta()?.supportsApiKey && isProviderFieldVisible('apiKey')) {
           <div class="field-group">
-            <label for="apiKey">{{ isIntegrationKind() ? 'API Key / AccessKey' : 'Api Key' }}</label>
+            <label for="apiKey">{{ getProviderFieldLabel('apiKey') }}</label>
             <input id="apiKey" pInputText formControlName="apiKey" />
           </div>
         }
 
-        @if (meta()?.supportsSecretKey) {
+        @if (meta()?.supportsSecretKey && isProviderFieldVisible('secretKey')) {
           <div class="field-group">
-            <label for="secretKey">Secret Key</label>
+            <label for="secretKey">{{ getProviderFieldLabel('secretKey') }}</label>
             <input id="secretKey" pInputText formControlName="secretKey" />
           </div>
         }
 
-        @if (meta()?.supportsAppId) {
+        @if (meta()?.supportsAppId && isProviderFieldVisible('appId')) {
           <div class="field-group">
-            <label for="appId">{{ isIntegrationKind() ? 'App ID（可选）' : 'App ID' }}</label>
+            <label for="appId">{{ getProviderFieldLabel('appId') }}</label>
             <input id="appId" pInputText formControlName="appId" />
           </div>
         }
 
-        @if (meta()?.supportsAccessToken) {
+        @if (meta()?.supportsAccessToken && isProviderFieldVisible('accessToken')) {
           <div class="field-group">
-            <label for="accessToken">{{ isIntegrationKind() ? 'Access Token（可选）' : 'Access Token' }}</label>
+            <label for="accessToken">{{ getProviderFieldLabel('accessToken') }}</label>
             <input id="accessToken" pInputText formControlName="accessToken" />
           </div>
         }
 
-        @if (meta()?.supportsOrganization) {
+        @if (meta()?.supportsOrganization && isProviderFieldVisible('organization')) {
           <div class="field-group">
-            <label for="organization">{{ isIntegrationKind() ? 'Organization（可选）' : 'Organization' }}</label>
+            <label for="organization">{{ getProviderFieldLabel('organization') }}</label>
             <input id="organization" pInputText formControlName="organization" />
           </div>
         }
 
-        @if (meta()?.supportsCatalogAccessKey) {
+        @if (meta()?.supportsCatalogAccessKey && isProviderFieldVisible('catalogAccessKey')) {
           <div class="field-group">
-            <label for="catalogAccessKey">Catalog Access Key</label>
+            <label for="catalogAccessKey">{{ getProviderFieldLabel('catalogAccessKey') }}</label>
             <input id="catalogAccessKey" pInputText formControlName="catalogAccessKey" />
           </div>
         }
 
-        @if (meta()?.supportsCatalogSecretKey) {
+        @if (meta()?.supportsCatalogSecretKey && isProviderFieldVisible('catalogSecretKey')) {
           <div class="field-group">
-            <label for="catalogSecretKey">Catalog Secret Key</label>
+            <label for="catalogSecretKey">{{ getProviderFieldLabel('catalogSecretKey') }}</label>
             <input id="catalogSecretKey" pInputText formControlName="catalogSecretKey" />
           </div>
         }
 
-        @if (meta()?.supportsCatalogAppId) {
+        @if (meta()?.supportsCatalogAppId && isProviderFieldVisible('catalogAppId')) {
           <div class="field-group">
-            <label for="catalogAppId">Catalog App ID</label>
+            <label for="catalogAppId">{{ getProviderFieldLabel('catalogAppId') }}</label>
             <input id="catalogAppId" pInputText formControlName="catalogAppId" />
           </div>
         }
@@ -492,6 +527,49 @@ export class BindingConfigFormPageComponent implements OnInit {
   readonly kind = signal<BindingConfigKind>('pipeline');
   readonly itemId = signal('');
 
+  private readonly providerAuthFieldMap: Record<string, string[]> = {
+    ark: ['apiKey'],
+    doubao_speech: ['appId', 'accessToken', 'secretKey'],
+    dashscope: ['apiKey']
+  };
+
+  private readonly providerFieldLabels: Record<string, Record<string, string>> = {
+    ark: {
+      apiKey: 'API Key'
+    },
+    doubao_speech: {
+      appId: 'App ID',
+      accessToken: 'Access Token',
+      secretKey: 'Secret Key'
+    },
+    dashscope: {
+      apiKey: 'API Key'
+    }
+  };
+
+  getProviderFieldLabel(field: string): string {
+    const providerType = this.currentProviderType();
+    const labels = this.providerFieldLabels[providerType];
+    if (labels?.[field]) return labels[field];
+
+    const defaults: Record<string, string> = {
+      apiKey: this.isIntegrationKind() ? 'API Key' : 'Api Key',
+      secretKey: 'Secret Key',
+      appId: this.isIntegrationKind() ? 'App ID' : 'App ID',
+      accessToken: this.isIntegrationKind() ? 'Access Token' : 'Access Token',
+      organization: this.isIntegrationKind() ? 'Organization' : 'Organization',
+      catalogAccessKey: 'Catalog Access Key',
+      catalogSecretKey: 'Catalog Secret Key',
+      catalogAppId: 'Catalog App ID'
+    };
+    return defaults[field] || field;
+  }
+
+  isProviderFieldVisible(field: string): boolean {
+    const fields = this.providerAuthFieldMap[this.currentProviderType()];
+    return fields ? fields.includes(field) : true;
+  }
+
   readonly invocationModeOptions = [
     { label: '流式', value: 'streaming' },
     { label: '非流式', value: 'non-streaming' }
@@ -568,7 +646,62 @@ export class BindingConfigFormPageComponent implements OnInit {
     configJson: ['{}']
   });
 
+  readonly currentProviderType = toSignal(
+    this.form.controls.providerType.valueChanges.pipe(startWith(this.form.controls.providerType.value)),
+    { initialValue: 'ark' }
+  );
+
+  readonly selectVisible = signal(true);
+
+  readonly presets = signal<IntegrationPreset[]>([]);
+  readonly configMode = signal<'preset' | 'custom'>('preset');
+  readonly selectedPresetKey = signal<string>('');
+  readonly selectedPreset = computed(() =>
+    this.presets().find(p => p.presetKey === this.selectedPresetKey()) ?? null
+  );
+
+  readonly configModeOptions = [
+    { label: '预设平台', value: 'preset' },
+    { label: '自定义配置', value: 'custom' }
+  ];
+
+  readonly presetOptions = computed(() =>
+    this.presets().map(p => ({ label: p.name, value: p.presetKey }))
+  );
+
+  isProviderTypeLocked(): boolean {
+    return this.configMode() === 'preset' && !!this.selectedPreset();
+  }
+
+  private loadPresets(): void {
+    this.bindingConfigService.getIntegrationPresets().subscribe({
+      next: (response) => {
+        if (response.code === 0 && response.data) {
+          this.presets.set(response.data);
+        }
+      }
+    });
+  }
+
+  applyPreset(): void {
+    const preset = this.selectedPreset();
+    if (!preset) return;
+    this.form.patchValue({
+      name: preset.name,
+      providerType: preset.providerType,
+      supportsAsr: preset.supportsAsr,
+      supportsTts: preset.supportsTts,
+      supportsLlm: preset.supportsLlm,
+      supportsMem: preset.supportsMem
+    });
+  }
+
   ngOnInit(): void {
+    this.form.controls.providerType.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.selectVisible.set(false);
+      setTimeout(() => this.selectVisible.set(true));
+    });
+
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const kind = (params.get('kind') || 'pipeline') as BindingConfigKind;
       const id = params.get('id') || '';
@@ -577,6 +710,10 @@ export class BindingConfigFormPageComponent implements OnInit {
       this.isEdit.set(!!id);
       this.resetFormState();
       this.loadKinds();
+
+      if (kind === 'integration' && !id) {
+        this.loadPresets();
+      }
     });
   }
 

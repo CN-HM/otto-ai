@@ -168,6 +168,18 @@ export interface BindingConfigPageQuery {
   limit: number;
 }
 
+export interface IntegrationPreset {
+  presetKey: string;
+  name: string;
+  description: string;
+  providerType: string;
+  supportsAsr: boolean;
+  supportsTts: boolean;
+  supportsLlm: boolean;
+  supportsMem: boolean;
+  authFields: string[];
+}
+
 export interface BindingConfigPayload {
   code?: string | null;
   name?: string | null;
