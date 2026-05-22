@@ -1,6 +1,0 @@
-MSBUILD : error MSB1008: 只能指定一个项目。
-    完整命令行:“C:\Program Files\dotnet\sdk\10.0.300\MSBuild.exe -maxcpucount --verbosity:m -tlp:default=auto --property:VSTestNoLogo=true --property:NuGetInteractive=false --property:VSTestVerbosity=normal --property:VSTestArtifactsProcessingMode=collect --property:VSTestSessionCorrelationId=32416_f20568a8-e7d0-4eb4-9ad0-1fa131262df8 --restoreProperty:VSTestNoLogo=true --restoreProperty:NuGetInteractive=false --restoreProperty:VSTestVerbosity=normal --restoreProperty:VSTestArtifactsProcessingMode=collect --restoreProperty:VSTestSessionCorrelationId=32416_f20568a8-e7d0-4eb4-9ad0-1fa131262df8 --restoreProperty:EnableDefaultCompileItems=false --restoreProperty:EnableDefaultEmbeddedResourceItems=false --restoreProperty:EnableDefaultNoneItems=false --target:VSTest --verbosity:normal --nologo -nodereuse:false test/AiAdmin.Application.Tests/AiAdmin.Application.Tests.csproj test/AiAdmin.Domain.Tests/AiAdmin.Domain.Tests.csproj -restore -distributedlogger:Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildLogger,C:\Program Files\dotnet\sdk\10.0.300\dotnet.dll*Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildForwardingLogger,C:\Program Files\dotnet\sdk\10.0.300\dotnet.dll -tlp:DISABLENODEDISPLAY”
-  响应文件追加的开关: 
-开关:test/AiAdmin.Domain.Tests/AiAdmin.Domain.Tests.csproj
-
-若要显示开关的语法，请键入“MSBuild -help”

@@ -36,9 +36,15 @@ ios/Flutter/Generated.xcconfig
 ios/Flutter/flutter_export_environment.sh
 android/.gradle/
 
+# ===== Test Outputs =====
+*test-results.txt
+*test-app-results.txt
+*test-domain-results.txt
+
 # ===== IDE =====
 .idea/
 .vs/
+.vscode/
 *.user
 *.suo
 
