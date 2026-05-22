@@ -1,7 +1,11 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
+import { BASE_PATH } from './variables';
 
-// 简单占位实现：返回空的 EnvironmentProviders。
-// 真实的 OpenAPI 客户端由生成器提供（在 CI/开发流程中可替换）。
 export function provideApi(_baseUrl: string): EnvironmentProviders {
-    return makeEnvironmentProviders([]);
+    return makeEnvironmentProviders([
+        {
+            provide: BASE_PATH,
+            useValue: ''  // 空字符串使 API 服务生成相对 URL，由 apiBaseUrlInterceptor 统一添加前缀
+        }
+    ]);
 }
