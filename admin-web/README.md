@@ -1,6 +1,6 @@
-# otto ai Web
+# Otto AI Web
 
-`admin-web` 是当前仓库中的 Angular 18 管理端，负责 otto ai 设备、智能体、模型、知识库、音色、计费和系统配置等后台运营能力。
+`admin-web` 是当前仓库中的 Angular 18 管理端，负责 Otto AI 设备、智能体、模型、知识库、音色、计费和系统配置等后台运营能力。
 
 ## 当前定位
 

@@ -1,8 +1,8 @@
-# Project Guidelines — otto ai Platform
+# Project Guidelines — Otto AI Platform
 
 ## 项目概述
 
-otto ai Platform 是一个 otto ai 设备管理后台，包含以下子项目：
+Otto AI Platform 是一个 Otto AI 设备管理后台，包含以下子项目：
 
 | 目录 | 技术栈 | 说明 |
 |------|--------|------|

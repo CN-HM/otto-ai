@@ -1,7 +1,7 @@
 {
   "culture": "it",
   "texts": {
-    "AppName": "otto ai",
+    "AppName": "Otto AI",
     "Welcome_Title": "Benvenuto",
     "Welcome_Text": "Questo è un modello di avvio dell'applicazione minimalista a livello singolo per ABP Framework.",
     "Menu:Home": "Home"

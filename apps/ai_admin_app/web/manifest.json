@@ -1,11 +1,11 @@
 {
-    "name": "otto ai",
-    "short_name": "otto ai",
+    "name": "Otto AI",
+    "short_name": "Otto AI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "otto ai Flutter application.",
+    "description": "Otto AI Flutter application.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

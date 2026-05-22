@@ -196,7 +196,7 @@ class _LoginHero extends StatelessWidget {
           ),
           alignment: Alignment.center,
           child: const Text(
-            'otto ai',
+            'Otto AI',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w800,

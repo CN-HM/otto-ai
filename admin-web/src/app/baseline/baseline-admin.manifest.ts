@@ -16,18 +16,18 @@ import { usersFeature } from './features/users.feature';
 import { voicesFeature } from './features/voices.feature';
 
 const baselineBranding = {
-  appName: 'otto ai',
+  appName: 'Otto AI',
   shellSubtitle: 'branding.shellSubtitle',
   shellVersion: '1.0',
   headerTitle: 'branding.headerTitle',
   headerDescription: 'branding.headerDescription',
-  loginBadge: 'otto ai',
+  loginBadge: 'Otto AI',
   loginTitle: 'branding.loginTitle',
   loginDescription: 'branding.loginDescription',
-  registerBadge: 'otto ai',
+  registerBadge: 'Otto AI',
   registerTitle: 'branding.registerTitle',
   registerDescription: 'branding.registerDescription',
-  retrievePasswordBadge: 'otto ai',
+  retrievePasswordBadge: 'Otto AI',
   retrievePasswordTitle: 'branding.retrievePasswordTitle',
   retrievePasswordDescription: 'branding.retrievePasswordDescription',
   dashboardTag: 'Dashboard',

@@ -1,4 +1,4 @@
-# otto ai App
+# Otto AI App
 
 当前 AI Flutter 业务 App 壳工程。
 

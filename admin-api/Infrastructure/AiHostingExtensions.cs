@@ -95,7 +95,7 @@ public static class AiHostingExtensions
         var runtimeHosts = BuildRuntimeHosts(address.PublicHost, externalHttpBases);
 
         var summary = new StringBuilder()
-            .AppendLine("========== otto ai External Interface ==========")
+            .AppendLine("========== Otto AI External Interface ==========")
             .AppendLine($"Environment: {app.Environment.EnvironmentName}")
             .AppendLine($"NodeId: {node.NodeId}")
             .AppendLine($"PathBase: {AiApiConventions.PathBase}")
