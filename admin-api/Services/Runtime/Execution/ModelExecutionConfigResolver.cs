@@ -69,8 +69,7 @@ public class ModelExecutionConfigResolver : IModelExecutionConfigResolver, ITran
             ["chunk_duration_ms"] = profile.ChunkDurationMs,
             ["chunk_size_bytes"] = profile.ChunkSizeBytes,
             ["language"] = profile.Language,
-            ["context"] = profile.Context,
-            ["enable_nonstream"] = profile.EnableNonstream
+            ["context"] = profile.Context
         };
 
         MergeConfigJson(config, profile.ConfigJson);

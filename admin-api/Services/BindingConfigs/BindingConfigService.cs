@@ -77,15 +77,6 @@ public class BindingConfigService : ITransientDependency
             },
             new()
             {
-                Kind = BindingConfigKinds.Pipeline,
-                Label = "对话链路配置",
-                Description = "定义角色运行时编排骨架。",
-                SupportsCode = true,
-                SupportsIsSystem = true,
-                SupportsGraphJson = true
-            },
-            new()
-            {
                 Kind = BindingConfigKinds.Asr,
                 Label = "ASR Profile",
                 Description = "语音识别配置。",
@@ -103,7 +94,6 @@ public class BindingConfigService : ITransientDependency
                 SupportsChunkSizeBytes = true,
                 SupportsLanguage = true,
                 SupportsContext = true,
-                SupportsEnableNonstream = true,
                 SupportsConfigJson = true
             },
             new()
@@ -137,7 +127,6 @@ public class BindingConfigService : ITransientDependency
                 SupportsIsEnabled = true,
                 SupportsInvocationMode = true,
                 SupportsPrimaryEndpoint = true,
-                SupportsPrimaryModel = true,
                 SupportsResourceId = true,
                 SupportsEncoding = true,
                 SupportsSampleRate = true,
@@ -200,7 +189,7 @@ public class BindingConfigService : ITransientDependency
     private static List<string> ResolveAuthFields(string providerType) => providerType switch
     {
         "ark" => ["apiKey"],
-        "doubao_speech" => ["appId", "accessToken", "secretKey"],
+        "doubao_speech" => ["appId", "accessToken"],
         "dashscope" => ["apiKey"],
         _ => []
     };
@@ -216,7 +205,6 @@ public class BindingConfigService : ITransientDependency
         return kind switch
         {
             BindingConfigKinds.Integration => await GetIntegrationPageAsync(page, limit, keyword, status, cancellationToken),
-            BindingConfigKinds.Pipeline => await GetPipelinePageAsync(page, limit, keyword, status, cancellationToken),
             BindingConfigKinds.Asr => await GetAsrPageAsync(page, limit, keyword, status, cancellationToken),
             BindingConfigKinds.Vad => await GetVadPageAsync(page, limit, keyword, status, cancellationToken),
             BindingConfigKinds.Llm => await GetLlmPageAsync(page, limit, keyword, status, cancellationToken),
@@ -234,7 +222,6 @@ public class BindingConfigService : ITransientDependency
         return kind switch
         {
             BindingConfigKinds.Integration => MapIntegration(await GetRequiredAsync(_db.AiProviderIntegrations.AsNoTracking(), normalizedId, "Provider Integration 不存在", cancellationToken)),
-            BindingConfigKinds.Pipeline => MapPipeline(await GetRequiredAsync(_db.AiPipelineTemplates.AsNoTracking(), normalizedId, "对话链路配置不存在", cancellationToken)),
             BindingConfigKinds.Asr => MapAsr(await GetRequiredAsync(_db.AiAsrProfiles.AsNoTracking(), normalizedId, "Error:AsrProfileNotFound", cancellationToken)),
             BindingConfigKinds.Vad => MapVad(await GetRequiredAsync(_db.AiVadProfiles.AsNoTracking(), normalizedId, "Error:VadProfileNotFound", cancellationToken)),
             BindingConfigKinds.Llm => MapLlm(await GetRequiredAsync(_db.AiLlmProfiles.AsNoTracking(), normalizedId, "Error:LlmProfileNotFound", cancellationToken)),
@@ -254,7 +241,6 @@ public class BindingConfigService : ITransientDependency
         return kind switch
         {
             BindingConfigKinds.Integration => await CreateIntegrationAsync(code, name, dto, operatorUserId, now, cancellationToken),
-            BindingConfigKinds.Pipeline => await CreatePipelineAsync(code, name, dto, operatorUserId, now, cancellationToken),
             BindingConfigKinds.Asr => await CreateAsrAsync(name, dto, operatorUserId, now, cancellationToken),
             BindingConfigKinds.Vad => await CreateVadAsync(name, dto, operatorUserId, now, cancellationToken),
             BindingConfigKinds.Llm => await CreateLlmAsync(name, dto, operatorUserId, now, cancellationToken),
@@ -275,7 +261,6 @@ public class BindingConfigService : ITransientDependency
         return kind switch
         {
             BindingConfigKinds.Integration => await UpdateIntegrationAsync(normalizedId, code, name, dto, operatorUserId, now, cancellationToken),
-            BindingConfigKinds.Pipeline => await UpdatePipelineAsync(normalizedId, code, name, dto, operatorUserId, now, cancellationToken),
             BindingConfigKinds.Asr => await UpdateAsrAsync(normalizedId, name, dto, operatorUserId, now, cancellationToken),
             BindingConfigKinds.Vad => await UpdateVadAsync(normalizedId, name, dto, operatorUserId, now, cancellationToken),
             BindingConfigKinds.Llm => await UpdateLlmAsync(normalizedId, name, dto, operatorUserId, now, cancellationToken),
@@ -296,17 +281,6 @@ public class BindingConfigService : ITransientDependency
             case BindingConfigKinds.Integration:
                 _db.AiProviderIntegrations.Remove(await GetRequiredAsync(_db.AiProviderIntegrations, normalizedId, "Provider Integration 不存在", cancellationToken));
                 break;
-            case BindingConfigKinds.Pipeline:
-            {
-                var entity = await GetRequiredAsync(_db.AiPipelineTemplates, normalizedId, "对话链路配置不存在", cancellationToken);
-                if (entity.IsSystem)
-                {
-                    throw new InvalidOperationException("Error:BuiltInPipelineDeleteDenied");
-                }
-
-                _db.AiPipelineTemplates.Remove(entity);
-                break;
-            }
             case BindingConfigKinds.Asr:
                 _db.AiAsrProfiles.Remove(await GetRequiredAsync(_db.AiAsrProfiles, normalizedId, "Error:AsrProfileNotFound", cancellationToken));
                 break;
@@ -342,16 +316,6 @@ public class BindingConfigService : ITransientDependency
                 if (totalRefCount > 0)
                 {
                     throw new LocalizedBusinessException("Error:ProviderIntegrationInUse", ("count", totalRefCount));
-                }
-
-                break;
-            }
-            case BindingConfigKinds.Pipeline:
-            {
-                var roleCount = await _db.AiAgentRoles.AsNoTracking().LongCountAsync(x => x.PipelineTemplateId == id, cancellationToken);
-                if (roleCount > 0)
-                {
-                    throw new LocalizedBusinessException("Error:PipelineConfigInUse", ("count", roleCount));
                 }
 
                 break;
@@ -436,28 +400,6 @@ public class BindingConfigService : ITransientDependency
             .Take(limit)
             .ToListAsync(cancellationToken);
         return (list.Select(MapIntegration).ToList(), total);
-    }
-
-    private async Task<(List<BindingConfigDto> List, long Total)> GetPipelinePageAsync(int page, int limit, string? keyword, string? status, CancellationToken cancellationToken)
-    {
-        var query = _db.AiPipelineTemplates.AsNoTracking().AsQueryable();
-        if (keyword != null)
-        {
-            query = query.Where(x => x.Code.Contains(keyword)
-                || x.Name.Contains(keyword)
-                || (x.Description != null && x.Description.Contains(keyword)));
-        }
-        if (status != null)
-        {
-            query = query.Where(x => x.Status == status);
-        }
-
-        var total = await query.LongCountAsync(cancellationToken);
-        var list = await query.OrderByDescending(x => x.IsSystem).ThenBy(x => x.Sort).ThenBy(x => x.Name)
-            .Skip((page - 1) * limit)
-            .Take(limit)
-            .ToListAsync(cancellationToken);
-        return (list.Select(MapPipeline).ToList(), total);
     }
 
     private async Task<(List<BindingConfigDto> List, long Total)> GetAsrPageAsync(int page, int limit, string? keyword, string? status, CancellationToken cancellationToken)
@@ -623,42 +565,6 @@ public class BindingConfigService : ITransientDependency
         return MapIntegration(entity);
     }
 
-    private async Task<BindingConfigDto> CreatePipelineAsync(string code, string name, BindingConfigUpsertDto dto, long operatorUserId, DateTime now, CancellationToken cancellationToken)
-    {
-        if (await _db.AiPipelineTemplates.AnyAsync(x => x.Code == code, cancellationToken))
-        {
-            throw new InvalidOperationException("Error:ConversationPipelineCodeExists");
-        }
-
-        var entity = new AiPipelineTemplate
-        {
-            Id = _guidGenerator.Create().ToString("N"),
-            Code = code,
-            Name = name,
-            Description = NormalizeOptional(dto.Description),
-            Status = NormalizeStatus(dto.Status),
-            IsSystem = dto.IsSystem ?? false,
-            IsDefault = dto.IsDefault,
-            GraphJson = NormalizePipelineGraphJsonOrDefault(dto.GraphJson, "{}"),
-            Sort = dto.Sort ?? 0,
-            Creator = operatorUserId,
-            CreatedAt = now,
-            Updater = operatorUserId,
-            UpdatedAt = now
-        };
-
-        await ApplyDefaultOnCreateAsync(
-            _db.AiPipelineTemplates,
-            entity.Id,
-            dto.IsDefault,
-            value => entity.IsDefault = value,
-            template => template.IsDefault = false,
-            cancellationToken);
-        _db.AiPipelineTemplates.Add(entity);
-        await _db.SaveChangesAsync(cancellationToken);
-        return MapPipeline(entity);
-    }
-
     private async Task<BindingConfigDto> CreateAsrAsync(string name, BindingConfigUpsertDto dto, long operatorUserId, DateTime now, CancellationToken cancellationToken)
     {
         var integrationId = RequireValue(dto.IntegrationId, "ASR Profile 必须绑定 Provider Integration");
@@ -685,7 +591,6 @@ public class BindingConfigService : ITransientDependency
             ChunkSizeBytes = dto.ChunkSizeBytes,
             Language = NormalizeOptional(dto.Language),
             Context = NormalizeOptional(dto.Context),
-            EnableNonstream = dto.EnableNonstream,
             ConfigJson = NormalizeJsonOrDefault(dto.ConfigJson, "{}"),
             Sort = dto.Sort ?? 0,
             Creator = operatorUserId,
@@ -901,38 +806,6 @@ public class BindingConfigService : ITransientDependency
         return MapIntegration(entity);
     }
 
-    private async Task<BindingConfigDto> UpdatePipelineAsync(string id, string code, string name, BindingConfigUpsertDto dto, long operatorUserId, DateTime now, CancellationToken cancellationToken)
-    {
-        var entity = await GetRequiredAsync(_db.AiPipelineTemplates, id, "对话链路配置不存在", cancellationToken);
-        var currentIsDefault = entity.IsDefault;
-        if (await _db.AiPipelineTemplates.AnyAsync(x => x.Code == code && x.Id != id, cancellationToken))
-        {
-            throw new InvalidOperationException("Error:ConversationPipelineCodeExists");
-        }
-
-        entity.Code = code;
-        entity.Name = name;
-        entity.Description = NormalizeOptional(dto.Description);
-        entity.Status = NormalizeStatus(dto.Status);
-        entity.IsSystem = dto.IsSystem ?? entity.IsSystem;
-        await ApplyDefaultOnUpdateAsync(
-            _db.AiPipelineTemplates,
-            entity.Id,
-            currentIsDefault,
-            dto.IsDefault,
-            value => entity.IsDefault = value,
-            template => template.IsDefault = false,
-            "Pipeline",
-            cancellationToken);
-        entity.GraphJson = NormalizePipelineGraphJsonOrDefault(dto.GraphJson, entity.GraphJson);
-        entity.Sort = dto.Sort ?? entity.Sort;
-        entity.Updater = operatorUserId;
-        entity.UpdatedAt = now;
-
-        await _db.SaveChangesAsync(cancellationToken);
-        return MapPipeline(entity);
-    }
-
     private async Task<BindingConfigDto> UpdateAsrAsync(string id, string name, BindingConfigUpsertDto dto, long operatorUserId, DateTime now, CancellationToken cancellationToken)
     {
         var entity = await GetRequiredAsync(_db.AiAsrProfiles, id, "Error:AsrProfileNotFound", cancellationToken);
@@ -958,7 +831,6 @@ public class BindingConfigService : ITransientDependency
         entity.ChunkSizeBytes = dto.ChunkSizeBytes;
         entity.Language = NormalizeOptional(dto.Language);
         entity.Context = NormalizeOptional(dto.Context);
-        entity.EnableNonstream = dto.EnableNonstream;
         entity.ConfigJson = NormalizeJsonOrDefault(dto.ConfigJson, entity.ConfigJson ?? "{}");
         entity.Sort = dto.Sort ?? entity.Sort;
         entity.Updater = operatorUserId;
@@ -1289,24 +1161,6 @@ public class BindingConfigService : ITransientDependency
         };
     }
 
-    private static BindingConfigDto MapPipeline(AiPipelineTemplate entity)
-    {
-        return new BindingConfigDto
-        {
-            Id = entity.Id,
-            Code = entity.Code,
-            Name = entity.Name,
-            Description = entity.Description,
-            Status = entity.Status,
-            IsDefault = entity.IsDefault,
-            IsSystem = entity.IsSystem,
-            Sort = entity.Sort,
-            GraphJson = NormalizePipelineGraphJsonOrDefault(entity.GraphJson, "{}"),
-            CreatedAt = entity.CreatedAt,
-            UpdatedAt = entity.UpdatedAt
-        };
-    }
-
     private static BindingConfigDto MapAsr(AiAsrProfile entity)
     {
         return new BindingConfigDto
@@ -1331,7 +1185,6 @@ public class BindingConfigService : ITransientDependency
             ChunkSizeBytes = entity.ChunkSizeBytes,
             Language = entity.Language,
             Context = entity.Context,
-            EnableNonstream = entity.EnableNonstream,
             ConfigJson = entity.ConfigJson,
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt
@@ -1663,18 +1516,6 @@ public class BindingConfigService : ITransientDependency
         return normalized;
     }
 
-    private static string NormalizePipelineGraphJsonOrDefault(string? value, string fallback)
-    {
-        var normalized = NormalizeJsonOrDefault(value, fallback);
-        var node = JsonNode.Parse(normalized);
-        if (node is JsonObject jsonObject)
-        {
-            jsonObject.Remove("profileBindings");
-            return jsonObject.ToJsonString(JsonOptions);
-        }
-
-        return normalized;
-    }
 
     private static async Task<TEntity> GetRequiredAsync<TEntity>(IQueryable<TEntity> query, string id, string message, CancellationToken cancellationToken)
         where TEntity : class

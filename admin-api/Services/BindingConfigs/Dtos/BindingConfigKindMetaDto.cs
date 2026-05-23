@@ -42,7 +42,6 @@ public class BindingConfigKindMetaDto
     public bool SupportsChunkSizeBytes { get; set; }
     public bool SupportsLanguage { get; set; }
     public bool SupportsContext { get; set; }
-    public bool SupportsEnableNonstream { get; set; }
     public bool SupportsShowUtterances { get; set; }
     public bool SupportsResultType { get; set; }
     public bool SupportsVadHead { get; set; }

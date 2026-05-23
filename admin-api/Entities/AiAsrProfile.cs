@@ -74,9 +74,6 @@ public class AiAsrProfile
     [Column("context")]
     public string? Context { get; set; }
 
-    [Column("enable_nonstream")]
-    public bool? EnableNonstream { get; set; }
-
     [Column("config_json", TypeName = "jsonb")]
     public string? ConfigJson { get; set; }
 

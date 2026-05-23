@@ -75,7 +75,6 @@ public class TodoExecutionService : ITransientDependency
                 AgentRoleReleaseId = agentRole.CurrentReleaseId,
                 SessionId = signal.SessionId ?? signal.Id,
                 DeviceId = signal.DeviceId,
-                PipelineTemplateId = agentRole.PipelineTemplateId,
                 LlmProfileId = agentRole.LlmProfileId,
                 RequestedInvocationMode = "non_streaming",
                 PreferStreaming = false

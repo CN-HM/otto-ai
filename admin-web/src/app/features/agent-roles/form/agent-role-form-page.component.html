@@ -135,21 +135,6 @@
           <p class="step-desc">{{ 'agentRoles.form.modelsDescription' | translate }}</p>
           <div class="field-grid">
             <div class="field-group">
-              <label for="pipelineTemplateId">{{ 'agentRoles.form.pipelineTemplate' | translate }}</label
-              ><p-select
-                id="pipelineTemplateId"
-                [options]="pipelineTemplateOptions()"
-                formControlName="pipelineTemplateId"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="{{ 'agentRoles.form.selectPipelineTemplate' | translate }}"
-                [showClear]="true"
-              ></p-select
-              ><span class="field-help">{{ 'agentRoles.form.pipelineTemplateHelp' | translate }}</span>
-            </div>
-          </div>
-          <div class="field-grid">
-            <div class="field-group">
               <label for="asrProfileId">{{ 'agentRoles.form.asr' | translate }}</label
               ><p-select
                 id="asrProfileId"

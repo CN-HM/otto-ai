@@ -10,8 +10,7 @@
 import { AiAdminServicesAgentRolesDtosOptionItemDto } from './aiAdminServicesAgentRolesDtosOptionItemDto.model';
 
 
-export interface AiAdminServicesAgentRolesDtosAgentRoleBindingOptionsDto { 
-    pipelineTemplates?: Array<AiAdminServicesAgentRolesDtosOptionItemDto> | null;
+export interface AiAdminServicesAgentRolesDtosAgentRoleBindingOptionsDto {
     asrProfiles?: Array<AiAdminServicesAgentRolesDtosOptionItemDto> | null;
     vadProfiles?: Array<AiAdminServicesAgentRolesDtosOptionItemDto> | null;
     llmProfiles?: Array<AiAdminServicesAgentRolesDtosOptionItemDto> | null;

@@ -9765,13 +9765,6 @@
       "AiAdmin.Services.AgentRoles.Dtos.AgentRoleBindingOptionsDto": {
         "type": "object",
         "properties": {
-          "pipelineTemplates": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AiAdmin.Services.AgentRoles.Dtos.OptionItemDto"
-            },
-            "nullable": true
-          },
           "asrProfiles": {
             "type": "array",
             "items": {
@@ -9860,10 +9853,6 @@
             "nullable": true
           },
           "themeToken": {
-            "type": "string",
-            "nullable": true
-          },
-          "pipelineTemplateId": {
             "type": "string",
             "nullable": true
           },
@@ -10185,10 +10174,6 @@
             "nullable": true
           },
           "themeToken": {
-            "type": "string",
-            "nullable": true
-          },
-          "pipelineTemplateId": {
             "type": "string",
             "nullable": true
           },
@@ -11389,10 +11374,6 @@
             "type": "string",
             "nullable": true
           },
-          "enableNonstream": {
-            "type": "boolean",
-            "nullable": true
-          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -11530,9 +11511,6 @@
             "type": "boolean"
           },
           "supportsContext": {
-            "type": "boolean"
-          },
-          "supportsEnableNonstream": {
             "type": "boolean"
           },
           "supportsShowUtterances": {
@@ -11747,10 +11725,6 @@
           },
           "context": {
             "type": "string",
-            "nullable": true
-          },
-          "enableNonstream": {
-            "type": "boolean",
             "nullable": true
           }
         },
@@ -14183,10 +14157,6 @@
             "type": "string",
             "nullable": true
           },
-          "pipelineTemplateId": {
-            "type": "string",
-            "nullable": true
-          },
           "requestedInvocationMode": {
             "type": "string",
             "nullable": true
@@ -14272,10 +14242,6 @@
             "nullable": true
           },
           "deviceId": {
-            "type": "string",
-            "nullable": true
-          },
-          "pipelineTemplateId": {
             "type": "string",
             "nullable": true
           },

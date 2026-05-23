@@ -139,7 +139,6 @@ public class AgentRoleRuntimeTestService : ITransientDependency
             AgentRoleReleaseId = agentRole.CurrentReleaseId ?? request.AgentRoleReleaseId,
             SessionId = sessionId,
             DeviceId = device.Id,
-            PipelineTemplateId = agentRole.PipelineTemplateId,
             RequestedInvocationMode = "non_streaming",
             PreferStreaming = false
         };

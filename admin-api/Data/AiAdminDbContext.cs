@@ -67,8 +67,6 @@ public class AiAdminDbContext : AbpDbContext<AiAdminDbContext>, IAuditLoggingDbC
     // ── Model ──
     /// <summary>共享云平台集成表</summary>
     public DbSet<AiProviderIntegration> AiProviderIntegrations => Set<AiProviderIntegration>();
-    /// <summary>管线模板表</summary>
-    public DbSet<AiPipelineTemplate> AiPipelineTemplates => Set<AiPipelineTemplate>();
     /// <summary>ASR Profile 表</summary>
     public DbSet<AiAsrProfile> AiAsrProfiles => Set<AiAsrProfile>();
     /// <summary>VAD Profile 表</summary>
@@ -223,16 +221,9 @@ public class AiAdminDbContext : AbpDbContext<AiAdminDbContext>, IAuditLoggingDbC
         {
             b.HasIndex(e => e.Code).IsUnique();
             b.HasIndex(e => new { e.Status, e.Sort });
-            b.HasIndex(e => e.PipelineTemplateId);
             b.HasIndex(e => e.AsrProfileId);
             b.HasIndex(e => e.LlmProfileId);
             b.HasIndex(e => e.TtsProfileId);
-        });
-
-        builder.Entity<AiPipelineTemplate>(b =>
-        {
-            b.HasIndex(e => e.Code).IsUnique();
-            b.HasIndex(e => new { e.Status, e.Sort });
         });
 
         builder.Entity<AiAsrProfile>(b =>

@@ -117,7 +117,6 @@ public class ActionRuleExecutionService : ITransientDependency
             AgentRoleReleaseId = orchestrationRequest.AgentRoleReleaseId,
             SessionId = orchestrationRequest.SessionId,
             DeviceId = orchestrationRequest.DeviceId,
-            PipelineTemplateId = orchestrationRequest.PipelineTemplateId,
             LlmProfileId = llmProfileId,
             RequestedInvocationMode = "non_streaming",
             PreferStreaming = false

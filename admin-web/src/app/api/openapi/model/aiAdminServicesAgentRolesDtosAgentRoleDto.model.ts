@@ -23,7 +23,6 @@ export interface AiAdminServicesAgentRolesDtosAgentRoleDto {
     icon?: string | null;
     coverImage?: string | null;
     themeToken?: string | null;
-    pipelineTemplateId?: string | null;
     asrProfileId?: string | null;
     vadProfileId?: string | null;
     llmProfileId?: string | null;

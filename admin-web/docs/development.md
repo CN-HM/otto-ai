@@ -292,3 +292,66 @@ this.kiotaClient.foo.create({ body: payload });
 - `uiText` 命名空间由自动同步脚本维护，不应手动编辑其中的条目
 - 翻译 key 使用 camelCase，层级使用 `.` 分隔
 - 不在代码中硬编码中文字符串（除非在 `uiText` 自动同步范围内）
+
+## 8. 全栈功能移除规范
+
+### 8.1 核心原则
+
+**移除功能时，必须从前端到后端到数据库逐层清理，不允许仅隐藏 UI 或仅注释代码。**
+
+隐藏 UI 而不移除后端代码会导致：API 仍返回废弃字段、数据库保留无用列、后续维护者不知道哪些代码已死。
+
+### 8.2 标准检查清单
+
+当要移除一个功能时，按以下顺序逐层排查：
+
+| 层级 | 检查点 |
+| --- | --- |
+| 数据库 | 删除无用表 / 列，创建 EF Core migration |
+| 实体 | 删除实体类文件，移除实体属性 |
+| DbContext | 移除 DbSet 属性、实体 Fluent 配置、索引 |
+| 数据种子 | 移除种子数据方法和内置 ID 常量 |
+| DTO | 移除输入/输出/选项 DTO 中的废弃字段 |
+| Service | 移除 switch 分支、私有 CRUD 方法、映射方法、引用检查 |
+| 常量/枚举 | 移除已废弃的常量值 |
+| 运行时/编排 | 移除废弃字段的赋值和传递，简化回退逻辑 |
+| 其他服务 | 搜索整个代码库，移除所有引用该字段的赋值 |
+| 迁移文件 | 自动生成的 Designer.cs / Snapshot.cs 由新 migration 覆盖 |
+| 前端表单 | 移除 HTML 表单控件、TS 信号/FormControl/绑定选项 |
+| 前端列表 | 移除列表详情展示中的废弃字段 |
+| 前端模型 | 移除本地 interface/models 中的废弃属性 |
+| 生成模型 | 移除 src/app/api/openapi/model/ 下自动生成接口中的字段 |
+| API Spec | 移除 api-json/ai-api-latest.json 中对应的 schema 属性 |
+| i18n | 移除 zh-Hans.json 和 zh-TW.json 中的废弃翻译 key |
+
+### 8.3 验证步骤
+
+移除完成后必须执行：
+
+```bash
+# 后端编译验证
+dotnet build admin-api/AiAdmin.csproj
+
+# 前端类型检查
+npx tsc --noEmit --project tsconfig.app.json
+
+# 确认无残留引用
+rg "废弃字段名" admin-api/ admin-web/src/ --type-add 'fe:*.{ts,html,json}' -t fe -t cs
+```
+
+### 8.4 反例
+
+```ts
+// 禁止：仅注释 HTML，后端代码原封不动
+<!-- <p-select formControlName="pipelineTemplateId" ...></p-select> -->
+
+// 禁止：仅从 DTO 移除，Service 仍引用 entity.PipelineTemplateId
+```
+
+### 8.5 正例
+
+以移除 Pipeline Template（对话链路配置）为例，完整清理了：
+
+- 后端 30+ 文件：实体删除、DTO 清理、Service 方法移除、常量移除、运行时简化、编排 DTO 清理、后台任务参数移除、内存服务参数移除、数据种子清理、迁移创建
+- 前端 15 文件：表单 HTML/TS、列表 TS、本地模型、5 个生成模型、API JSON spec、2 个 i18n 文件
+- 验证：后端 0 warning 0 error，前端 TS 编译通过

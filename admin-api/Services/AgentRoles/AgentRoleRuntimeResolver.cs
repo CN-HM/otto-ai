@@ -55,7 +55,6 @@ public class AgentRoleRuntimeResolver : ITransientDependency
             UsesPublishedSnapshot = false,
             CurrentReleaseId = entity.CurrentReleaseId,
             CurrentVersion = entity.CurrentVersion,
-            PipelineTemplateId = entity.PipelineTemplateId,
             AsrProfileId = entity.AsrProfileId,
             VadProfileId = entity.VadProfileId,
             LlmProfileId = entity.LlmProfileId,
@@ -122,7 +121,6 @@ public class AgentRoleRuntimeResolver : ITransientDependency
             descriptor.Description ??= role.Description;
             descriptor.Status ??= role.Status;
             descriptor.ThemeToken ??= role.ThemeToken;
-            descriptor.PipelineTemplateId ??= role.PipelineTemplateId;
             descriptor.AsrProfileId ??= role.AsrProfileId;
             descriptor.VadProfileId ??= role.VadProfileId;
             descriptor.LlmProfileId ??= role.LlmProfileId;
@@ -169,7 +167,6 @@ public class AgentRoleRuntimeResolver : ITransientDependency
                 UsesPublishedSnapshot = false,
                 CurrentReleaseId = role.CurrentReleaseId,
                 CurrentVersion = role.CurrentVersion,
-                PipelineTemplateId = role.PipelineTemplateId,
                 AsrProfileId = role.AsrProfileId,
                 VadProfileId = role.VadProfileId,
                 LlmProfileId = role.LlmProfileId,

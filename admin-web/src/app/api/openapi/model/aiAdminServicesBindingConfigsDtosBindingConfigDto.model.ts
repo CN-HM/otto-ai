@@ -56,7 +56,6 @@ export interface AiAdminServicesBindingConfigsDtosBindingConfigDto {
     chunkSizeBytes?: number | null;
     language?: string | null;
     context?: string | null;
-    enableNonstream?: boolean | null;
     createdAt?: string | null;
     updatedAt?: string | null;
 }

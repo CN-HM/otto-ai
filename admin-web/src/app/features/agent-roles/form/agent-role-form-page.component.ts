@@ -40,8 +40,8 @@ interface SelectOption {
   label: string;
   value: string;
 }
-type BindingTypeKey = 'PIPELINE' | 'ASR' | 'LLM' | 'TTS' | 'VAD';
-type BindingControlName = 'pipelineTemplateId' | 'asrProfileId' | 'llmProfileId' | 'ttsProfileId' | 'vadProfileId';
+type BindingTypeKey = 'ASR' | 'LLM' | 'TTS' | 'VAD';
+type BindingControlName = 'asrProfileId' | 'llmProfileId' | 'ttsProfileId' | 'vadProfileId';
 interface KnowledgeBindingFormItem {
   datasetId: string;
   datasetName: string;
@@ -50,7 +50,6 @@ interface KnowledgeBindingFormItem {
 }
 
 const BINDING_CONTROL_BY_TYPE: Record<BindingTypeKey, BindingControlName> = {
-  PIPELINE: 'pipelineTemplateId',
   ASR: 'asrProfileId',
   LLM: 'llmProfileId',
   TTS: 'ttsProfileId',
@@ -101,7 +100,6 @@ export class AgentRoleFormPageComponent implements OnInit {
   readonly submitting = signal(false);
   readonly feedbackMessage = signal('');
   readonly isEdit = signal(false);
-  readonly pipelineTemplateOptions = signal<SelectOption[]>([]);
   readonly asrProfileOptions = signal<SelectOption[]>([]);
   readonly llmProfileOptions = signal<SelectOption[]>([]);
   readonly ttsProfileOptions = signal<SelectOption[]>([]);
@@ -165,7 +163,6 @@ export class AgentRoleFormPageComponent implements OnInit {
     icon: [''],
     coverImage: [''],
     themeToken: [''],
-    pipelineTemplateId: [''],
     asrProfileId: [''],
     vadProfileId: [''],
     llmProfileId: [''],
@@ -284,7 +281,6 @@ export class AgentRoleFormPageComponent implements OnInit {
             icon: item.icon || '',
             coverImage: item.coverImage || '',
             themeToken: item.themeToken || '',
-            pipelineTemplateId: item.pipelineTemplateId || '',
             asrProfileId: item.asrProfileId || '',
             vadProfileId: item.vadProfileId || '',
             llmProfileId: item.llmProfileId || '',
@@ -351,7 +347,6 @@ export class AgentRoleFormPageComponent implements OnInit {
       icon: this.normalizeOptional(raw.icon),
       coverImage: this.normalizeOptional(raw.coverImage),
       themeToken: this.normalizeOptional(raw.themeToken),
-      pipelineTemplateId: this.normalizeOptional(raw.pipelineTemplateId),
       asrProfileId: this.normalizeOptional(raw.asrProfileId),
       vadProfileId: this.normalizeOptional(raw.vadProfileId),
       llmProfileId: this.normalizeOptional(raw.llmProfileId),
@@ -459,26 +454,22 @@ export class AgentRoleFormPageComponent implements OnInit {
     this.agentRoleService.getBindingOptions().subscribe({
       next: (response: ApiResponse<AgentRoleBindingOptions>) => {
         if (response.code !== 0 || !response.data) {
-          this.setBindingOptions('PIPELINE', []);
           this.setBindingOptions('ASR', []);
           this.setBindingOptions('LLM', []);
           this.setBindingOptions('TTS', []);
           this.setBindingOptions('VAD', []);
           return;
         }
-        this.setBindingOptions('PIPELINE', this.mapOptionItems(response.data.pipelineTemplates));
         this.setBindingOptions('ASR', this.mapOptionItems(response.data.asrProfiles));
         this.setBindingOptions('LLM', this.mapOptionItems(response.data.llmProfiles));
         this.setBindingOptions('TTS', this.mapOptionItems(response.data.ttsProfiles));
         this.setBindingOptions('VAD', this.mapOptionItems(response.data.vadProfiles));
-        this.applyDefaultBindingSelection('PIPELINE', this.mapOptionItems(response.data.pipelineTemplates));
         this.applyDefaultBindingSelection('ASR', this.mapOptionItems(response.data.asrProfiles));
         this.applyDefaultBindingSelection('LLM', this.mapOptionItems(response.data.llmProfiles));
         this.applyDefaultBindingSelection('TTS', this.mapOptionItems(response.data.ttsProfiles));
         this.applyDefaultBindingSelection('VAD', this.mapOptionItems(response.data.vadProfiles));
       },
       error: () => {
-        this.setBindingOptions('PIPELINE', []);
         this.setBindingOptions('ASR', []);
         this.setBindingOptions('LLM', []);
         this.setBindingOptions('TTS', []);
@@ -489,9 +480,6 @@ export class AgentRoleFormPageComponent implements OnInit {
 
   private setBindingOptions(bindingType: BindingTypeKey, options: SelectOption[]): void {
     switch (bindingType) {
-      case 'PIPELINE':
-        this.pipelineTemplateOptions.set(options);
-        break;
       case 'ASR':
         this.asrProfileOptions.set(options);
         break;

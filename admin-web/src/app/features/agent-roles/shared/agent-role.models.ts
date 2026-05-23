@@ -33,7 +33,6 @@ export interface AgentRoleItem {
   icon?: string | null;
   coverImage?: string | null;
   themeToken?: string | null;
-  pipelineTemplateId?: string | null;
   asrProfileId?: string | null;
   vadProfileId?: string | null;
   llmProfileId?: string | null;
@@ -70,7 +69,6 @@ export interface AgentRoleItem {
 }
 
 export interface AgentRoleBindingOptions {
-  pipelineTemplates: { label: string; value: string; description?: string | null }[];
   asrProfiles: { label: string; value: string; description?: string | null }[];
   vadProfiles: { label: string; value: string; description?: string | null }[];
   llmProfiles: { label: string; value: string; description?: string | null }[];
@@ -105,7 +103,6 @@ export interface AgentRolePayload {
   icon?: string;
   coverImage?: string;
   themeToken?: string;
-  pipelineTemplateId?: string;
   asrProfileId?: string;
   vadProfileId?: string;
   llmProfileId?: string;

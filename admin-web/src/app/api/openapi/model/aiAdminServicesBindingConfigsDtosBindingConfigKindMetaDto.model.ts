@@ -50,7 +50,6 @@ export interface AiAdminServicesBindingConfigsDtosBindingConfigKindMetaDto {
     supportsChunkSizeBytes?: boolean;
     supportsLanguage?: boolean;
     supportsContext?: boolean;
-    supportsEnableNonstream?: boolean;
     supportsShowUtterances?: boolean;
     supportsResultType?: boolean;
     supportsVadHead?: boolean;

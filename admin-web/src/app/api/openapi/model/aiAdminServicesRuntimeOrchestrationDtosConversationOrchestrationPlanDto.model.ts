@@ -17,7 +17,6 @@ export interface AiAdminServicesRuntimeOrchestrationDtosConversationOrchestratio
     agentRoleVersion?: string | null;
     agentRoleReleaseId?: string | null;
     agentRoleConfigSource?: string | null;
-    pipelineTemplateId?: string | null;
     requestedInvocationMode?: string | null;
     effectiveInvocationMode?: string | null;
     fallbackMode?: string | null;

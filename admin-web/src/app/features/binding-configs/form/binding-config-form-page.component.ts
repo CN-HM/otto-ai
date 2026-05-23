@@ -370,13 +370,6 @@ function createDefaultPipelineStageEnabled(): PipelineStageEnabled {
           </div>
         }
 
-        @if (meta()?.supportsEnableNonstream) {
-          <div class="field-group toggle-field">
-            <label for="enableNonstream">启用非流式 (Enable Nonstream)</label>
-            <p-toggleSwitch id="enableNonstream" formControlName="enableNonstream"></p-toggleSwitch>
-          </div>
-        }
-
         @if (meta()?.supportsDimension) {
           <div class="field-group">
             <label for="dimension">向量维度</label>
@@ -529,7 +522,7 @@ export class BindingConfigFormPageComponent implements OnInit {
 
   private readonly providerAuthFieldMap: Record<string, string[]> = {
     ark: ['apiKey'],
-    doubao_speech: ['appId', 'accessToken', 'secretKey'],
+    doubao_speech: ['appId', 'accessToken'],
     dashscope: ['apiKey']
   };
 
@@ -539,8 +532,7 @@ export class BindingConfigFormPageComponent implements OnInit {
     },
     doubao_speech: {
       appId: 'App ID',
-      accessToken: 'Access Token',
-      secretKey: 'Secret Key'
+      accessToken: 'Access Token'
     },
     dashscope: {
       apiKey: 'API Key'
@@ -630,7 +622,6 @@ export class BindingConfigFormPageComponent implements OnInit {
     chunkSizeBytes: [null as number | null],
     language: [''],
     context: [''],
-    enableNonstream: [null as boolean | null],
     temperature: [null as number | null],
     maxTokens: [null as number | null],
     topP: [null as number | null],
@@ -854,7 +845,6 @@ export class BindingConfigFormPageComponent implements OnInit {
             chunkSizeBytes: item.chunkSizeBytes ?? null,
             language: item.language || '',
             context: item.context || '',
-            enableNonstream: item.enableNonstream ?? null,
             apiKey: item.apiKey || '',
             secretKey: item.secretKey || '',
             appId: item.appId || '',
@@ -977,8 +967,7 @@ export class BindingConfigFormPageComponent implements OnInit {
       chunkDurationMs: this.meta()?.supportsChunkDurationMs ? raw.chunkDurationMs : undefined,
       chunkSizeBytes: this.meta()?.supportsChunkSizeBytes ? raw.chunkSizeBytes : undefined,
       language: this.meta()?.supportsLanguage ? this.normalize(raw.language) : undefined,
-      context: this.meta()?.supportsContext ? this.normalize(raw.context) : undefined,
-      enableNonstream: this.meta()?.supportsEnableNonstream ? raw.enableNonstream : undefined
+      context: this.meta()?.supportsContext ? this.normalize(raw.context) : undefined
     };
 
     this.feedbackMessage.set('');
@@ -1127,7 +1116,6 @@ export class BindingConfigFormPageComponent implements OnInit {
         chunkSizeBytes: null,
         language: '',
         context: '',
-        enableNonstream: null,
         apiKey: '',
         secretKey: '',
         appId: '',

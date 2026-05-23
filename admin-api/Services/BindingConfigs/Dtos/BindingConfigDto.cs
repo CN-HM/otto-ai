@@ -48,7 +48,6 @@ public class BindingConfigDto
     public int? ChunkSizeBytes { get; set; }
     public string? Language { get; set; }
     public string? Context { get; set; }
-    public bool? EnableNonstream { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

@@ -24,7 +24,6 @@ public sealed class MemoryExtractionBackgroundJobArgs
     public string? OrchestrationAgentRoleReleaseId { get; set; }
     public string? OrchestrationSessionId { get; set; }
     public string? OrchestrationDeviceId { get; set; }
-    public string? PipelineTemplateId { get; set; }
     public string? VadProfileId { get; set; }
     public string? AsrProfileId { get; set; }
     public string? LlmProfileId { get; set; }
@@ -61,7 +60,6 @@ public sealed class MemoryExtractionBackgroundJobArgs
             AgentRoleReleaseId = OrchestrationAgentRoleReleaseId,
             SessionId = OrchestrationSessionId,
             DeviceId = OrchestrationDeviceId,
-            PipelineTemplateId = PipelineTemplateId,
             VadProfileId = VadProfileId,
             AsrProfileId = AsrProfileId,
             LlmProfileId = LlmProfileId,

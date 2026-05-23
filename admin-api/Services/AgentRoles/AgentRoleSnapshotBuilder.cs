@@ -22,7 +22,6 @@ public static class AgentRoleSnapshotBuilder
             role.Icon,
             role.CoverImage,
             role.ThemeToken,
-            role.PipelineTemplateId,
             role.AsrProfileId,
             role.LlmProfileId,
             role.TtsProfileId,

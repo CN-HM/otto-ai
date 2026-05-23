@@ -15,7 +15,6 @@ export interface AiAdminServicesRuntimeOrchestrationDtosConversationOrchestratio
     agentRoleReleaseId?: string | null;
     sessionId?: string | null;
     deviceId?: string | null;
-    pipelineTemplateId?: string | null;
     vadProfileId?: string | null;
     asrProfileId?: string | null;
     llmProfileId?: string | null;

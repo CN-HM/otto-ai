@@ -259,7 +259,6 @@ public class MemoryExtractionService : ITransientDependency
             AgentRoleReleaseId = source.AgentRoleReleaseId,
             SessionId = source.SessionId,
             DeviceId = source.DeviceId,
-            PipelineTemplateId = source.PipelineTemplateId,
             VadProfileId = source.VadProfileId,
             AsrProfileId = source.AsrProfileId,
             LlmProfileId = memoryModelId,

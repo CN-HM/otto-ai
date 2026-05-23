@@ -3,6 +3,7 @@ using System;
 using AiAdmin.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Volo.Abp.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace AiAdmin.Migrations
 {
     [DbContext(typeof(AiAdminDbContext))]
-    partial class AiAdminDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260523115136_RemoveEnableNonstreamFromAsrProfile")]
+    partial class RemoveEnableNonstreamFromAsrProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -388,6 +391,11 @@ namespace AiAdmin.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
+                    b.Property<string>("PipelineTemplateId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("pipeline_template_id");
+
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("published_at");
@@ -459,6 +467,8 @@ namespace AiAdmin.Migrations
                         .IsUnique();
 
                     b.HasIndex("LlmProfileId");
+
+                    b.HasIndex("PipelineTemplateId");
 
                     b.HasIndex("TtsProfileId");
 
@@ -2202,6 +2212,78 @@ namespace AiAdmin.Migrations
                     b.HasIndex("ProviderCode", "TransactionNo");
 
                     b.ToTable("ai_payment_transaction");
+                });
+
+            modelBuilder.Entity("AiAdmin.Entities.AiPipelineTemplate", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long?>("Creator")
+                        .HasColumnType("bigint")
+                        .HasColumnName("creator");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("GraphJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("graph_json");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_system");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Sort")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long?>("Updater")
+                        .HasColumnType("bigint")
+                        .HasColumnName("updater");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("Status", "Sort");
+
+                    b.ToTable("ai_pipeline_template");
                 });
 
             modelBuilder.Entity("AiAdmin.Entities.AiProviderIntegration", b =>

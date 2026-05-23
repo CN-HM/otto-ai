@@ -47,5 +47,4 @@ public class BindingConfigUpsertDto
     public int? ChunkSizeBytes { get; set; }
     public string? Language { get; set; }
     public string? Context { get; set; }
-    public bool? EnableNonstream { get; set; }
 }

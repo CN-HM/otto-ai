@@ -44,10 +44,6 @@ public class AiAgentRole
     [MaxLength(100)]
     public string? ThemeToken { get; set; }
 
-    [Column("pipeline_template_id")]
-    [MaxLength(32)]
-    public string? PipelineTemplateId { get; set; }
-
     [Column("asr_profile_id")]
     [MaxLength(32)]
     public string? AsrProfileId { get; set; }

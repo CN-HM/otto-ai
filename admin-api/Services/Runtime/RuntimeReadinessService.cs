@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using AiAdmin.Config;
 using AiAdmin.Data;
 using AiAdmin.Entities;
@@ -51,16 +50,12 @@ public class RuntimeReadinessService : ITransientDependency
         var agentRoles = await _db.AiAgentRoles.AsNoTracking()
             .Where(x => x.Status == "active")
             .ToListAsync(cancellationToken);
-        var pipelineTemplates = await _db.AiPipelineTemplates.AsNoTracking()
-            .Where(x => x.Status == "active")
-            .ToListAsync(cancellationToken);
         var devices = await _db.AiDevices.AsNoTracking().ToListAsync(cancellationToken);
         var activeIntegrationMap = activeIntegrations.ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
-        var pipelineTemplateMap = pipelineTemplates.ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
 
         var runtimeSwitchCheck = BuildRuntimeSwitchCheck();
         var modelPathAssessment = AssessModelPathReadiness(asrProfiles, vadProfiles, llmProfiles, ttsProfiles, activeIntegrationMap);
-        var agentRoleRouteAssessment = AssessAgentRoleRouteReadiness(agentRoles, modelPathAssessment.ReadyConfigIdsByType, pipelineTemplateMap);
+        var agentRoleRouteAssessment = AssessAgentRoleRouteReadiness(agentRoles, modelPathAssessment.ReadyConfigIdsByType);
         var deviceProvisioningCheck = BuildDeviceProvisioningCheck(devices, agentRoleRouteAssessment.ReadyAgentRoleIds);
 
         var checks = new[]
@@ -151,8 +146,7 @@ public class RuntimeReadinessService : ITransientDependency
 
     private AgentRoleRouteAssessment AssessAgentRoleRouteReadiness(
         IReadOnlyList<AiAgentRole> agentRoles,
-        IReadOnlyDictionary<PipelineStageType, HashSet<string>> readyConfigIdsByType,
-        IReadOnlyDictionary<string, AiPipelineTemplate> pipelineTemplateMap)
+        IReadOnlyDictionary<PipelineStageType, HashSet<string>> readyConfigIdsByType)
     {
         var readyAgentRoleIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var missingVadCount = 0;
@@ -163,7 +157,7 @@ public class RuntimeReadinessService : ITransientDependency
 
         foreach (var agentRole in agentRoles)
         {
-            var pipelineConfig = ResolveReadinessPipelineConfig(agentRole.PipelineTemplateId, pipelineTemplateMap);
+            var pipelineConfig = ReadinessPipelineConfig.Default;
             var vadProfileId = pipelineConfig.IsStageEnabled(PipelineStageType.Vad) ? agentRole.VadProfileId : null;
             var asrProfileId = pipelineConfig.IsStageEnabled(PipelineStageType.Asr) ? agentRole.AsrProfileId : null;
             var llmProfileId = pipelineConfig.IsStageEnabled(PipelineStageType.Llm) ? agentRole.LlmProfileId : null;
@@ -331,17 +325,6 @@ public class RuntimeReadinessService : ITransientDependency
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 
-    private static ReadinessPipelineConfig ResolveReadinessPipelineConfig(
-        string? pipelineTemplateId,
-        IReadOnlyDictionary<string, AiPipelineTemplate> pipelineTemplateMap)
-    {
-        var normalizedId = NormalizeValue(pipelineTemplateId);
-        if (normalizedId == null || !pipelineTemplateMap.TryGetValue(normalizedId, out var template))
-            return ReadinessPipelineConfig.Default;
-
-        return ReadinessPipelineConfig.FromGraphJson(template.GraphJson);
-    }
-
     private sealed record ModelPathAssessment(
         RuntimeReadinessCheckDto Check,
         IReadOnlyDictionary<PipelineStageType, HashSet<string>> ReadyConfigIdsByType);
@@ -365,45 +348,6 @@ public class RuntimeReadinessService : ITransientDependency
         public bool IsStageEnabled(PipelineStageType stage)
         {
             return _enabledStages.Contains(stage);
-        }
-
-        public static ReadinessPipelineConfig FromGraphJson(string? graphJson)
-        {
-            var normalized = NormalizeValue(graphJson);
-            if (normalized == null)
-                return Default;
-
-            try
-            {
-                using var document = JsonDocument.Parse(normalized);
-                var root = document.RootElement;
-                if (root.ValueKind != JsonValueKind.Object)
-                    return Default;
-
-                var enabledStages = ReadEnabledStages(root);
-                return new ReadinessPipelineConfig(enabledStages);
-            }
-            catch (JsonException)
-            {
-                return Default;
-            }
-        }
-
-        private static HashSet<PipelineStageType> ReadEnabledStages(JsonElement root)
-        {
-            if (!root.TryGetProperty("enabledStages", out var enabledElement) || enabledElement.ValueKind != JsonValueKind.Array)
-                return StageNames.ToHashSet();
-
-            var result = new HashSet<PipelineStageType>();
-            foreach (var item in enabledElement.EnumerateArray())
-            {
-                if (item.ValueKind != JsonValueKind.String)
-                    continue;
-                if (PipelineStageTypeConverter.TryParse(item.GetString(), out var stage))
-                    result.Add(stage);
-            }
-
-            return result;
         }
     }
 }

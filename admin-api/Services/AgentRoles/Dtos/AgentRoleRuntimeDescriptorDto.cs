@@ -13,7 +13,6 @@ public class AgentRoleRuntimeDescriptorDto
     public bool UsesPublishedSnapshot { get; set; }
     public string? CurrentReleaseId { get; set; }
     public string? CurrentVersion { get; set; }
-    public string? PipelineTemplateId { get; set; }
     public string? AsrProfileId { get; set; }
     public string? VadProfileId { get; set; }
     public string? LlmProfileId { get; set; }

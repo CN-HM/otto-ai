@@ -116,7 +116,6 @@ public class DeviceConversationRuntimeService : ITransientDependency
             AgentRoleReleaseId = NormalizeOptionalText(device.AgentRoleReleaseId),
             SessionId = NormalizeOptionalText(request.SessionId),
             DeviceId = device.Id,
-            PipelineTemplateId = agentRole.PipelineTemplateId,
             RequestedInvocationMode = "streaming",
             PreferStreaming = true
         });
@@ -169,14 +168,11 @@ public class DeviceConversationRuntimeService : ITransientDependency
                 AgentRoleReleaseId = NormalizeOptionalText(device.AgentRoleReleaseId),
                 SessionId = NormalizeOptionalText(request.SessionId),
                 DeviceId = device.Id,
-                PipelineTemplateId = agentRole.PipelineTemplateId,
                 RequestedInvocationMode = "non_streaming",
                 PreferStreaming = false
             };
             var streamingOrchestrationRequest = CreateStreamingOrchestrationRequest(orchestrationRequest);
             var plan = await _conversationOrchestrationService.BuildPlanAsync(orchestrationRequest, cancellationToken);
-            if (plan.Asr == null)
-                throw new InvalidOperationException("当前 Pipeline 已禁用 ASR 节点，无法处理音频输入");
 
             var asrResponse = await _conversationStageExecutionService.RecognizeAsync(orchestrationRequest,
                 new AsrRecognitionRequestDto
@@ -274,7 +270,6 @@ public class DeviceConversationRuntimeService : ITransientDependency
             AgentRoleReleaseId = NormalizeOptionalText(device.AgentRoleReleaseId),
             SessionId = NormalizeOptionalText(request.SessionId),
             DeviceId = device.Id,
-            PipelineTemplateId = agentRole.PipelineTemplateId,
             RequestedInvocationMode = "non_streaming",
             PreferStreaming = false
         };
@@ -703,7 +698,6 @@ public class DeviceConversationRuntimeService : ITransientDependency
             AgentRoleReleaseId = request.AgentRoleReleaseId,
             SessionId = request.SessionId,
             DeviceId = request.DeviceId,
-            PipelineTemplateId = request.PipelineTemplateId,
             VadProfileId = request.VadProfileId,
             AsrProfileId = request.AsrProfileId,
             LlmProfileId = request.LlmProfileId,

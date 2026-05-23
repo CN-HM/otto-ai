@@ -1,9 +1,7 @@
 using System.Text.Json;
-using AiAdmin.Data;
 using AiAdmin.Services.AgentRoles;
 using AiAdmin.Services.Runtime;
 using AiAdmin.Services.Runtime.Orchestration.Dtos;
-using Microsoft.EntityFrameworkCore;
 using Volo.Abp.DependencyInjection;
 
 namespace AiAdmin.Services.Runtime.Orchestration;
@@ -25,16 +23,13 @@ public class ConversationOrchestrationService : IConversationOrchestrationServic
 
     private readonly AgentRoleRuntimeResolver _agentRoleRuntimeResolver;
     private readonly IModelProviderCapabilityResolver _modelProviderCapabilityResolver;
-    private readonly AiAdminDbContext _db;
 
     public ConversationOrchestrationService(
         AgentRoleRuntimeResolver agentRoleRuntimeResolver,
-        IModelProviderCapabilityResolver modelProviderCapabilityResolver,
-        AiAdminDbContext db)
+        IModelProviderCapabilityResolver modelProviderCapabilityResolver)
     {
         _agentRoleRuntimeResolver        = agentRoleRuntimeResolver;
         _modelProviderCapabilityResolver = modelProviderCapabilityResolver;
-        _db = db;
     }
 
     public async Task<ConversationOrchestrationPlanDto> BuildPlanAsync(ConversationOrchestrationRequestDto request,
@@ -50,8 +45,7 @@ public class ConversationOrchestrationService : IConversationOrchestrationServic
             agentRole.PreferredInvocationMode);
         var fallbackMode            = NormalizeMode(agentRole.FallbackMode);
         var preferredInvocationMode = NormalizeMode(agentRole.PreferredInvocationMode);
-        var pipelineConfig = await ResolvePipelineConfigAsync(request.PipelineTemplateId ?? agentRole.PipelineTemplateId,
-            cancellationToken);
+        var pipelineConfig = PipelineRuntimeConfig.Default(null);
         var effectiveVadProfileId = ResolveProfileId(request.VadProfileId,
             agentRole.VadProfileId,
             pipelineConfig.IsStageEnabled(PipelineStageType.Vad));
@@ -84,7 +78,6 @@ public class ConversationOrchestrationService : IConversationOrchestrationServic
             AgentRoleVersion        = agentRole.CurrentVersion,
             AgentRoleReleaseId      = agentRole.CurrentReleaseId,
             AgentRoleConfigSource   = agentRole.RuntimeConfigSource,
-            PipelineTemplateId       = pipelineConfig.TemplateId,
             RequestedInvocationMode = requestedInvocationMode,
             EffectiveInvocationMode = requestedInvocationMode,
             FallbackMode            = fallbackMode,
@@ -248,20 +241,6 @@ public class ConversationOrchestrationService : IConversationOrchestrationServic
             return;
         if (allowDuplicate || !warnings.Contains(warning))
             warnings.Add(warning);
-    }
-
-    private async Task<PipelineRuntimeConfig> ResolvePipelineConfigAsync(string? pipelineTemplateId, CancellationToken cancellationToken)
-    {
-        var normalizedId = NormalizeValue(pipelineTemplateId);
-        if (normalizedId == null)
-            return PipelineRuntimeConfig.Default(null);
-
-        var template = await _db.AiPipelineTemplates.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == normalizedId && x.Status == "active", cancellationToken);
-        if (template == null)
-            return PipelineRuntimeConfig.Default(normalizedId);
-
-        return PipelineRuntimeConfig.FromGraphJson(template.Id, template.GraphJson);
     }
 
     private static string? ResolveProfileId(string? requestProfileId, string? agentRoleProfileId, bool stageEnabled)

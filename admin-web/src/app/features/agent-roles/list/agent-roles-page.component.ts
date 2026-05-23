@@ -379,9 +379,6 @@ export class AgentRolesPageComponent implements OnInit {
 
   roleConfigDetails(item: AgentRoleItem): { label: string; value: string }[] {
     const details: { label: string; value: string }[] = [];
-    if (item.pipelineTemplateId) {
-      details.push({ label: 'Pipeline', value: item.pipelineTemplateId });
-    }
     if (item.asrProfileId) {
       details.push({ label: 'ASR', value: item.asrProfileId });
     }

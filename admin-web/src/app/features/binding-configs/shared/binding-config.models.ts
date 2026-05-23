@@ -95,7 +95,6 @@ export interface BindingConfigKindMeta {
   supportsChunkSizeBytes: boolean;
   supportsLanguage: boolean;
   supportsContext: boolean;
-  supportsEnableNonstream: boolean;
 }
 
 export interface BindingConfigOption {
@@ -151,7 +150,6 @@ export interface BindingConfigItem {
   chunkSizeBytes?: number | null;
   language?: string | null;
   context?: string | null;
-  enableNonstream?: boolean | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 }
@@ -226,5 +224,4 @@ export interface BindingConfigPayload {
   chunkSizeBytes?: number | null;
   language?: string | null;
   context?: string | null;
-  enableNonstream?: boolean | null;
 }

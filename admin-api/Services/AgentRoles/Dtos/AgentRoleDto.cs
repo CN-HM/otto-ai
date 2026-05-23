@@ -12,7 +12,6 @@ public class AgentRoleDto
     public string? Icon { get; set; }
     public string? CoverImage { get; set; }
     public string? ThemeToken { get; set; }
-    public string? PipelineTemplateId { get; set; }
     public string? AsrProfileId { get; set; }
     public string? VadProfileId { get; set; }
     public string? LlmProfileId { get; set; }

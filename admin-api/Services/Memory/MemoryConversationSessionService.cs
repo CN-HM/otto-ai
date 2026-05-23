@@ -136,7 +136,6 @@ public class MemoryConversationSessionService : ITransientDependency
             OrchestrationAgentRoleReleaseId = orchestrationRequest.AgentRoleReleaseId,
             OrchestrationSessionId = orchestrationRequest.SessionId,
             OrchestrationDeviceId = orchestrationRequest.DeviceId,
-            PipelineTemplateId = orchestrationRequest.PipelineTemplateId,
             VadProfileId = orchestrationRequest.VadProfileId,
             AsrProfileId = orchestrationRequest.AsrProfileId,
             LlmProfileId = orchestrationRequest.LlmProfileId,

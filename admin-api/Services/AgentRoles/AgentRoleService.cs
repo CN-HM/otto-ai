@@ -99,7 +99,6 @@ public class AgentRoleService : ITransientDependency
             Icon = NormalizeOptionalText(dto.Icon),
             CoverImage = NormalizeOptionalText(dto.CoverImage),
             ThemeToken = NormalizeOptionalText(dto.ThemeToken),
-            PipelineTemplateId = NormalizeOptionalText(dto.PipelineTemplateId),
             AsrProfileId = NormalizeOptionalText(dto.AsrProfileId),
             VadProfileId = NormalizeOptionalText(dto.VadProfileId),
             LlmProfileId = NormalizeOptionalText(dto.LlmProfileId),
@@ -153,7 +152,6 @@ public class AgentRoleService : ITransientDependency
         entity.Icon = NormalizeOptionalText(dto.Icon);
         entity.CoverImage = NormalizeOptionalText(dto.CoverImage);
         entity.ThemeToken = NormalizeOptionalText(dto.ThemeToken);
-        entity.PipelineTemplateId = NormalizeOptionalText(dto.PipelineTemplateId);
         entity.AsrProfileId = NormalizeOptionalText(dto.AsrProfileId);
         entity.VadProfileId = NormalizeOptionalText(dto.VadProfileId);
         entity.LlmProfileId = NormalizeOptionalText(dto.LlmProfileId);
@@ -506,7 +504,6 @@ public class AgentRoleService : ITransientDependency
             Icon = entity.Icon,
             CoverImage = entity.CoverImage,
             ThemeToken = entity.ThemeToken,
-            PipelineTemplateId = entity.PipelineTemplateId,
             AsrProfileId = entity.AsrProfileId,
             VadProfileId = entity.VadProfileId,
             LlmProfileId = entity.LlmProfileId,
@@ -646,11 +643,6 @@ public class AgentRoleService : ITransientDependency
 
     private async Task EnsureBindingTargetsExistAsync(AgentRoleUpsertDto dto, CancellationToken cancellationToken)
     {
-        var pipelineTemplateId = NormalizeOptionalText(dto.PipelineTemplateId);
-        if (!string.IsNullOrWhiteSpace(pipelineTemplateId)
-            && !await _db.AiPipelineTemplates.AsNoTracking().AnyAsync(x => x.Id == pipelineTemplateId, cancellationToken))
-            throw new InvalidOperationException("Error:PipelineConfigNotFound");
-
         var asrProfileId = NormalizeOptionalText(dto.AsrProfileId);
         if (!string.IsNullOrWhiteSpace(asrProfileId)
             && !await _db.AiAsrProfiles.AsNoTracking().AnyAsync(x => x.Id == asrProfileId, cancellationToken))
@@ -836,13 +828,6 @@ public class AgentRoleService : ITransientDependency
 
     public async Task<AgentRoleBindingOptionsDto> GetBindingOptionsAsync(CancellationToken cancellationToken = default)
     {
-        var pipelineTemplates = await _db.AiPipelineTemplates.AsNoTracking()
-            .Where(x => x.Status == "active")
-            .OrderByDescending(x => x.IsSystem)
-            .ThenBy(x => x.Sort)
-            .ThenBy(x => x.Name)
-            .ToListAsync(cancellationToken);
-
         var asrProfiles = await _db.AiAsrProfiles.AsNoTracking()
             .Where(x => x.IsEnabled && x.Status == "active")
             .OrderByDescending(x => x.IsDefault)
@@ -873,12 +858,6 @@ public class AgentRoleService : ITransientDependency
 
         return new AgentRoleBindingOptionsDto
         {
-            PipelineTemplates = pipelineTemplates.Select(item => new OptionItemDto
-            {
-                Label = item.Name,
-                Value = item.Id,
-                Description = item.Description
-            }).ToList(),
             AsrProfiles = asrProfiles.Select(item => BuildProfileOption(item.Name, item.Id, item.Description, item.IsDefault)).ToList(),
             VadProfiles = vadProfiles.Select(item => BuildProfileOption(item.Name, item.Id, item.Description, item.IsDefault)).ToList(),
             LlmProfiles = llmProfiles.Select(item => BuildProfileOption(item.Name, item.Id, item.Description, item.IsDefault)).ToList(),

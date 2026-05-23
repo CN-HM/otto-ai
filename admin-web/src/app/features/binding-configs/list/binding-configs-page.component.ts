@@ -607,7 +607,6 @@ export class BindingConfigsPageComponent implements OnInit {
       chunkSizeBytes: merged.chunkSizeBytes ?? null,
       language: this.normalizeOptional(merged.language),
       context: this.normalizeOptional(merged.context),
-      enableNonstream: merged.enableNonstream ?? null,
       apiKey: this.normalizeOptional(merged.apiKey),
       secretKey: this.normalizeOptional(merged.secretKey),
       appId: this.normalizeOptional(merged.appId),

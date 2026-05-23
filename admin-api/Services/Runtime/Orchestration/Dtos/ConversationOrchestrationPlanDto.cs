@@ -8,7 +8,6 @@ public class ConversationOrchestrationPlanDto
     public string? AgentRoleVersion { get; set; }
     public string? AgentRoleReleaseId { get; set; }
     public string? AgentRoleConfigSource { get; set; }
-    public string? PipelineTemplateId { get; set; }
     public string RequestedInvocationMode { get; set; } = "non_streaming";
     public string EffectiveInvocationMode { get; set; } = "non_streaming";
     public string FallbackMode { get; set; } = "non_streaming";
