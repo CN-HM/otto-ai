@@ -121,6 +121,10 @@ public abstract class OpenAiCompatibleHttpAdapterBase : ProviderAdapterBase
             };
             if (!string.IsNullOrWhiteSpace(message.Name))
                 json["name"] = message.Name;
+            if (!string.IsNullOrWhiteSpace(message.ToolCallId))
+                json["tool_call_id"] = message.ToolCallId;
+            if (message.ToolCalls is { Count: > 0 })
+                json["tool_calls"] = message.ToolCalls.DeepClone();
             messages.Add(json);
         }
 

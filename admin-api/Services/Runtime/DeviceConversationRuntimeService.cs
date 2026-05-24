@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Nodes;
 using AiAdmin.Data;
 using AiAdmin.Entities;
 using AiAdmin.Services.AgentRoles;
@@ -62,7 +63,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
     private readonly AgentRoleKnowledgeRetrievalService _agentRoleKnowledgeRetrievalService;
     private readonly MemoryLibraryService _memoryLibraryService;
     private readonly MemoryConversationSessionService _memoryConversationSessionService;
-    private readonly ActionRuleExecutionService _actionRuleExecutionService;
+    private readonly ConversationToolLoop _toolLoop;
     private readonly ConversationRuntimeTraceAggregator _traceAggregator;
     private readonly ILogger<DeviceConversationRuntimeService> _logger;
 
@@ -74,7 +75,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
         AgentRoleKnowledgeRetrievalService agentRoleKnowledgeRetrievalService,
         MemoryLibraryService memoryLibraryService,
         MemoryConversationSessionService memoryConversationSessionService,
-        ActionRuleExecutionService actionRuleExecutionService,
+        ConversationToolLoop toolLoop,
         ConversationRuntimeTraceAggregator traceAggregator,
         ILogger<DeviceConversationRuntimeService> logger)
     {
@@ -85,7 +86,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
         _agentRoleKnowledgeRetrievalService = agentRoleKnowledgeRetrievalService;
         _memoryLibraryService = memoryLibraryService;
         _memoryConversationSessionService = memoryConversationSessionService;
-        _actionRuleExecutionService = actionRuleExecutionService;
+        _toolLoop = toolLoop;
         _traceAggregator = traceAggregator;
         _logger = logger;
     }
@@ -341,111 +342,44 @@ public class DeviceConversationRuntimeService : ITransientDependency
             ? ragResponse.FallbackReplyText
             : null);
         var audioSegments = new List<byte[]>();
-        var audioSegmentsLock = new object();
         var outputSampleRate = 16000;
         var outputChannels = 1;
         var ttsVoice = await ResolveTtsVoiceAsync(effectiveTtsVoiceId, plan.Tts?.ProfileId, cancellationToken);
 
         if (string.IsNullOrWhiteSpace(replyText))
         {
-            if (ttsEnabled)
+            var toolDefinitions = await BuildActiveToolDefinitionsAsync(cancellationToken);
+            var toolContext = new ConversationContext
             {
-                var sentenceBuffer = new ConversationStreamingSentenceBuffer();
-                await using var ttsSession = await _conversationStageExecutionService.CreateStreamingTtsSessionAsync(streamingOrchestrationRequest,
-                    CreateTtsRequest(ttsVoice, responseFormat: "pcm"),
-                    async (ttsEvent, ct) =>
-                    {
-                        if (ttsEvent.EventType != "audio_chunk" || ttsEvent.AudioBytes.Length == 0)
-                            return;
+                AgentRoleId = agentRole.Id,
+                DeviceId = device.Id,
+                SessionId = orchestrationRequest.SessionId,
+                UserId = device.UserId
+            };
 
-                        var pcmChunk = NormalizeTtsAudioChunk(ttsEvent.AudioBytes, ttsEvent.Format, out var sampleRate, out var channels);
-                        if (pcmChunk.Length == 0)
-                            return;
-
-                        lock (audioSegmentsLock)
-                        {
-                            audioSegments.Add(pcmChunk);
-                            outputSampleRate = sampleRate;
-                            outputChannels = channels;
-                        }
-
-                        if (onReplySegment != null)
-                        {
-                            await onReplySegment(new DeviceConversationReplyAudioSegment
-                            {
-                                Text = ttsEvent.Text ?? string.Empty,
-                                TtsPcm16Le = pcmChunk,
-                                SampleRate = sampleRate,
-                                Channels = channels
-                            }, ct);
-                        }
-                    },
-                    cancellationToken);
-
-                try
-                {
-                    var llmResponse = await _conversationStageExecutionService.ChatStreamingAsync(streamingOrchestrationRequest,
-                        new LlmChatRequestDto
-                        {
-                            SystemPrompt = BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext),
-                            Stream = true,
-                            Messages =
-                            [
-                                new LlmChatMessageDto
-                                {
-                                    Role = "user",
-                                    Content = transcript
-                                }
-                            ]
-                        },
-                        async (chunk, ct) =>
-                        {
-                            foreach (var sentence in sentenceBuffer.Append(chunk.TextDelta))
-                                await ttsSession.SendTextAsync(sentence, ct);
-                        },
-                        cancellationToken);
-                    AddStageTraceThreadSafe(stageTraceLock, stageTraces, llmResponse.StageTrace);
-                    replyText = NormalizeOptionalText(llmResponse.Text);
-
-                    var remainingSentence = sentenceBuffer.FlushRemaining();
-                    if (!string.IsNullOrWhiteSpace(remainingSentence))
-                        await ttsSession.SendTextAsync(remainingSentence, cancellationToken);
-
-                    var ttsResponse = await ttsSession.CompleteAsync(cancellationToken);
-                    AddStageTraceThreadSafe(stageTraceLock, stageTraces, ttsResponse.StageTrace);
-                }
-                catch
-                {
-                    await ttsSession.CancelAsync(CancellationToken.None);
-                    throw;
-                }
-            }
-            else
+            var toolMessages = new List<LlmChatMessageDto>
             {
-                var llmResponse = await _conversationStageExecutionService.ChatAsync(orchestrationRequest,
-                    new LlmChatRequestDto
-                    {
-                        SystemPrompt = BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext),
-                        Stream = false,
-                        Messages =
-                        [
-                            new LlmChatMessageDto
-                            {
-                                Role = "user",
-                                Content = transcript
-                            }
-                        ]
-                    },
-                    cancellationToken);
-                AddStageTraceThreadSafe(stageTraceLock, stageTraces, llmResponse.StageTrace);
-                replyText = NormalizeOptionalText(llmResponse.Text);
-            }
+                new() { Role = "user", Content = transcript }
+            };
+
+            var effectiveSystemPromptResolved = NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt;
+            var systemPrompt = BuildRuntimeSystemPrompt(effectiveSystemPromptResolved, memoryContext);
+
+            var toolLoopResult = await _toolLoop.RunAsync(
+                orchestrationRequest,
+                systemPrompt,
+                toolMessages,
+                toolDefinitions,
+                toolContext,
+                cancellationToken);
+
+            replyText = NormalizeOptionalText(toolLoopResult.FinalReply);
         }
 
         if (string.IsNullOrWhiteSpace(replyText))
             return null;
 
-        if (audioSegments.Count == 0 && ttsEnabled)
+        if (ttsEnabled)
         {
             var ttsResponse = await _conversationStageExecutionService.SynthesizeAsync(streamingOrchestrationRequest,
                 CreateTtsRequest(ttsVoice, replyText, "wav"),
@@ -476,10 +410,6 @@ public class DeviceConversationRuntimeService : ITransientDependency
         if (string.IsNullOrWhiteSpace(replyText))
             return null;
 
-        replyText = await AppendActionConfirmationAsync(
-            agentRole, device, orchestrationRequest, orchestrationRequest.SessionId,
-            transcript, replyText, cancellationToken);
-
         return new DeviceConversationTurnResult
         {
             Transcript = transcript,
@@ -502,55 +432,31 @@ public class DeviceConversationRuntimeService : ITransientDependency
         }
     }
 
-    private async Task<string> AppendActionConfirmationAsync(
-        AgentRoles.Dtos.AgentRoleRuntimeDescriptorDto agentRole,
-        AiDevice device,
-        ConversationOrchestrationRequestDto orchestrationRequest,
-        string? sessionId,
-        string transcript,
-        string replyText,
-        CancellationToken cancellationToken)
+    private async Task<List<McpToolDefinition>> BuildActiveToolDefinitionsAsync(CancellationToken cancellationToken)
     {
-        try
+        var tools = await _db.AiMcpTools
+            .AsNoTracking()
+            .Where(x => x.Status == "active")
+            .OrderBy(x => x.Sort)
+            .ThenBy(x => x.Code)
+            .ToListAsync(cancellationToken);
+
+        return tools.Select(tool =>
         {
-            var signals = await _actionRuleExecutionService.ExecuteSyncAsync(
-                agentRole, device, orchestrationRequest, sessionId, transcript, replyText, cancellationToken);
+            JsonObject? schema = null;
+            if (!string.IsNullOrWhiteSpace(tool.ParamSchema))
+            {
+                try { schema = JsonNode.Parse(tool.ParamSchema) as JsonObject; }
+                catch { }
+            }
 
-            if (signals.Count == 0)
-                return replyText;
-
-            var createdSignals = signals.Where(x => x.Created).ToList();
-            if (createdSignals.Count == 0)
-                return replyText;
-
-            var confirmation = BuildActionConfirmation(createdSignals);
-            return string.IsNullOrWhiteSpace(confirmation) ? replyText : $"{replyText}\n\n{confirmation}";
-        }
-        catch
-        {
-            return replyText;
-        }
-    }
-
-    private static string BuildActionConfirmation(List<ActionRuleExecutionResult> signals)
-    {
-        var todoItems = signals.Where(x => x.ActionType == "todo").ToList();
-        var reminderItems = signals.Where(x => x.ActionType == "reminder").ToList();
-        var parts = new List<string>();
-
-        if (todoItems.Count > 0)
-        {
-            var items = todoItems.Select(x => $"「{x.SourceText}」").ToList();
-            parts.Add($"已记录待办：{string.Join("、", items)}");
-        }
-
-        if (reminderItems.Count > 0)
-        {
-            var items = reminderItems.Select(x => $"「{x.SourceText}」").ToList();
-            parts.Add($"已设置提醒：{string.Join("、", items)}");
-        }
-
-        return parts.Count > 0 ? string.Join("\n", parts) : string.Empty;
+            return new McpToolDefinition
+            {
+                Name = tool.Code,
+                Description = tool.Description ?? tool.Name,
+                InputSchema = schema
+            };
+        }).ToList();
     }
 
     private async Task AppendMemoryConversationTurnAsync(
