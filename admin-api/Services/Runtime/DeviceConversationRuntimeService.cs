@@ -9,6 +9,7 @@ using AiAdmin.Services.Runtime.Execution;
 using AiAdmin.Services.Runtime.Execution.Dtos;
 using AiAdmin.Services.Runtime.Orchestration;
 using AiAdmin.Services.Runtime.Orchestration.Dtos;
+using AiAdmin.Services.SystemPrompt;
 using AiAdmin.Services.Voice;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -66,6 +67,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
     private readonly ConversationToolLoop _toolLoop;
     private readonly ConversationRuntimeTraceAggregator _traceAggregator;
     private readonly ILogger<DeviceConversationRuntimeService> _logger;
+    private readonly SystemPromptTemplateRenderer _templateRenderer;
 
     public DeviceConversationRuntimeService(
         AiAdminDbContext db,
@@ -77,7 +79,8 @@ public class DeviceConversationRuntimeService : ITransientDependency
         MemoryConversationSessionService memoryConversationSessionService,
         ConversationToolLoop toolLoop,
         ConversationRuntimeTraceAggregator traceAggregator,
-        ILogger<DeviceConversationRuntimeService> logger)
+        ILogger<DeviceConversationRuntimeService> logger,
+        SystemPromptTemplateRenderer templateRenderer)
     {
         _db = db;
         _agentRoleRuntimeResolver = agentRoleRuntimeResolver;
@@ -89,6 +92,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
         _toolLoop = toolLoop;
         _traceAggregator = traceAggregator;
         _logger = logger;
+        _templateRenderer = templateRenderer;
     }
 
     public async Task<DeviceConversationTurnResult?> ExecuteTurnAsync(DeviceConversationTurnRequest request, CancellationToken cancellationToken = default)
@@ -326,6 +330,20 @@ public class DeviceConversationRuntimeService : ITransientDependency
             query: transcript,
             sessionId: orchestrationRequest.SessionId,
             cancellationToken: cancellationToken);
+
+        var variableContext = new VariableResolveContext
+        {
+            AgentRoleId = agentRole.Id,
+            DeviceId = device.Id,
+            SessionId = orchestrationRequest.SessionId,
+            UserId = device.UserId,
+            Device = device,
+            AgentRole = agentRole,
+            User = device.UserId != null
+                ? await _db.SysUsers.FindAsync(device.UserId.Value)
+                : null
+        };
+
         var ragResponse = await _agentRoleKnowledgeRetrievalService.RetrieveAsync(new AgentRoleKnowledgeRetrievalRequest
         {
             AgentRole = agentRole,
@@ -357,23 +375,90 @@ public class DeviceConversationRuntimeService : ITransientDependency
                 UserId = device.UserId
             };
 
-            var toolMessages = new List<LlmChatMessageDto>
+                        var pcmChunk = NormalizeTtsAudioChunk(ttsEvent.AudioBytes, ttsEvent.Format, out var sampleRate, out var channels);
+                        if (pcmChunk.Length == 0)
+                            return;
+
+                        lock (audioSegmentsLock)
+                        {
+                            audioSegments.Add(pcmChunk);
+                            outputSampleRate = sampleRate;
+                            outputChannels = channels;
+                        }
+
+                        if (onReplySegment != null)
+                        {
+                            await onReplySegment(new DeviceConversationReplyAudioSegment
+                            {
+                                Text = ttsEvent.Text ?? string.Empty,
+                                TtsPcm16Le = pcmChunk,
+                                SampleRate = sampleRate,
+                                Channels = channels
+                            }, ct);
+                        }
+                    },
+                    cancellationToken);
+
+                try
+                {
+                    var streamingSystemPrompt = await BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext, variableContext);
+                    var llmResponse = await _conversationStageExecutionService.ChatStreamingAsync(streamingOrchestrationRequest,
+                        new LlmChatRequestDto
+                        {
+                            SystemPrompt = streamingSystemPrompt,
+                            Stream = true,
+                            Messages =
+                            [
+                                new LlmChatMessageDto
+                                {
+                                    Role = "user",
+                                    Content = transcript
+                                }
+                            ]
+                        },
+                        async (chunk, ct) =>
+                        {
+                            foreach (var sentence in sentenceBuffer.Append(chunk.TextDelta))
+                                await ttsSession.SendTextAsync(sentence, ct);
+                        },
+                        cancellationToken);
+                    AddStageTraceThreadSafe(stageTraceLock, stageTraces, llmResponse.StageTrace);
+                    replyText = NormalizeOptionalText(llmResponse.Text);
+
+                    var remainingSentence = sentenceBuffer.FlushRemaining();
+                    if (!string.IsNullOrWhiteSpace(remainingSentence))
+                        await ttsSession.SendTextAsync(remainingSentence, cancellationToken);
+
+                    var ttsResponse = await ttsSession.CompleteAsync(cancellationToken);
+                    AddStageTraceThreadSafe(stageTraceLock, stageTraces, ttsResponse.StageTrace);
+                }
+                catch
+                {
+                    await ttsSession.CancelAsync(CancellationToken.None);
+                    throw;
+                }
+            }
+            else
             {
-                new() { Role = "user", Content = transcript }
-            };
-
-            var effectiveSystemPromptResolved = NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt;
-            var systemPrompt = BuildRuntimeSystemPrompt(effectiveSystemPromptResolved, memoryContext);
-
-            var toolLoopResult = await _toolLoop.RunAsync(
-                orchestrationRequest,
-                systemPrompt,
-                toolMessages,
-                toolDefinitions,
-                toolContext,
-                cancellationToken);
-
-            replyText = NormalizeOptionalText(toolLoopResult.FinalReply);
+                var nonStreamingSystemPrompt = await BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext, variableContext);
+                var llmResponse = await _conversationStageExecutionService.ChatAsync(orchestrationRequest,
+                    new LlmChatRequestDto
+                    {
+                        SystemPrompt = nonStreamingSystemPrompt,
+                        Stream = false,
+                        Messages =
+                        [
+                            new LlmChatMessageDto
+                            {
+                                Role = "user",
+                                Content = transcript
+                            }
+                        ]
+                    },
+                    cancellationToken);
+                AddStageTraceThreadSafe(stageTraceLock, stageTraces, llmResponse.StageTrace);
+                replyText = NormalizeOptionalText(llmResponse.Text);
+            }
         }
 
         if (string.IsNullOrWhiteSpace(replyText))
@@ -665,22 +750,23 @@ public class DeviceConversationRuntimeService : ITransientDependency
         return buffer;
     }
 
-    private static string? BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext)
+    private async Task<string?> BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext, VariableResolveContext variableContext)
     {
         var normalizedBase = NormalizeOptionalText(baseSystemPrompt);
+        var rendered = await _templateRenderer.RenderAsync(normalizedBase, variableContext);
         var memoryRecords = memoryContext?.Records
             .Where(x => !string.IsNullOrWhiteSpace(x.Content))
             .Take(memoryContext.TopK > 0 ? memoryContext.TopK : 5)
             .ToList() ?? [];
         if (memoryRecords.Count == 0)
         {
-            return normalizedBase;
+            return rendered;
         }
 
         var builder = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(normalizedBase))
+        if (!string.IsNullOrWhiteSpace(rendered))
         {
-            builder.AppendLine(normalizedBase);
+            builder.AppendLine(rendered);
             builder.AppendLine();
         }
 

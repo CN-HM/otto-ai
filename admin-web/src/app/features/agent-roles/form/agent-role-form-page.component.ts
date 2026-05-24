@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -92,6 +93,7 @@ export class AgentRoleFormPageComponent implements OnInit {
   private readonly mcpToolService = inject(McpToolService);
   private readonly commonService = inject(CommonService);
   private readonly i18n = inject(I18nService);
+  private readonly http = inject(HttpClient);
 
   readonly roleId = signal('');
   readonly loading = signal(false);
@@ -115,6 +117,8 @@ export class AgentRoleFormPageComponent implements OnInit {
   });
   readonly mcpToolOptions = signal<McpToolOption[]>([]);
   readonly currentStep = signal(0);
+
+  availableVariables: { name: string; category: string; description: string; example: string }[] = [];
 
   readonly memoryDecisionOptions = computed(() => {
     this.i18n.localeVersion();
@@ -192,6 +196,7 @@ export class AgentRoleFormPageComponent implements OnInit {
     this.loadThemeOptions();
     this.loadKnowledgeBases();
     this.loadMcpToolOptions();
+    this.loadVariables();
     this.syncLanguageFields(this.form.controls.ttsLanguage.value);
 
     this.form.controls.ttsProfileId.valueChanges.subscribe(ttsProfileId => {
@@ -725,5 +730,39 @@ export class AgentRoleFormPageComponent implements OnInit {
       },
       { emitEvent: false }
     );
+  }
+
+  private loadVariables(): void {
+    this.http.get<{ variables: { name: string; category: string; description: string; example: string }[] }>('/api/system-prompt/variables')
+      .subscribe({
+        next: (res) => this.availableVariables = res.variables ?? [],
+        error: () => this.availableVariables = []
+      });
+  }
+
+  get variablesByCategory(): Map<string, { name: string; category: string; description: string; example: string }[]> {
+    const map = new Map<string, { name: string; category: string; description: string; example: string }[]>();
+    for (const v of this.availableVariables) {
+      const list = map.get(v.category) ?? [];
+      list.push(v);
+      map.set(v.category, list);
+    }
+    return map;
+  }
+
+  insertVariable(name: string): void {
+    const textarea = document.getElementById('systemPrompt') as HTMLTextAreaElement | null;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = (this.form.controls.systemPrompt.value as string) ?? '';
+    const varText = `{{${name}}}`;
+    this.form.controls.systemPrompt.setValue(
+      text.substring(0, start) + varText + text.substring(end)
+    );
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + varText.length, start + varText.length);
+    });
   }
 }
