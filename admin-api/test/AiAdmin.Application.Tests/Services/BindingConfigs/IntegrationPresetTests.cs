@@ -56,7 +56,7 @@ public class IntegrationPresetTests : AiAdminIntegratedTest
         ark.AuthFields.ShouldBe(["apiKey"]);
 
         var doubao = presets.First(p => p.PresetKey == "doubao_speech");
-        doubao.AuthFields.ShouldBe(["appId", "accessToken", "secretKey"]);
+        doubao.AuthFields.ShouldBe(["appId", "accessToken"]);
 
         var dashscope = presets.First(p => p.PresetKey == "dashscope");
         dashscope.AuthFields.ShouldBe(["apiKey"]);
