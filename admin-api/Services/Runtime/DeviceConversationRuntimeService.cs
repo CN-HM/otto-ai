@@ -348,7 +348,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
 
         if (string.IsNullOrWhiteSpace(replyText))
         {
-            var toolDefinitions = await BuildActiveToolDefinitionsAsync(cancellationToken);
+            var toolDefinitions = await BuildActiveToolDefinitionsAsync(agentRole.Id ?? string.Empty, cancellationToken);
             var toolContext = new ConversationContext
             {
                 AgentRoleId = agentRole.Id,
@@ -432,11 +432,21 @@ public class DeviceConversationRuntimeService : ITransientDependency
         }
     }
 
-    private async Task<List<McpToolDefinition>> BuildActiveToolDefinitionsAsync(CancellationToken cancellationToken)
+    private async Task<List<McpToolDefinition>> BuildActiveToolDefinitionsAsync(string agentRoleId, CancellationToken cancellationToken)
     {
+        var pluginIds = await _db.AiAgentRolePluginMappings
+            .AsNoTracking()
+            .Where(x => x.AgentRoleId == agentRoleId)
+            .Select(x => x.PluginId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        if (pluginIds.Count == 0)
+            return [];
+
         var tools = await _db.AiMcpTools
             .AsNoTracking()
-            .Where(x => x.Status == "active")
+            .Where(x => x.Status == "active" && pluginIds.Contains(x.Code))
             .OrderBy(x => x.Sort)
             .ThenBy(x => x.Code)
             .ToListAsync(cancellationToken);

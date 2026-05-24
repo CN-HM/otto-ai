@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -45,6 +46,12 @@ public class ConversationToolLoop : ITransientDependency
         var result = new ConversationToolLoopResult();
         var roundMessages = new List<LlmChatMessageDto>(messages);
 
+        var enhancedSystemPrompt = systemPrompt;
+        if (toolDefinitions.Count > 0)
+        {
+            enhancedSystemPrompt = (systemPrompt ?? string.Empty) + BuildToolGuidanceSection(toolDefinitions);
+        }
+
         for (var round = 0; round < MaxRounds; round++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -54,7 +61,7 @@ public class ConversationToolLoop : ITransientDependency
 
             var request = new LlmChatRequestDto
             {
-                SystemPrompt = systemPrompt,
+                SystemPrompt = enhancedSystemPrompt,
                 Stream = false,
                 Messages = [.. roundMessages]
             };
@@ -185,7 +192,7 @@ public class ConversationToolLoop : ITransientDependency
         {
             var finalRequest = new LlmChatRequestDto
             {
-                SystemPrompt = systemPrompt,
+                SystemPrompt = enhancedSystemPrompt,
                 Stream = false,
                 Messages = [.. roundMessages]
             };
@@ -327,6 +334,42 @@ public class ConversationToolLoop : ITransientDependency
         }
 
         return array;
+    }
+
+    private static string BuildToolGuidanceSection(List<McpToolDefinition> tools)
+    {
+        if (tools.Count == 0)
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        sb.AppendLine();
+        sb.AppendLine("## 可用工具");
+        sb.AppendLine("你可以使用以下工具来帮助用户。当用户提到相关需求时，请主动调用对应的工具，而不是告诉用户你做不到：");
+        sb.AppendLine();
+
+        foreach (var tool in tools)
+        {
+            var hint = GetToolUsageHint(tool.Name);
+            sb.AppendLine($"- **{tool.Name}**: {hint}");
+        }
+
+        return sb.ToString().Trim();
+    }
+
+    private static string GetToolUsageHint(string toolCode)
+    {
+        return toolCode switch
+        {
+            "todo-list" => "当需要查看用户的待处理任务或提醒列表时使用",
+            "todo-create" => "当用户要求设置闹钟、创建提醒、安排定时任务、记录待办事项时使用。可以指定scheduled_at来设置触发时间",
+            "todo-execute" => "执行已创建任务的提醒通知（短信或邮件）",
+            "todo-complete" => "当任务完成或需要标记为已完成时使用",
+            "risk-create" => "当检测到安全风险、异常情况或需要标记风险线索时使用",
+            "health-followup-create" => "当需要安排健康随访、用药提醒等健康相关定时任务时使用",
+            "send-sms" => "发送短信通知到用户手机",
+            "send-email" => "发送邮件通知到用户邮箱",
+            _ => string.Empty
+        };
     }
 
     private static string Truncate(string value, int maxLength)
