@@ -57,18 +57,18 @@ public partial class AiAdminDataSeeder : IDataSeedContributor, ITransientDepende
         var now = DateTime.UtcNow;
         var tools = new[]
         {
-            new { Kind = McpSystemToolKind.SendSms, Name = "发送短信", Description = "发送短信通知到指定手机号", ParamSchema = "{\"phone\":\"string\",\"content\":\"string\"}" },
-            new { Kind = McpSystemToolKind.SendEmail, Name = "发送邮件", Description = "发送邮件通知到指定邮箱", ParamSchema = "{\"to\":\"string\",\"subject\":\"string\",\"body\":\"string\"}" }
+            new { Code = McpSystemToolCodes.SendSms, Name = "发送短信", Description = "发送短信通知到指定手机号", ParamSchema = "{\"phone\":\"string\",\"content\":\"string\"}" },
+            new { Code = McpSystemToolCodes.SendEmail, Name = "发送邮件", Description = "发送邮件通知到指定邮箱", ParamSchema = "{\"to\":\"string\",\"subject\":\"string\",\"body\":\"string\"}" }
         };
 
         foreach (var tool in tools)
         {
-            var code = McpSystemTools.GetCode(tool.Kind);
+            var code = tool.Code;
             var existing = await _db.AiMcpTools.FirstOrDefaultAsync(x => x.Code == code);
             if (existing != null)
             {
                 existing.IsSystem = true;
-                existing.Category = McpSystemTools.NotificationCategory;
+                existing.Category = McpToolCategory.Notification;
                 existing.UpdatedAt = now;
                 continue;
             }
@@ -78,7 +78,7 @@ public partial class AiAdminDataSeeder : IDataSeedContributor, ITransientDepende
                 Id = Guid.NewGuid().ToString("N")[..32],
                 Code = code,
                 Name = tool.Name,
-                Category = McpSystemTools.NotificationCategory,
+                Category = McpToolCategory.Notification,
                 IsSystem = true,
                 Description = tool.Description,
                 ParamSchema = tool.ParamSchema,

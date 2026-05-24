@@ -91,7 +91,7 @@ public class McpToolService : ITransientDependency
     public async Task<McpToolDto> CreateAsync(McpToolUpsertDto dto, long operatorUserId, CancellationToken cancellationToken = default)
     {
         var code = dto.Code.Trim();
-        if (McpSystemTools.IsSystemCode(code))
+        if (McpSystemToolCodes.IsSystemCode(code))
         {
             throw new InvalidOperationException("系统 MCP 工具由系统内置创建，不能手动创建同名工具");
         }
@@ -146,7 +146,7 @@ public class McpToolService : ITransientDependency
                 throw new InvalidOperationException("系统 MCP 工具分类不能修改");
             }
         }
-        else if (McpSystemTools.IsSystemCode(code))
+        else if (McpSystemToolCodes.IsSystemCode(code))
         {
             throw new InvalidOperationException("系统 MCP 工具编码不能分配给自定义工具");
         }
