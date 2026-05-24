@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AiAdmin.Data;
 using AiAdmin.Entities;
 using AiAdmin.Services.McpTools.Dtos;
+using AiAdmin.Services.Runtime;
+using Hangfire;
 using Volo.Abp.Guids;
 
 namespace AiAdmin.Services.McpTools.Handlers;
@@ -59,6 +61,14 @@ public class HealthFollowupCreateHandler : IMcpToolHandler
 
         _db.AiRuntimeSignals.Add(signal);
         await _db.SaveChangesAsync(ct);
+
+        if (scheduledAt > now)
+        {
+            signal.WakeupJobId = BackgroundJob.Schedule<AgentWakeupJob>(
+                job => job.WakeAsync(signal.Id),
+                scheduledAt);
+            await _db.SaveChangesAsync(ct);
+        }
 
         return new McpToolCallResult
         {

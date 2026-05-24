@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AiAdmin.Data;
 using AiAdmin.Services.McpTools.Dtos;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
 namespace AiAdmin.Services.McpTools.Handlers;
@@ -27,6 +28,13 @@ public class TodoCompleteHandler : IMcpToolHandler
         var signal = await _db.AiRuntimeSignals.FirstOrDefaultAsync(s => s.Id == signalId, ct);
         if (signal == null)
             return new McpToolCallResult { Success = false, Message = $"Signal not found: {signalId}" };
+
+        // Cancel scheduled wakeup job if exists
+        if (!string.IsNullOrEmpty(signal.WakeupJobId))
+        {
+            BackgroundJob.Delete(signal.WakeupJobId);
+            signal.WakeupJobId = null;
+        }
 
         signal.Status = "completed";
         signal.ProcessedAt = DateTime.UtcNow;

@@ -1,6 +1,8 @@
 using AiAdmin.Data;
 using AiAdmin.Entities;
 using AiAdmin.Services.Memory.Dtos;
+using AiAdmin.Services.Runtime;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.DependencyInjection;
 
@@ -84,6 +86,34 @@ public class RuntimeSignalService : ITransientDependency
 
         _db.AiRuntimeSignals.Remove(signal);
         await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ScheduleWakeupIfNeededAsync(AiRuntimeSignal signal)
+    {
+        if (!string.IsNullOrEmpty(signal.WakeupJobId))
+        {
+            BackgroundJob.Delete(signal.WakeupJobId);
+            signal.WakeupJobId = null;
+        }
+
+        if (signal.ScheduledAt.HasValue && signal.ScheduledAt.Value > DateTime.UtcNow
+            && signal.Status != "completed" && signal.Status != "ignored" && signal.Status != "failed")
+        {
+            signal.WakeupJobId = BackgroundJob.Schedule<AgentWakeupJob>(
+                job => job.WakeAsync(signal.Id),
+                signal.ScheduledAt.Value);
+            await _db.SaveChangesAsync();
+        }
+    }
+
+    public async Task CancelWakeupIfExistsAsync(AiRuntimeSignal signal)
+    {
+        if (!string.IsNullOrEmpty(signal.WakeupJobId))
+        {
+            BackgroundJob.Delete(signal.WakeupJobId);
+            signal.WakeupJobId = null;
+            await _db.SaveChangesAsync();
+        }
     }
 
     private static RuntimeSignalDto ToDto(AiRuntimeSignal signal)

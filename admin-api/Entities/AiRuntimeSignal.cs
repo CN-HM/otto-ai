@@ -68,6 +68,10 @@ public class AiRuntimeSignal
     [Column("error_message")]
     public string? ErrorMessage { get; set; }
 
+    [Column("wakeup_job_id")]
+    [MaxLength(256)]
+    public string? WakeupJobId { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }
 

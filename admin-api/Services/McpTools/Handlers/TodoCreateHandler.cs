@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AiAdmin.Data;
 using AiAdmin.Entities;
 using AiAdmin.Services.McpTools.Dtos;
+using AiAdmin.Services.Runtime;
+using Hangfire;
 using Volo.Abp.Guids;
 
 namespace AiAdmin.Services.McpTools.Handlers;
@@ -57,6 +59,15 @@ public class TodoCreateHandler : IMcpToolHandler
 
         _db.AiRuntimeSignals.Add(signal);
         await _db.SaveChangesAsync(ct);
+
+        // Schedule Hangfire wakeup if scheduled_at is set and in the future
+        if (signal.ScheduledAt.HasValue && signal.ScheduledAt.Value > now)
+        {
+            signal.WakeupJobId = BackgroundJob.Schedule<AgentWakeupJob>(
+                job => job.WakeAsync(signal.Id),
+                signal.ScheduledAt.Value);
+            await _db.SaveChangesAsync(ct);
+        }
 
         return new McpToolCallResult
         {
