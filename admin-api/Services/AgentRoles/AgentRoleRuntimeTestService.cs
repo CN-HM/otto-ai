@@ -11,7 +11,6 @@ using AiAdmin.Services.Runtime.Execution;
 using AiAdmin.Services.Runtime.Execution.Dtos;
 using AiAdmin.Services.Runtime.Orchestration;
 using AiAdmin.Services.Runtime.Orchestration.Dtos;
-using AiAdmin.Services.SystemPrompt;
 using AiAdmin.Services.Voice;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.DependencyInjection;
@@ -106,8 +105,6 @@ public class AgentRoleRuntimeTestService : ITransientDependency
     private readonly AgentRoleKnowledgeRetrievalService _agentRoleKnowledgeRetrievalService;
     private readonly MemoryLibraryService _memoryLibraryService;
     private readonly MemoryConversationSessionService _memoryConversationSessionService;
-    private readonly ActionRuleExecutionService _actionRuleExecutionService;
-    private readonly SystemPromptTemplateRenderer _templateRenderer;
 
     public AgentRoleRuntimeTestService(
         AiAdminDbContext db,
@@ -116,9 +113,7 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         IConversationStageExecutionService conversationStageExecutionService,
         AgentRoleKnowledgeRetrievalService agentRoleKnowledgeRetrievalService,
         MemoryLibraryService memoryLibraryService,
-        MemoryConversationSessionService memoryConversationSessionService,
-        ActionRuleExecutionService actionRuleExecutionService,
-        SystemPromptTemplateRenderer templateRenderer)
+        MemoryConversationSessionService memoryConversationSessionService)
     {
         _db = db;
         _agentRoleRuntimeResolver = agentRoleRuntimeResolver;
@@ -127,8 +122,6 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         _agentRoleKnowledgeRetrievalService = agentRoleKnowledgeRetrievalService;
         _memoryLibraryService = memoryLibraryService;
         _memoryConversationSessionService = memoryConversationSessionService;
-        _actionRuleExecutionService = actionRuleExecutionService;
-        _templateRenderer = templateRenderer;
     }
 
     public async Task<AgentRoleRuntimeTestResultDto> RunAsync(AgentRoleRuntimeTestRequestDto request, long currentUserId, bool isSuperAdmin, CancellationToken cancellationToken = default)
@@ -243,26 +236,12 @@ public class AgentRoleRuntimeTestService : ITransientDependency
             result.Warnings.Add($"知识库召回失败：{ex.Message}");
         }
 
-        var variableContext = new VariableResolveContext
-        {
-            AgentRoleId = agentRole.Id,
-            DeviceId = request.DeviceId,
-            SessionId = request.SessionId,
-            UserId = currentUserId,
-            Device = null,
-            AgentRole = agentRole,
-            User = null
-        };
-        var testSystemPrompt = await BuildRuntimeSystemPrompt(
-            NormalizeOptionalText(result.Knowledge?.InjectedSystemPrompt) ?? NormalizeOptionalText(agentRole.SystemPrompt),
-            result.MemoryBefore,
-            variableContext);
         var llmStage = Stopwatch.StartNew();
         try
         {
             result.Llm = await _conversationStageExecutionService.ChatAsync(orchestration, new LlmChatRequestDto
             {
-                SystemPrompt = testSystemPrompt,
+                SystemPrompt = BuildRuntimeSystemPrompt(NormalizeOptionalText(result.Knowledge?.InjectedSystemPrompt) ?? NormalizeOptionalText(agentRole.SystemPrompt), result.MemoryBefore),
                 Stream = false,
                 Messages =
                 [
@@ -403,23 +382,22 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         return NormalizeOptionalText(ttsVoice.TtsVoice);
     }
 
-    private async Task<string?> BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext, VariableResolveContext variableContext)
+    private static string? BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext)
     {
         var normalizedBase = NormalizeOptionalText(baseSystemPrompt);
-        var rendered = await _templateRenderer.RenderAsync(normalizedBase, variableContext);
         var memoryRecords = memoryContext?.Records
             .Where(x => !string.IsNullOrWhiteSpace(x.Content))
             .Take(memoryContext.TopK > 0 ? memoryContext.TopK : 5)
             .ToList() ?? [];
         if (memoryRecords.Count == 0)
         {
-            return rendered;
+            return normalizedBase;
         }
 
         var builder = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(rendered))
+        if (!string.IsNullOrWhiteSpace(normalizedBase))
         {
-            builder.AppendLine(rendered);
+            builder.AppendLine(normalizedBase);
             builder.AppendLine();
         }
 

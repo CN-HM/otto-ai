@@ -397,37 +397,3 @@
   gap: 1rem;
   padding-top: 0.5rem;
 }
-
-.variable-panel {
-  margin-bottom: 0.5rem;
-}
-.variable-panel > label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-}
-.variable-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  align-items: center;
-}
-.category-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-right: 0.25rem;
-}
-.variable-chip {
-  font-size: 0.75rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 999px;
-  cursor: pointer;
-  border: 1px solid var(--border, #d0d5dd);
-  background: var(--surface-hover, #f5f5f5);
-  color: var(--text-primary, #333);
-}
-.variable-chip:hover {
-  background: var(--primary-light, #e0e7ff);
-  border-color: var(--primary, #4f46e5);
-}
