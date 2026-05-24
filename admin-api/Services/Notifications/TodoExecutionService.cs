@@ -49,10 +49,8 @@ public class TodoExecutionService : ITransientDependency
             var user = await _db.SysUsers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == signal.UserId, cancellationToken);
 
             var notificationTools = agentRole.PluginMappings
-                .Where(m => !string.IsNullOrWhiteSpace(m.PluginId))
-                .Select(m => McpSystemTools.TryParse(m.PluginId, out var kind) ? (McpSystemToolKind?)kind : null)
-                .Where(kind => kind.HasValue && McpSystemTools.IsNotificationTool(kind.Value))
-                .Select(kind => kind!.Value)
+                .Where(m => !string.IsNullOrWhiteSpace(m.PluginId) && IsNotificationTool(m.PluginId))
+                .Select(m => m.PluginId!)
                 .Distinct()
                 .ToList();
 
@@ -105,7 +103,7 @@ public class TodoExecutionService : ITransientDependency
                 return;
             }
 
-            if (!McpSystemTools.TryParse(toolCall.Value.Tool, out var toolKind) || !notificationTools.Contains(toolKind))
+            if (!notificationTools.Contains(toolCall.Value.Tool))
             {
                 signal.Status = "failed";
                 signal.ErrorMessage = $"LLM 返回了未配置或不支持的 MCP 工具：{toolCall.Value.Tool}";
@@ -114,7 +112,7 @@ public class TodoExecutionService : ITransientDependency
                 return;
             }
 
-            var result = await _mcpToolExecutionService.ExecuteAsync(toolKind, toolCall.Value.Args, cancellationToken);
+            var result = await _mcpToolExecutionService.ExecuteAsync(toolCall.Value.Tool, toolCall.Value.Args, cancellationToken);
 
             signal.Status = "completed";
             signal.ProcessedAt = DateTime.UtcNow;
@@ -151,7 +149,7 @@ public class TodoExecutionService : ITransientDependency
         throw new InvalidOperationException("待办未关联 Agent 角色，无法执行通知");
     }
 
-    private static string BuildSystemPrompt(AgentRoleRuntimeDescriptorDto agentRole, IReadOnlyCollection<McpSystemToolKind> tools, SysUser? user, AiRuntimeSignal signal)
+    private static string BuildSystemPrompt(AgentRoleRuntimeDescriptorDto agentRole, IReadOnlyCollection<string> tools, SysUser? user, AiRuntimeSignal signal)
     {
         var roleName = agentRole.DisplayName ?? agentRole.Name ?? "智能助手";
         var roleDesc = agentRole.Description ?? "";
@@ -169,9 +167,9 @@ public class TodoExecutionService : ITransientDependency
         sb.AppendLine();
         sb.AppendLine("当前需要执行一条待办通知。你可以使用以下工具：");
         sb.AppendLine();
-        if (tools.Contains(McpSystemToolKind.SendSms))
+        if (tools.Contains(McpSystemToolCodes.SendSms))
             sb.AppendLine("- send-sms(phone, content)：发送短信通知，phone 为手机号，content 为短信内容");
-        if (tools.Contains(McpSystemToolKind.SendEmail))
+        if (tools.Contains(McpSystemToolCodes.SendEmail))
             sb.AppendLine("- send-email(to, subject, body)：发送邮件通知，to 为收件人邮箱，subject 为邮件主题，body 为 HTML 邮件正文");
         sb.AppendLine();
         sb.AppendLine("用户信息：");
@@ -207,6 +205,10 @@ public class TodoExecutionService : ITransientDependency
 请执行这条待办的通知。
 """;
     }
+
+    private static bool IsNotificationTool(string code) =>
+        string.Equals(code, McpSystemToolCodes.SendSms, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(code, McpSystemToolCodes.SendEmail, StringComparison.OrdinalIgnoreCase);
 
     private static (string Tool, JsonObject Args)? ParseToolCall(string llmText)
     {

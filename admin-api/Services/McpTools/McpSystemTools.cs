@@ -1,43 +1,26 @@
+using System.Collections.Generic;
+
 namespace AiAdmin.Services.McpTools;
 
-public enum McpSystemToolKind
+public static class McpSystemToolCodes
 {
-    SendSms,
-    SendEmail
-}
+    public const string SendSms   = "send-sms";
+    public const string SendEmail = "send-email";
 
-public static class McpSystemTools
-{
-    public const string NotificationCategory = "notification";
+    public const string TodoList    = "todo-list";
+    public const string TodoCreate  = "todo-create";
+    public const string TodoExecute = "todo-execute";
+    public const string TodoComplete = "todo-complete";
 
-    private static readonly IReadOnlyDictionary<McpSystemToolKind, string> Codes = new Dictionary<McpSystemToolKind, string>
+    public const string RiskCreate           = "risk-create";
+    public const string HealthFollowupCreate = "health-followup-create";
+
+    public static readonly HashSet<string> All = new()
     {
-        [McpSystemToolKind.SendSms] = "send-sms",
-        [McpSystemToolKind.SendEmail] = "send-email"
+        SendSms, SendEmail,
+        TodoList, TodoCreate, TodoExecute, TodoComplete,
+        RiskCreate, HealthFollowupCreate
     };
 
-    public static string GetCode(McpSystemToolKind kind) => Codes[kind];
-
-    public static bool TryParse(string? code, out McpSystemToolKind kind)
-    {
-        if (!string.IsNullOrWhiteSpace(code))
-        {
-            var normalized = code.Trim();
-            foreach (var item in Codes)
-            {
-                if (string.Equals(item.Value, normalized, StringComparison.OrdinalIgnoreCase))
-                {
-                    kind = item.Key;
-                    return true;
-                }
-            }
-        }
-
-        kind = default;
-        return false;
-    }
-
-    public static bool IsSystemCode(string? code) => TryParse(code, out _);
-
-    public static bool IsNotificationTool(McpSystemToolKind kind) => kind is McpSystemToolKind.SendSms or McpSystemToolKind.SendEmail;
+    public static bool IsSystemCode(string? code) => code != null && All.Contains(code);
 }

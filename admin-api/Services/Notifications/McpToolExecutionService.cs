@@ -22,23 +22,18 @@ public class McpToolExecutionService : ITransientDependency
 
     public async Task<string> ExecuteAsync(string toolName, JsonObject arguments, CancellationToken cancellationToken = default)
     {
-        if (!McpSystemTools.TryParse(toolName, out var toolKind))
+        if (!McpSystemToolCodes.IsSystemCode(toolName))
         {
             throw new InvalidOperationException($"Unknown MCP tool: {toolName}");
         }
 
-        return await ExecuteAsync(toolKind, arguments, cancellationToken);
-    }
+        _logger.LogInformation("Executing MCP tool {ToolName} with args {Args}", toolName, arguments.ToJsonString());
 
-    public async Task<string> ExecuteAsync(McpSystemToolKind toolKind, JsonObject arguments, CancellationToken cancellationToken = default)
-    {
-        _logger.LogInformation("Executing MCP tool {ToolName} with args {Args}", McpSystemTools.GetCode(toolKind), arguments.ToJsonString());
-
-        return toolKind switch
+        return toolName switch
         {
-            McpSystemToolKind.SendSms => await ExecuteSendSmsAsync(arguments, cancellationToken),
-            McpSystemToolKind.SendEmail => await ExecuteSendEmailAsync(arguments, cancellationToken),
-            _ => throw new InvalidOperationException($"Unknown MCP tool: {toolKind}")
+            McpSystemToolCodes.SendSms => await ExecuteSendSmsAsync(arguments, cancellationToken),
+            McpSystemToolCodes.SendEmail => await ExecuteSendEmailAsync(arguments, cancellationToken),
+            _ => throw new InvalidOperationException($"Unknown MCP tool: {toolName}")
         };
     }
 
