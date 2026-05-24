@@ -545,6 +545,7 @@
       "pitch": "音调",
       "promptTitle": "系统提示词",
       "applyPromptTemplate": "套用陪伴助手模板",
+      "availableVariables": "可用变量",
       "promptDescription": "告诉大模型这个角色是谁、如何说话、什么不能做。",
       "knowledgeTitle": "知识库",
       "knowledgeDescription": "选择该角色允许使用的知识库。运行时会在进入 LLM 前按排序检索并注入上下文。",
