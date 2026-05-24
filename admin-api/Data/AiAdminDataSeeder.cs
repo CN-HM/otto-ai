@@ -31,7 +31,7 @@ public partial class AiAdminDataSeeder : IDataSeedContributor, ITransientDepende
         await SeedSystemSettings();
         await SeedBilling();
         await SeedRbac();
-        await SeedNotificationMcpTools();
+        await SeedSystemMcpTools();
     }
 
     private async Task SeedAdminUser()
@@ -52,23 +52,28 @@ public partial class AiAdminDataSeeder : IDataSeedContributor, ITransientDepende
         await _db.SaveChangesAsync();
     }
 
-    private async Task SeedNotificationMcpTools()
+    private async Task SeedSystemMcpTools()
     {
         var now = DateTime.UtcNow;
         var tools = new[]
         {
-            new { Code = McpSystemToolCodes.SendSms, Name = "发送短信", Description = "发送短信通知到指定手机号", ParamSchema = "{\"phone\":\"string\",\"content\":\"string\"}" },
-            new { Code = McpSystemToolCodes.SendEmail, Name = "发送邮件", Description = "发送邮件通知到指定邮箱", ParamSchema = "{\"to\":\"string\",\"subject\":\"string\",\"body\":\"string\"}" }
+            new { Code = McpSystemToolCodes.SendSms,               Name = "发送短信",     Category = McpToolCategory.Notification, Description = "发送短信通知到指定手机号",                ParamSchema = "{\"phone\":\"string\",\"content\":\"string\"}" },
+            new { Code = McpSystemToolCodes.SendEmail,             Name = "发送邮件",     Category = McpToolCategory.Notification, Description = "发送邮件通知到指定邮箱",                ParamSchema = "{\"to\":\"string\",\"subject\":\"string\",\"body\":\"string\"}" },
+            new { Code = McpSystemToolCodes.TodoList,              Name = "查询任务",     Category = McpToolCategory.Task,         Description = "查询待处理或到期的任务列表",            ParamSchema = "{\"status\":\"string\",\"signal_type\":\"string\",\"limit\":\"integer\"}" },
+            new { Code = McpSystemToolCodes.TodoCreate,            Name = "创建待办",     Category = McpToolCategory.Task,         Description = "创建新的待办事项或提醒",                ParamSchema = "{\"title\":\"string\",\"content\":\"string\",\"signal_type\":\"string\",\"severity\":\"string\",\"scheduled_at\":\"string\"}" },
+            new { Code = McpSystemToolCodes.TodoExecute,           Name = "执行任务",     Category = McpToolCategory.Task,         Description = "执行任务的提醒通知（短信或邮件）",       ParamSchema = "{\"signal_id\":\"string\",\"notification_channel\":\"string\",\"notification_message\":\"string\"}" },
+            new { Code = McpSystemToolCodes.TodoComplete,          Name = "完成任务",     Category = McpToolCategory.Task,         Description = "标记任务为已完成",                      ParamSchema = "{\"signal_id\":\"string\",\"result_note\":\"string\"}" },
+            new { Code = McpSystemToolCodes.RiskCreate,            Name = "创建风险线索", Category = McpToolCategory.Monitoring,   Description = "创建风险监控线索",                      ParamSchema = "{\"title\":\"string\",\"content\":\"string\",\"severity\":\"string\",\"evidence\":\"string\"}" },
+            new { Code = McpSystemToolCodes.HealthFollowupCreate,  Name = "创建健康线索", Category = McpToolCategory.Monitoring,   Description = "创建健康随访线索",                      ParamSchema = "{\"title\":\"string\",\"content\":\"string\",\"scheduled_at\":\"string\",\"followup_type\":\"string\"}" }
         };
 
         foreach (var tool in tools)
         {
-            var code = tool.Code;
-            var existing = await _db.AiMcpTools.FirstOrDefaultAsync(x => x.Code == code);
+            var existing = await _db.AiMcpTools.FirstOrDefaultAsync(x => x.Code == tool.Code);
             if (existing != null)
             {
                 existing.IsSystem = true;
-                existing.Category = McpToolCategory.Notification;
+                existing.Category = tool.Category;
                 existing.UpdatedAt = now;
                 continue;
             }
@@ -76,9 +81,9 @@ public partial class AiAdminDataSeeder : IDataSeedContributor, ITransientDepende
             _db.AiMcpTools.Add(new AiMcpTool
             {
                 Id = Guid.NewGuid().ToString("N")[..32],
-                Code = code,
+                Code = tool.Code,
                 Name = tool.Name,
-                Category = McpToolCategory.Notification,
+                Category = tool.Category,
                 IsSystem = true,
                 Description = tool.Description,
                 ParamSchema = tool.ParamSchema,
