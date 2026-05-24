@@ -438,61 +438,6 @@
         }
       }
     },
-    "actionRules": {
-      "title": "动作规则",
-      "description": "配置实时动作规则（待办、提醒、风险、健康），在对话过程中同步执行并即时反馈给用户。",
-      "newRule": "新建规则",
-      "type": "动作类型",
-      "ruleName": "规则名称",
-      "state": "状态",
-      "actions": "操作",
-      "noData": "暂无动作规则。",
-      "createTitle": "新建动作规则",
-      "editTitle": "编辑动作规则",
-      "helpTitle": "动作规则说明",
-      "helpDescription": "动作规则在对话过程中实时执行：识别到对应内容后立即生成信号并反馈确认信息给用户。",
-      "namePlaceholder": "例如：待办事项标记",
-      "instruction": "提取说明",
-      "instructionPlaceholder": "用自然语言说明什么内容应该被识别为动作",
-      "instructionHelp": "通常直接使用默认说明即可。",
-      "enabledState": "启用状态",
-      "enableNow": "立即启用",
-      "saveDisabled": "先保存但不生效",
-      "listLoadFailed": "动作规则列表获取失败。",
-      "listRequestFailed": "动作规则列表请求失败。",
-      "saveFailed": "动作规则保存失败。",
-      "saveRequestFailed": "动作规则保存请求失败。",
-      "deleteTitle": "删除动作规则",
-      "deleteConfirm": "确认删除规则“{name}”吗？该操作不可撤销。",
-      "deleteFailed": "删除动作规则失败。",
-      "deleteRequestFailed": "删除动作规则请求失败。",
-      "enabled": "启用",
-      "disabled": "停用",
-      "typeLabels": {
-        "todo": "待办事项",
-        "reminder": "提醒事项",
-        "risk": "风险线索",
-        "health_followup": "健康线索"
-      },
-      "typeDescriptions": {
-        "todo": "用户明确交代的后续任务或安排，实时识别并确认。",
-        "reminder": "带时间线索或明确触达需求的提醒，实时识别并确认。",
-        "risk": "安全、情绪、照护、诈骗等需要后续处理的信号。",
-        "health_followup": "健康关注点、复诊、用药和回访线索。"
-      },
-      "defaultNames": {
-        "todo": "待办事项标记",
-        "reminder": "提醒事项标记",
-        "risk": "风险线索标记",
-        "health_followup": "健康线索标记"
-      },
-      "defaultInstructions": {
-        "todo": "从对话中识别用户明确交代、需要后续执行或提醒的待办事项。必须有清晰任务内容，不要把普通聊天当成待办。",
-        "reminder": "从对话中识别明确提醒需求，尽量提取提醒内容、时间线索和上下文。",
-        "risk": "从对话中识别安全、情绪、照护或异常风险线索，只输出需要后续处理的信号，不要直接通知用户。",
-        "health_followup": "从对话中识别需要后续关注的健康线索，例如不适症状、用药、睡眠、饮食或复诊相关信息，只标记线索。"
-      }
-    },
     "form": {
       "createTitle": "新增智能体角色",
       "editTitle": "编辑智能体角色",

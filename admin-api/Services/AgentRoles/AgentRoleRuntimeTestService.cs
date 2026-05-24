@@ -105,7 +105,6 @@ public class AgentRoleRuntimeTestService : ITransientDependency
     private readonly AgentRoleKnowledgeRetrievalService _agentRoleKnowledgeRetrievalService;
     private readonly MemoryLibraryService _memoryLibraryService;
     private readonly MemoryConversationSessionService _memoryConversationSessionService;
-    private readonly ActionRuleExecutionService _actionRuleExecutionService;
 
     public AgentRoleRuntimeTestService(
         AiAdminDbContext db,
@@ -114,8 +113,7 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         IConversationStageExecutionService conversationStageExecutionService,
         AgentRoleKnowledgeRetrievalService agentRoleKnowledgeRetrievalService,
         MemoryLibraryService memoryLibraryService,
-        MemoryConversationSessionService memoryConversationSessionService,
-        ActionRuleExecutionService actionRuleExecutionService)
+        MemoryConversationSessionService memoryConversationSessionService)
     {
         _db = db;
         _agentRoleRuntimeResolver = agentRoleRuntimeResolver;
@@ -124,7 +122,6 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         _agentRoleKnowledgeRetrievalService = agentRoleKnowledgeRetrievalService;
         _memoryLibraryService = memoryLibraryService;
         _memoryConversationSessionService = memoryConversationSessionService;
-        _actionRuleExecutionService = actionRuleExecutionService;
     }
 
     public async Task<AgentRoleRuntimeTestResultDto> RunAsync(AgentRoleRuntimeTestRequestDto request, long currentUserId, bool isSuperAdmin, CancellationToken cancellationToken = default)
@@ -273,8 +270,6 @@ public class AgentRoleRuntimeTestService : ITransientDependency
             return result;
         }
 
-        await AppendActionConfirmationAsync(result, agentRole, device, orchestration, sessionId, transcript, cancellationToken);
-
         if (!ttsEnabled)
         {
             result.TtsStage = AgentRoleRuntimeTestStageDto.Skipped("Pipeline 已禁用 TTS 节点。");
@@ -320,56 +315,6 @@ public class AgentRoleRuntimeTestService : ITransientDependency
     public async Task FinalizeSessionAsync(string? sessionId, CancellationToken cancellationToken = default)
     {
         await _memoryConversationSessionService.FinalizeSessionAsync(sessionId, "admin_runtime_test", cancellationToken);
-    }
-
-    private async Task AppendActionConfirmationAsync(
-        AgentRoleRuntimeTestResultDto result,
-        AgentRoleRuntimeDescriptorDto agentRole,
-        AiDevice device,
-        ConversationOrchestrationRequestDto orchestration,
-        string sessionId,
-        string transcript,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var signals = await _actionRuleExecutionService.ExecuteSyncAsync(
-                agentRole, device, orchestration, sessionId, transcript, result.ReplyText!, cancellationToken);
-
-            if (signals.Count == 0)
-                return;
-
-            var createdSignals = signals.Where(x => x.Created).ToList();
-            if (createdSignals.Count == 0)
-                return;
-
-            var parts = new List<string>();
-            var todoItems = createdSignals.Where(x => x.ActionType == "todo").ToList();
-            var reminderItems = createdSignals.Where(x => x.ActionType == "reminder").ToList();
-
-            if (todoItems.Count > 0)
-            {
-                var items = todoItems.Select(x => $"「{x.SourceText}」").ToList();
-                parts.Add($"已记录待办：{string.Join("、", items)}");
-            }
-
-            if (reminderItems.Count > 0)
-            {
-                var items = reminderItems.Select(x => $"「{x.SourceText}」").ToList();
-                parts.Add($"已设置提醒：{string.Join("、", items)}");
-            }
-
-            if (parts.Count > 0)
-            {
-                var confirmation = string.Join("\n", parts);
-                result.ReplyText = $"{result.ReplyText}\n\n{confirmation}";
-                result.Warnings.Add($"动作规则执行成功：{confirmation}");
-            }
-        }
-        catch (Exception ex)
-        {
-            result.Warnings.Add($"动作规则执行失败：{ex.Message}");
-        }
     }
 
     private async Task<AiDevice> ResolveTestDeviceAsync(string? deviceId, long currentUserId, bool isSuperAdmin, CancellationToken cancellationToken)

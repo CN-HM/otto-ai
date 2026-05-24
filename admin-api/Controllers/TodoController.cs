@@ -1,6 +1,5 @@
 using AiAdmin.Entities;
 using AiAdmin.Infrastructure;
-using AiAdmin.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,13 +13,11 @@ namespace AiAdmin.Controllers;
 public class TodoController : AiAdminBaseController
 {
     private readonly Data.AiAdminDbContext _db;
-    private readonly TodoExecutionService _todoExecutionService;
     private readonly IGuidGenerator _guidGenerator;
 
-    public TodoController(Data.AiAdminDbContext db, TodoExecutionService todoExecutionService, IGuidGenerator guidGenerator)
+    public TodoController(Data.AiAdminDbContext db, IGuidGenerator guidGenerator)
     {
         _db = db;
-        _todoExecutionService = todoExecutionService;
         _guidGenerator = guidGenerator;
     }
 
@@ -50,22 +47,6 @@ public class TodoController : AiAdminBaseController
         return Result<object>.Ok(new { id = signal.Id });
     }
 
-    [HttpPost("{id}/execute")]
-    [RequirePermission("memory-library:list")]
-    public async Task<Result<object>> Execute(string id, CancellationToken cancellationToken)
-    {
-        var signal = await _db.AiRuntimeSignals.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
-            ?? throw new InvalidOperationException("Error:TodoNotFound");
-
-        if (signal.SignalType != "todo")
-            return Result<object>.Error("仅支持执行待办类型的信号");
-
-        if (signal.Status is "completed" or "ignored")
-            return Result<object>.Error("待办已完成或已忽略，无需重复执行");
-
-        await _todoExecutionService.ExecuteAsync(signal, cancellationToken);
-        return Result<object>.Ok(new { id = signal.Id, status = signal.Status });
-    }
 }
 
 public class CreateTodoDto

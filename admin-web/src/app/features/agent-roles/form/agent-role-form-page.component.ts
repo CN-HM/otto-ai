@@ -34,7 +34,6 @@ import {
 import { AgentRoleService } from '../shared/agent-role.service';
 import { CommonService } from '../../../core/http/common.service';
 import { PageToolbarComponent } from '../../../shared/components/page-toolbar.component';
-import { ActionRulesComponent } from '../action-rules/action-rules.component';
 
 interface SelectOption {
   label: string;
@@ -78,8 +77,7 @@ interface StepDef {
     SliderModule,
     ToggleSwitchModule,
     TranslatePipe,
-    FeedbackMessageComponent,
-    ActionRulesComponent
+    FeedbackMessageComponent
   ],
   templateUrl: './agent-role-form-page.component.html',
   styleUrls: ['./agent-role-form-page.component.css']
@@ -144,14 +142,13 @@ export class AgentRoleFormPageComponent implements OnInit {
       { key: 'prompt', label: this.i18n.translate('agentRoles.form.steps.prompt') },
       { key: 'knowledge', label: this.i18n.translate('agentRoles.form.steps.knowledge') },
       { key: 'memory', label: this.i18n.translate('agentRoles.form.steps.memory') },
-      { key: 'mcp', label: this.i18n.translate('agentRoles.form.steps.mcp') },
-      { key: 'actions', label: this.i18n.translate('agentRoles.form.steps.actions') }
+      { key: 'mcp', label: this.i18n.translate('agentRoles.form.steps.mcp') }
     ];
   });
 
   readonly visibleSteps = computed<StepDef[]>(() => {
     const steps = this.steps();
-    return this.isEdit() ? steps : steps.filter(step => step.key !== 'actions');
+    return this.isEdit() ? steps : steps;
   });
 
   readonly form = this.formBuilder.nonNullable.group({

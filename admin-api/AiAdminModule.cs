@@ -1,6 +1,4 @@
 using AiAdmin.Infrastructure;
-using AiAdmin.Services.Notifications;
-using Hangfire;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Serilog;
@@ -67,20 +65,6 @@ public class AiAdminModule : AbpModule
             // where required ASP.NET Core services may not be registered
             var logger = context.ServiceProvider.GetRequiredService<ILogger<AiAdminModule>>();
             logger.LogWarning(ex, "无法配置 ASP.NET Core 中间件管道，可能在集成测试环境中运行");
-        }
-
-        try
-        {
-            RecurringJob.AddOrUpdate<TodoScanBackgroundJob>(
-                "todo-execution-scan",
-                job => job.ScanAndExecuteAsync(CancellationToken.None),
-                "*/1 * * * *");
-        }
-        catch (Exception ex)
-        {
-            // 旧实例崩溃后残留的分布式锁可能需要 10-30 秒才能释放，启动时不阻塞
-            var logger = context.ServiceProvider.GetRequiredService<ILogger<AiAdminModule>>();
-            logger.LogWarning(ex, "无法获取 Hangfire 分布式锁以注册定时任务，可能是旧实例锁残留");
         }
     }
 }

@@ -438,61 +438,6 @@
         }
       }
     },
-    "actionRules": {
-      "title": "動作規則",
-      "description": "設定即時動作規則（待辦、提醒、風險、健康），在對話過程中同步執行並即時回饋給使用者。",
-      "newRule": "新建規則",
-      "type": "動作類型",
-      "ruleName": "規則名稱",
-      "state": "狀態",
-      "actions": "操作",
-      "noData": "暫無動作規則。",
-      "createTitle": "新建動作規則",
-      "editTitle": "編輯動作規則",
-      "helpTitle": "動作規則說明",
-      "helpDescription": "動作規則在對話過程中即時執行：識別到對應內容後立即生成信號並回饋確認資訊給使用者。",
-      "namePlaceholder": "例如：待辦事項標記",
-      "instruction": "提取說明",
-      "instructionPlaceholder": "用自然語言說明哪些內容應該被識別為動作",
-      "instructionHelp": "通常直接使用預設說明即可。",
-      "enabledState": "啟用狀態",
-      "enableNow": "立即啟用",
-      "saveDisabled": "先儲存但不生效",
-      "listLoadFailed": "動作規則列表取得失敗。",
-      "listRequestFailed": "動作規則列表請求失敗。",
-      "saveFailed": "動作規則儲存失敗。",
-      "saveRequestFailed": "動作規則儲存請求失敗。",
-      "deleteTitle": "刪除動作規則",
-      "deleteConfirm": "確認刪除規則「{name}」嗎？此操作不可撤銷。",
-      "deleteFailed": "刪除動作規則失敗。",
-      "deleteRequestFailed": "刪除動作規則請求失敗。",
-      "enabled": "啟用",
-      "disabled": "停用",
-      "typeLabels": {
-        "todo": "待辦事項",
-        "reminder": "提醒事項",
-        "risk": "風險線索",
-        "health_followup": "健康線索"
-      },
-      "typeDescriptions": {
-        "todo": "使用者明確交代的後續任務或安排，即時識別並確認。",
-        "reminder": "帶時間線索或明確觸達需求的提醒，即時識別並確認。",
-        "risk": "安全、情緒、照護、詐騙等需要後續處理的信號。",
-        "health_followup": "健康關注點、複診、用藥和回訪線索。"
-      },
-      "defaultNames": {
-        "todo": "待辦事項標記",
-        "reminder": "提醒事項標記",
-        "risk": "風險線索標記",
-        "health_followup": "健康線索標記"
-      },
-      "defaultInstructions": {
-        "todo": "從對話中識別使用者明確交代、需要後續執行或提醒的待辦事項。必須有清晰任務內容，不要把普通聊天當成待辦。",
-        "reminder": "從對話中識別明確提醒需求，盡量提取提醒內容、時間線索和上下文。",
-        "risk": "從對話中識別安全、情緒、照護或異常風險線索，只輸出需要後續處理的信號，不要直接通知使用者。",
-        "health_followup": "從對話中識別需要後續關注的健康線索，例如不適症狀、用藥、睡眠、飲食或複診相關資訊，只標記線索。"
-      }
-    },
     "form": {
       "createTitle": "新增智能體角色",
       "editTitle": "編輯智能體角色",

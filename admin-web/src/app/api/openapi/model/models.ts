@@ -45,7 +45,6 @@ export * from './aiAdminInfrastructureResultAiAdminInfrastructurePageDataAiAdmin
 export * from './aiAdminInfrastructureResultAiAdminInfrastructurePageDataSystemObject.model';
 export * from './aiAdminInfrastructureResultAiAdminServicesAdminDtosAdminSystemSettingsDto.model';
 export * from './aiAdminInfrastructureResultAiAdminServicesAgentRolesAgentRoleRuntimeTestResultDto.model';
-export * from './aiAdminInfrastructureResultAiAdminServicesAgentRolesDtosActionRuleDto.model';
 export * from './aiAdminInfrastructureResultAiAdminServicesAgentRolesDtosAgentRoleBindingOptionsDto.model';
 export * from './aiAdminInfrastructureResultAiAdminServicesAgentRolesDtosAgentRoleDto.model';
 export * from './aiAdminInfrastructureResultAiAdminServicesAgentRolesDtosAgentRoleReleaseDto.model';
@@ -78,7 +77,6 @@ export * from './aiAdminInfrastructureResultAiAdminServicesRuntimeOrchestrationD
 export * from './aiAdminInfrastructureResultAiAdminServicesVoiceDtosOtaEntityDto.model';
 export * from './aiAdminInfrastructureResultAiAdminServicesVoiceDtosTimbreDetailsVo.model';
 export * from './aiAdminInfrastructureResultAiAdminServicesVoiceDtosTtsVoiceSyncResultDto.model';
-export * from './aiAdminInfrastructureResultSystemCollectionsGenericListAiAdminServicesAgentRolesDtosActionRuleDto.model';
 export * from './aiAdminInfrastructureResultSystemCollectionsGenericListAiAdminServicesAgentRolesDtosAgentRoleDto.model';
 export * from './aiAdminInfrastructureResultSystemCollectionsGenericListAiAdminServicesAgentRolesDtosAgentRoleReleaseDto.model';
 export * from './aiAdminInfrastructureResultSystemCollectionsGenericListAiAdminServicesAgentRolesDtosOptionItemDto.model';
@@ -110,8 +108,6 @@ export * from './aiAdminServicesAgentRolesAgentRoleRuntimeTestKnowledgeHitDto.mo
 export * from './aiAdminServicesAgentRolesAgentRoleRuntimeTestRequestDto.model';
 export * from './aiAdminServicesAgentRolesAgentRoleRuntimeTestResultDto.model';
 export * from './aiAdminServicesAgentRolesAgentRoleRuntimeTestStageDto.model';
-export * from './aiAdminServicesAgentRolesDtosActionRuleDto.model';
-export * from './aiAdminServicesAgentRolesDtosActionRuleUpsertDto.model';
 export * from './aiAdminServicesAgentRolesDtosAgentRoleBindingOptionsDto.model';
 export * from './aiAdminServicesAgentRolesDtosAgentRoleContextProviderDto.model';
 export * from './aiAdminServicesAgentRolesDtosAgentRoleDto.model';

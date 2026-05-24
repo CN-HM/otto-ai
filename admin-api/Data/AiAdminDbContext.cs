@@ -103,8 +103,6 @@ public class AiAdminDbContext : AbpDbContext<AiAdminDbContext>, IAuditLoggingDbC
     public DbSet<AiMemoryRuleExecutionLog> AiMemoryRuleExecutionLogs => Set<AiMemoryRuleExecutionLog>();
     /// <summary>记忆记录修订表</summary>
     public DbSet<AiMemoryRecordRevision> AiMemoryRecordRevisions => Set<AiMemoryRecordRevision>();
-    /// <summary>动作规则表</summary>
-    public DbSet<AiActionRule> AiActionRules => Set<AiActionRule>();
     /// <summary>运行时信号表</summary>
     public DbSet<AiRuntimeSignal> AiRuntimeSignals => Set<AiRuntimeSignal>();
 
@@ -345,12 +343,6 @@ public class AiAdminDbContext : AbpDbContext<AiAdminDbContext>, IAuditLoggingDbC
             b.HasIndex(e => new { e.UserId, e.Code }).IsUnique();
             b.HasIndex(e => new { e.UserId, e.AgentId });
             b.HasIndex(e => new { e.AgentId, e.Status });
-        });
-
-        builder.Entity<AiActionRule>(b =>
-        {
-            b.HasIndex(e => new { e.AgentRoleId, e.Name }).IsUnique();
-            b.HasIndex(e => new { e.AgentRoleId, e.ActionType, e.IsEnabled });
         });
 
         builder.Entity<AiMemoryRule>(b =>
