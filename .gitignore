@@ -1,6 +1,9 @@
 # Archived business docs (not committed)
 .archive/
 
+# Claude Code worktrees
+.claude/worktrees/
+
 # 环境配置（包含密钥，不要提交）
 appsettings.Production.json
 appsettings.Development.json
