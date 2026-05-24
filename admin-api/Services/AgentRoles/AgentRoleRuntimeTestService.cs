@@ -11,6 +11,7 @@ using AiAdmin.Services.Runtime.Execution;
 using AiAdmin.Services.Runtime.Execution.Dtos;
 using AiAdmin.Services.Runtime.Orchestration;
 using AiAdmin.Services.Runtime.Orchestration.Dtos;
+using AiAdmin.Services.SystemPrompt;
 using AiAdmin.Services.Voice;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.DependencyInjection;
@@ -105,6 +106,7 @@ public class AgentRoleRuntimeTestService : ITransientDependency
     private readonly AgentRoleKnowledgeRetrievalService _agentRoleKnowledgeRetrievalService;
     private readonly MemoryLibraryService _memoryLibraryService;
     private readonly MemoryConversationSessionService _memoryConversationSessionService;
+    private readonly SystemPromptTemplateRenderer _templateRenderer;
 
     public AgentRoleRuntimeTestService(
         AiAdminDbContext db,
@@ -113,7 +115,8 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         IConversationStageExecutionService conversationStageExecutionService,
         AgentRoleKnowledgeRetrievalService agentRoleKnowledgeRetrievalService,
         MemoryLibraryService memoryLibraryService,
-        MemoryConversationSessionService memoryConversationSessionService)
+        MemoryConversationSessionService memoryConversationSessionService,
+        SystemPromptTemplateRenderer templateRenderer)
     {
         _db = db;
         _agentRoleRuntimeResolver = agentRoleRuntimeResolver;
@@ -122,6 +125,7 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         _agentRoleKnowledgeRetrievalService = agentRoleKnowledgeRetrievalService;
         _memoryLibraryService = memoryLibraryService;
         _memoryConversationSessionService = memoryConversationSessionService;
+        _templateRenderer = templateRenderer;
     }
 
     public async Task<AgentRoleRuntimeTestResultDto> RunAsync(AgentRoleRuntimeTestRequestDto request, long currentUserId, bool isSuperAdmin, CancellationToken cancellationToken = default)
@@ -239,9 +243,20 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         var llmStage = Stopwatch.StartNew();
         try
         {
+            var effectiveSystemPrompt = NormalizeOptionalText(result.Knowledge?.InjectedSystemPrompt) ?? NormalizeOptionalText(agentRole.SystemPrompt);
+            var variableContext = new VariableResolveContext
+            {
+                AgentRoleId = agentRole.Id,
+                DeviceId = device.Id,
+                SessionId = sessionId,
+                UserId = device.UserId,
+                Device = null,
+                AgentRole = agentRole,
+                User = null
+            };
             result.Llm = await _conversationStageExecutionService.ChatAsync(orchestration, new LlmChatRequestDto
             {
-                SystemPrompt = BuildRuntimeSystemPrompt(NormalizeOptionalText(result.Knowledge?.InjectedSystemPrompt) ?? NormalizeOptionalText(agentRole.SystemPrompt), result.MemoryBefore),
+                SystemPrompt = await BuildRuntimeSystemPrompt(effectiveSystemPrompt, result.MemoryBefore, variableContext),
                 Stream = false,
                 Messages =
                 [
@@ -382,9 +397,10 @@ public class AgentRoleRuntimeTestService : ITransientDependency
         return NormalizeOptionalText(ttsVoice.TtsVoice);
     }
 
-    private static string? BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext)
+    private async Task<string?> BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext, VariableResolveContext variableContext)
     {
-        var normalizedBase = NormalizeOptionalText(baseSystemPrompt);
+        var rendered = await _templateRenderer.RenderAsync(baseSystemPrompt, variableContext);
+        var normalizedBase = NormalizeOptionalText(rendered);
         var memoryRecords = memoryContext?.Records
             .Where(x => !string.IsNullOrWhiteSpace(x.Content))
             .Take(memoryContext.TopK > 0 ? memoryContext.TopK : 5)

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,13 +35,14 @@ import {
 import { AgentRoleService } from '../shared/agent-role.service';
 import { CommonService } from '../../../core/http/common.service';
 import { PageToolbarComponent } from '../../../shared/components/page-toolbar.component';
+import { ActionRulesComponent } from '../action-rules/action-rules.component';
 
 interface SelectOption {
   label: string;
   value: string;
 }
-type BindingTypeKey = 'ASR' | 'LLM' | 'TTS' | 'VAD';
-type BindingControlName = 'asrProfileId' | 'llmProfileId' | 'ttsProfileId' | 'vadProfileId';
+type BindingTypeKey = 'PIPELINE' | 'ASR' | 'LLM' | 'TTS' | 'VAD';
+type BindingControlName = 'pipelineTemplateId' | 'asrProfileId' | 'llmProfileId' | 'ttsProfileId' | 'vadProfileId';
 interface KnowledgeBindingFormItem {
   datasetId: string;
   datasetName: string;
@@ -49,6 +51,7 @@ interface KnowledgeBindingFormItem {
 }
 
 const BINDING_CONTROL_BY_TYPE: Record<BindingTypeKey, BindingControlName> = {
+  PIPELINE: 'pipelineTemplateId',
   ASR: 'asrProfileId',
   LLM: 'llmProfileId',
   TTS: 'ttsProfileId',
@@ -77,7 +80,8 @@ interface StepDef {
     SliderModule,
     ToggleSwitchModule,
     TranslatePipe,
-    FeedbackMessageComponent
+    FeedbackMessageComponent,
+    ActionRulesComponent
   ],
   templateUrl: './agent-role-form-page.component.html',
   styleUrls: ['./agent-role-form-page.component.css']
@@ -92,12 +96,14 @@ export class AgentRoleFormPageComponent implements OnInit {
   private readonly mcpToolService = inject(McpToolService);
   private readonly commonService = inject(CommonService);
   private readonly i18n = inject(I18nService);
+  private readonly http = inject(HttpClient);
 
   readonly roleId = signal('');
   readonly loading = signal(false);
   readonly submitting = signal(false);
   readonly feedbackMessage = signal('');
   readonly isEdit = signal(false);
+  readonly pipelineTemplateOptions = signal<SelectOption[]>([]);
   readonly asrProfileOptions = signal<SelectOption[]>([]);
   readonly llmProfileOptions = signal<SelectOption[]>([]);
   readonly ttsProfileOptions = signal<SelectOption[]>([]);
@@ -115,6 +121,8 @@ export class AgentRoleFormPageComponent implements OnInit {
   });
   readonly mcpToolOptions = signal<McpToolOption[]>([]);
   readonly currentStep = signal(0);
+
+  availableVariables: { name: string; category: string; description: string; example: string }[] = [];
 
   readonly memoryDecisionOptions = computed(() => {
     this.i18n.localeVersion();
@@ -142,13 +150,14 @@ export class AgentRoleFormPageComponent implements OnInit {
       { key: 'prompt', label: this.i18n.translate('agentRoles.form.steps.prompt') },
       { key: 'knowledge', label: this.i18n.translate('agentRoles.form.steps.knowledge') },
       { key: 'memory', label: this.i18n.translate('agentRoles.form.steps.memory') },
-      { key: 'mcp', label: this.i18n.translate('agentRoles.form.steps.mcp') }
+      { key: 'mcp', label: this.i18n.translate('agentRoles.form.steps.mcp') },
+      { key: 'actions', label: this.i18n.translate('agentRoles.form.steps.actions') }
     ];
   });
 
   readonly visibleSteps = computed<StepDef[]>(() => {
     const steps = this.steps();
-    return this.isEdit() ? steps : steps;
+    return this.isEdit() ? steps : steps.filter(step => step.key !== 'actions');
   });
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -160,6 +169,7 @@ export class AgentRoleFormPageComponent implements OnInit {
     icon: [''],
     coverImage: [''],
     themeToken: [''],
+    pipelineTemplateId: [''],
     asrProfileId: [''],
     vadProfileId: [''],
     llmProfileId: [''],
@@ -192,6 +202,7 @@ export class AgentRoleFormPageComponent implements OnInit {
     this.loadThemeOptions();
     this.loadKnowledgeBases();
     this.loadMcpToolOptions();
+    this.loadVariables();
     this.syncLanguageFields(this.form.controls.ttsLanguage.value);
 
     this.form.controls.ttsProfileId.valueChanges.subscribe(ttsProfileId => {
@@ -278,6 +289,7 @@ export class AgentRoleFormPageComponent implements OnInit {
             icon: item.icon || '',
             coverImage: item.coverImage || '',
             themeToken: item.themeToken || '',
+            pipelineTemplateId: item.pipelineTemplateId || '',
             asrProfileId: item.asrProfileId || '',
             vadProfileId: item.vadProfileId || '',
             llmProfileId: item.llmProfileId || '',
@@ -344,6 +356,7 @@ export class AgentRoleFormPageComponent implements OnInit {
       icon: this.normalizeOptional(raw.icon),
       coverImage: this.normalizeOptional(raw.coverImage),
       themeToken: this.normalizeOptional(raw.themeToken),
+      pipelineTemplateId: this.normalizeOptional(raw.pipelineTemplateId),
       asrProfileId: this.normalizeOptional(raw.asrProfileId),
       vadProfileId: this.normalizeOptional(raw.vadProfileId),
       llmProfileId: this.normalizeOptional(raw.llmProfileId),
@@ -451,22 +464,26 @@ export class AgentRoleFormPageComponent implements OnInit {
     this.agentRoleService.getBindingOptions().subscribe({
       next: (response: ApiResponse<AgentRoleBindingOptions>) => {
         if (response.code !== 0 || !response.data) {
+          this.setBindingOptions('PIPELINE', []);
           this.setBindingOptions('ASR', []);
           this.setBindingOptions('LLM', []);
           this.setBindingOptions('TTS', []);
           this.setBindingOptions('VAD', []);
           return;
         }
+        this.setBindingOptions('PIPELINE', this.mapOptionItems(response.data.pipelineTemplates));
         this.setBindingOptions('ASR', this.mapOptionItems(response.data.asrProfiles));
         this.setBindingOptions('LLM', this.mapOptionItems(response.data.llmProfiles));
         this.setBindingOptions('TTS', this.mapOptionItems(response.data.ttsProfiles));
         this.setBindingOptions('VAD', this.mapOptionItems(response.data.vadProfiles));
+        this.applyDefaultBindingSelection('PIPELINE', this.mapOptionItems(response.data.pipelineTemplates));
         this.applyDefaultBindingSelection('ASR', this.mapOptionItems(response.data.asrProfiles));
         this.applyDefaultBindingSelection('LLM', this.mapOptionItems(response.data.llmProfiles));
         this.applyDefaultBindingSelection('TTS', this.mapOptionItems(response.data.ttsProfiles));
         this.applyDefaultBindingSelection('VAD', this.mapOptionItems(response.data.vadProfiles));
       },
       error: () => {
+        this.setBindingOptions('PIPELINE', []);
         this.setBindingOptions('ASR', []);
         this.setBindingOptions('LLM', []);
         this.setBindingOptions('TTS', []);
@@ -477,6 +494,9 @@ export class AgentRoleFormPageComponent implements OnInit {
 
   private setBindingOptions(bindingType: BindingTypeKey, options: SelectOption[]): void {
     switch (bindingType) {
+      case 'PIPELINE':
+        this.pipelineTemplateOptions.set(options);
+        break;
       case 'ASR':
         this.asrProfileOptions.set(options);
         break;
@@ -725,5 +745,39 @@ export class AgentRoleFormPageComponent implements OnInit {
       },
       { emitEvent: false }
     );
+  }
+
+  private loadVariables(): void {
+    this.http.get<{ variables: { name: string; category: string; description: string; example: string }[] }>('/api/system-prompt/variables')
+      .subscribe({
+        next: (res) => this.availableVariables = res.variables ?? [],
+        error: () => this.availableVariables = []
+      });
+  }
+
+  get variablesByCategory(): Map<string, { name: string; category: string; description: string; example: string }[]> {
+    const map = new Map<string, { name: string; category: string; description: string; example: string }[]>();
+    for (const v of this.availableVariables) {
+      const list = map.get(v.category) ?? [];
+      list.push(v);
+      map.set(v.category, list);
+    }
+    return map;
+  }
+
+  insertVariable(name: string): void {
+    const textarea = document.getElementById('systemPrompt') as HTMLTextAreaElement | null;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = (this.form.controls.systemPrompt.value as string) ?? '';
+    const varText = `{{${name}}}`;
+    this.form.controls.systemPrompt.setValue(
+      text.substring(0, start) + varText + text.substring(end)
+    );
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + varText.length, start + varText.length);
+    });
   }
 }

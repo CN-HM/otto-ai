@@ -9,6 +9,7 @@ using AiAdmin.Services.Runtime.Execution;
 using AiAdmin.Services.Runtime.Execution.Dtos;
 using AiAdmin.Services.Runtime.Orchestration;
 using AiAdmin.Services.Runtime.Orchestration.Dtos;
+using AiAdmin.Services.SystemPrompt;
 using AiAdmin.Services.Voice;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -66,6 +67,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
     private readonly ConversationToolLoop _toolLoop;
     private readonly ConversationRuntimeTraceAggregator _traceAggregator;
     private readonly ILogger<DeviceConversationRuntimeService> _logger;
+    private readonly SystemPromptTemplateRenderer _templateRenderer;
 
     public DeviceConversationRuntimeService(
         AiAdminDbContext db,
@@ -77,7 +79,8 @@ public class DeviceConversationRuntimeService : ITransientDependency
         MemoryConversationSessionService memoryConversationSessionService,
         ConversationToolLoop toolLoop,
         ConversationRuntimeTraceAggregator traceAggregator,
-        ILogger<DeviceConversationRuntimeService> logger)
+        ILogger<DeviceConversationRuntimeService> logger,
+        SystemPromptTemplateRenderer templateRenderer)
     {
         _db = db;
         _agentRoleRuntimeResolver = agentRoleRuntimeResolver;
@@ -89,6 +92,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
         _toolLoop = toolLoop;
         _traceAggregator = traceAggregator;
         _logger = logger;
+        _templateRenderer = templateRenderer;
     }
 
     public async Task<DeviceConversationTurnResult?> ExecuteTurnAsync(DeviceConversationTurnRequest request, CancellationToken cancellationToken = default)
@@ -363,7 +367,19 @@ public class DeviceConversationRuntimeService : ITransientDependency
             };
 
             var effectiveSystemPromptResolved = NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt;
-            var systemPrompt = BuildRuntimeSystemPrompt(effectiveSystemPromptResolved, memoryContext);
+            var variableContext = new VariableResolveContext
+            {
+                AgentRoleId = agentRole.Id,
+                DeviceId = device.Id,
+                SessionId = orchestrationRequest.SessionId,
+                UserId = device.UserId,
+                Device = device,
+                AgentRole = agentRole,
+                User = device.UserId != null
+                    ? await _db.SysUsers.FindAsync(device.UserId.Value)
+                    : null
+            };
+            var systemPrompt = await BuildRuntimeSystemPrompt(effectiveSystemPromptResolved, memoryContext, variableContext);
 
             var toolLoopResult = await _toolLoop.RunAsync(
                 orchestrationRequest,
@@ -665,9 +681,10 @@ public class DeviceConversationRuntimeService : ITransientDependency
         return buffer;
     }
 
-    private static string? BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext)
+    private async Task<string?> BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext, VariableResolveContext variableContext)
     {
-        var normalizedBase = NormalizeOptionalText(baseSystemPrompt);
+        var rendered = await _templateRenderer.RenderAsync(baseSystemPrompt, variableContext);
+        var normalizedBase = NormalizeOptionalText(rendered);
         var memoryRecords = memoryContext?.Records
             .Where(x => !string.IsNullOrWhiteSpace(x.Content))
             .Take(memoryContext.TopK > 0 ? memoryContext.TopK : 5)
