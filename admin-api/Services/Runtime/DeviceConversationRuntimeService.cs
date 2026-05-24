@@ -8,6 +8,7 @@ using AiAdmin.Services.Runtime.Execution;
 using AiAdmin.Services.Runtime.Execution.Dtos;
 using AiAdmin.Services.Runtime.Orchestration;
 using AiAdmin.Services.Runtime.Orchestration.Dtos;
+using AiAdmin.Services.SystemPrompt;
 using AiAdmin.Services.Voice;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -65,6 +66,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
     private readonly ActionRuleExecutionService _actionRuleExecutionService;
     private readonly ConversationRuntimeTraceAggregator _traceAggregator;
     private readonly ILogger<DeviceConversationRuntimeService> _logger;
+    private readonly SystemPromptTemplateRenderer _templateRenderer;
 
     public DeviceConversationRuntimeService(
         AiAdminDbContext db,
@@ -76,7 +78,8 @@ public class DeviceConversationRuntimeService : ITransientDependency
         MemoryConversationSessionService memoryConversationSessionService,
         ActionRuleExecutionService actionRuleExecutionService,
         ConversationRuntimeTraceAggregator traceAggregator,
-        ILogger<DeviceConversationRuntimeService> logger)
+        ILogger<DeviceConversationRuntimeService> logger,
+        SystemPromptTemplateRenderer templateRenderer)
     {
         _db = db;
         _agentRoleRuntimeResolver = agentRoleRuntimeResolver;
@@ -88,6 +91,7 @@ public class DeviceConversationRuntimeService : ITransientDependency
         _actionRuleExecutionService = actionRuleExecutionService;
         _traceAggregator = traceAggregator;
         _logger = logger;
+        _templateRenderer = templateRenderer;
     }
 
     public async Task<DeviceConversationTurnResult?> ExecuteTurnAsync(DeviceConversationTurnRequest request, CancellationToken cancellationToken = default)
@@ -330,6 +334,20 @@ public class DeviceConversationRuntimeService : ITransientDependency
             query: transcript,
             sessionId: orchestrationRequest.SessionId,
             cancellationToken: cancellationToken);
+
+        var variableContext = new VariableResolveContext
+        {
+            AgentRoleId = agentRole.Id,
+            DeviceId = device.Id,
+            SessionId = orchestrationRequest.SessionId,
+            UserId = device.UserId,
+            Device = device,
+            AgentRole = agentRole,
+            User = device.UserId != null
+                ? await _db.SysUsers.FindAsync(device.UserId.Value)
+                : null
+        };
+
         var ragResponse = await _agentRoleKnowledgeRetrievalService.RetrieveAsync(new AgentRoleKnowledgeRetrievalRequest
         {
             AgentRole = agentRole,
@@ -389,10 +407,11 @@ public class DeviceConversationRuntimeService : ITransientDependency
 
                 try
                 {
+                    var streamingSystemPrompt = await BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext, variableContext);
                     var llmResponse = await _conversationStageExecutionService.ChatStreamingAsync(streamingOrchestrationRequest,
                         new LlmChatRequestDto
                         {
-                            SystemPrompt = BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext),
+                            SystemPrompt = streamingSystemPrompt,
                             Stream = true,
                             Messages =
                             [
@@ -427,10 +446,11 @@ public class DeviceConversationRuntimeService : ITransientDependency
             }
             else
             {
+                var nonStreamingSystemPrompt = await BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext, variableContext);
                 var llmResponse = await _conversationStageExecutionService.ChatAsync(orchestrationRequest,
                     new LlmChatRequestDto
                     {
-                        SystemPrompt = BuildRuntimeSystemPrompt(NormalizeOptionalText(ragResponse.InjectedSystemPrompt) ?? effectiveSystemPrompt, memoryContext),
+                        SystemPrompt = nonStreamingSystemPrompt,
                         Stream = false,
                         Messages =
                         [
@@ -755,22 +775,23 @@ public class DeviceConversationRuntimeService : ITransientDependency
         return buffer;
     }
 
-    private static string? BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext)
+    private async Task<string?> BuildRuntimeSystemPrompt(string? baseSystemPrompt, MemoryRuntimeContextDto? memoryContext, VariableResolveContext variableContext)
     {
         var normalizedBase = NormalizeOptionalText(baseSystemPrompt);
+        var rendered = await _templateRenderer.RenderAsync(normalizedBase, variableContext);
         var memoryRecords = memoryContext?.Records
             .Where(x => !string.IsNullOrWhiteSpace(x.Content))
             .Take(memoryContext.TopK > 0 ? memoryContext.TopK : 5)
             .ToList() ?? [];
         if (memoryRecords.Count == 0)
         {
-            return normalizedBase;
+            return rendered;
         }
 
         var builder = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(normalizedBase))
+        if (!string.IsNullOrWhiteSpace(rendered))
         {
-            builder.AppendLine(normalizedBase);
+            builder.AppendLine(rendered);
             builder.AppendLine();
         }
 
