@@ -146,7 +146,7 @@ public class SystemSettingsService : ITransientDependency
         settings.EnableStopTtsNotify = dto.Runtime.EnableStopTtsNotify;
         settings.StopTtsNotifyVoice = TrimOrEmpty(dto.Runtime.StopTtsNotifyVoice);
         settings.ExitCommands = TrimOrEmpty(dto.Runtime.ExitCommands);
-        settings.IoTProtocolConfig = TrimOrEmpty(dto.Runtime.IoTProtocolConfig);
+        settings.IoTProtocolConfig = string.IsNullOrWhiteSpace(dto.Runtime.IoTProtocolConfig) ? "{}" : dto.Runtime.IoTProtocolConfig.Trim();
         settings.WakeupWords = TrimOrEmpty(dto.Runtime.WakeupWords);
         settings.DeviceMaxOutputSize = dto.Runtime.DeviceMaxOutputSize;
         settings.VoiceprintUrl = TrimOrEmpty(dto.Runtime.VoiceprintUrl);

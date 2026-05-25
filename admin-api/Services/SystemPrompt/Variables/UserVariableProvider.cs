@@ -3,6 +3,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace AiAdmin.Services.SystemPrompt.Variables;
 
+[ExposeServices(typeof(ISystemPromptVariableProvider))]
 public class UserVariableProvider : ISystemPromptVariableProvider, ITransientDependency
 {
     private static readonly Dictionary<string, VariableDefinition> Definitions = new()
